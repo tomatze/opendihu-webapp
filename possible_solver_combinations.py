@@ -1,6 +1,6 @@
 # each dict entry corresponds to a cpp-class 
-# each class has a ordered list of needed sub-classes
-# possible outer structures (runnables) are marked with '!'
+# each class has a ordered list template_arguments (assume no args if omitted)
+# possible outer structures (runnables) have the key runnable set to True (assume False if ommited)
 # lists of the form [ "Mesh::" ] get auto expanded to [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::Str..", ... ]
 possible_solver_combinations = {
     "SpatialDiscretization::FiniteElementMethod" : {
