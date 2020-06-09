@@ -38,28 +38,27 @@ class Example:
         self.combinations = possible_solver_combinations
 
         # create a list of keys and a list of runnables
-        # delete the '!' in the process
-        self.keys = list(self.combinations.keys())
         self.runnables = []
+        self.keys = list(self.combinations.keys())
         for i in range(0, len(self.keys)):
-            if self.keys[i][0] == '!':
-                self.combinations[self.keys[i][1:]] = self.combinations.pop(self.keys[i])
-                self.keys[i] = self.keys[i][1:]
+            if self.combinations[self.keys[i]].get('runnable', False) == True:
                 self.runnables.append(self.keys[i])
 
-        # expand all sub_list of the form:
+        # expand all template_arguments sublists of the form:
         # [ "Mesh::" ]
         # to the form:
         # [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::StructuredDeformableOfDimension" ... ]
         for key, value in self.combinations.items():
-            for i in range(0, len(value)):
-                for item in value[i]:
+            template_arguments = value.get("template_arguments", [])
+            for i in range(0, len(template_arguments)):
+                template_argument = template_arguments[i]
+                for item in template_argument:
                     if len(item) >= 2 and item[-1] == ':' and item[-2] == ':':
                         # if item ends with '::'
-                        value[i].remove(item)
+                        template_argument.remove(item)
                         for key_sub in self.keys:
                             if key_sub.startswith(item):
-                                value[i].append(key_sub)
+                                template_argument.append(key_sub)
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
     def parse_src(self, src):
@@ -112,7 +111,7 @@ class Example:
     # helper function to make validate_src() recursive
     def validate_src_recursive(self, node):
         try:
-            wanted_childs = self.combinations[node.name]
+            wanted_childs = self.combinations[node.name].get("template_arguments", [])
         except:
             # if the key node.name does not exist, we are at the bottom
             return True
@@ -145,7 +144,7 @@ def main():
 
     example.parse_src(src)
     #print(example.root) 
-    #print(example.create_src())
+    print(example.create_src())
     #print(example.validate_src())
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
