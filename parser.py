@@ -97,9 +97,9 @@ class Example:
 
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
     def create_src(self):
-        template = open("template.cpp", "r").read()
-        index = template.find(' problem(settings)')
-        return template[:index] + indent(str(self.root), '  ') + template[index:]
+        cpp_template = open("template.cpp", "r").read()
+        index = cpp_template.find(' problem(settings)')
+        return cpp_template[:index] + indent(str(self.root), '  ') + cpp_template[index:]
 
     # this checks if the tree is a valid combination
     def validate_src(self):
@@ -144,8 +144,8 @@ def main():
 
     example.parse_src(src)
     #print(example.root) 
-    print(example.create_src())
-    #print(example.validate_src())
+    #print(example.create_src())
+    print(example.validate_src())
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
 # helper function to indent a multiline-string by a given indentation
