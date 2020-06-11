@@ -3,6 +3,27 @@
 # possible outer structures (runnables) have the key runnable set to True (assuming False if ommited)
 # lists of the form [ "Mesh::" ] get auto expanded to [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::Str..", ... ]
 possible_solver_combinations = {
+    "global" : {
+        "python_options" : {
+            "scenarioName" : {
+                "description" : "name of the scenario",
+                "type" : "string",
+                "default" : "test-scenario"
+            },
+            "logFormat" : {
+                "description" : "output-format of logfiles",
+                "type" : [ "csv", "json" ],
+                "default" : "csv"
+            },
+            "solverStructureDiagramFile" : {
+                "description" : "filename of solver structure diagram",
+                "type" : "string",
+                "default" : "solver_structure.txt"
+            }
+        }
+    },
+
+
     "SpatialDiscretization::FiniteElementMethod" : {
         "runnable" : True,
         "template_arguments" : [
@@ -10,7 +31,14 @@ possible_solver_combinations = {
             [ "BasisFunction::" ],
             [ "Quadrature::" ],
             [ "Equation::" ]
-        ]
+        ],
+        "python_options" : {
+            "prefactor" : {
+                "description" : "prefactor",
+                "type" : "double",
+                "default" : "1.0"
+            }
+        }
     },
 
 
