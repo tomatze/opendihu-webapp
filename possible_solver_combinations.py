@@ -5,6 +5,7 @@
 
 # classes added so far:
 # OutputWriter::
+# TimeSteppingScheme::ExplicitEuler
 # SpatialDiscretization::FiniteElementMethod
 # Mesh::
 # BasisFunction::
@@ -32,12 +33,22 @@ possible_solver_combinations = {
     },
 
 
+    # TODO accept all DiscretizableInTime e.g. Cellmm (not only SpatialDiscretization)
+    "TimeSteppingScheme::ExplicitEuler" : {
+        "runnable" : True,
+        "template_arguments" : [
+            [ "SpatialDiscretization::" ]
+        ]
+    },
+
+
     "OutputWriter::OutputSurface" : {
         "runnable" : True,
         "template_arguments" : [
             [ "SpatialDiscretization::" ]
         ]
     },
+
 
     "SpatialDiscretization::FiniteElementMethod" : {
         "runnable" : True,
