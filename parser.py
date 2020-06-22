@@ -25,7 +25,7 @@ class Node:
             return self.name
         else:
             return self.name + '<' + childs_string + '\n' + indentation + '>'
-        
+
 
 # this class holds a tree of Node objects
 # the tree represents the structure of a example.cpp
@@ -70,7 +70,7 @@ class Example:
             # TODO maybe also remove multi-line comments
             # remove newlines tabs and spaces from problem
             problem = re.sub(r'\s+', '', problem)
-    
+
             # create tree from problem with a simple parser
             problem = '<' + problem + '>'
             stack = []
@@ -90,7 +90,7 @@ class Example:
                     stack.pop()
                 else:
                     stack[-1].name = stack[-1].name + char
-            
+
             self.root = stack[0].childs[0]
         except:
             print('Error: failed to parse ' + src, file=sys.stderr)
