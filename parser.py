@@ -131,7 +131,7 @@ class Example:
 
     # this function returns a list of all possible childs of a given class
     def get_possible_childs(self, name):
-        return self.combinations[name]
+        return self.combinations[name]["template_arguments"]
 
 
     def parse_settings(self):
@@ -151,7 +151,7 @@ def main():
     #print(example.root) 
     #print(example.create_src())
     print(example.validate_src())
-    print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
+    #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
 # helper function to indent a multiline-string by a given indentation
 def indent(lines, indentation):
