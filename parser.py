@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import re
+import sys
 
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
@@ -64,7 +65,9 @@ class Example:
     def parse_src(self, src):
         try:
             # isolate problem
-            problem = src.split('settings(argc, argv);')[1].split(' problem(')[0]
+            #problem = src.split('settings(argc, argv);')[1].split(' problem(')[0]
+            problem = src.split('settings(argc, argv);')[1]
+            problem = re.compile('(.*)>(.*);').split(problem)[0] + '>'
             # remove comments from problem
             problem = re.sub(r'(?m)(^.*)//.*\n?', r'\1\n', problem)
             # TODO maybe also remove multi-line comments
@@ -135,9 +138,11 @@ class Example:
         pass
 
 def main():
-    path_example = "../opendihu/examples/"
-    settings = open(path_example + "laplace/laplace1d/settings_linear_quadratic_dirichlet.py", "r").read()
-    src = open(path_example + "laplace/laplace1d/src/laplace_linear.cpp", "r").read()
+    #path_example = "../opendihu/examples/"
+    #settings = open(path_example + "laplace/laplace1d/settings_linear_quadratic_dirichlet.py", "r").read()
+    src = open(str(sys.argv[1]), "r").read()
+    #src = open(path_example + "laplace/laplace1d/src/laplace_linear.cpp", "r").read()
+    #src = open(path_example + "laplace/laplace3d_surface/src/laplace_surface.cpp", "r").read()
     #src = open(path_example + "electrophysiology/biceps_contraction/opendihu/src/biceps_contraction.cpp", "r").read()
 
     example = Example()
@@ -146,7 +151,7 @@ def main():
     #print(example.root) 
     #print(example.create_src())
     print(example.validate_src())
-    #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
+    print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
 # helper function to indent a multiline-string by a given indentation
 def indent(lines, indentation):
