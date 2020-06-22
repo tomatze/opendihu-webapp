@@ -24,6 +24,13 @@ possible_solver_combinations = {
     },
 
 
+    "OutputWriter::OutputSurface" : {
+        "runnable" : True,
+        "template_arguments" : [
+            [ "SpatialDiscretization::" ]
+        ]
+    },
+
     "SpatialDiscretization::FiniteElementMethod" : {
         "runnable" : True,
         "template_arguments" : [
