@@ -7,7 +7,7 @@ possible_solver_combinations = {
         "python_options" : {
             "scenarioName" : {
                 "description" : "name of the scenario",
-                "type" : "string",
+                "type" : [ "string" ],
                 "default" : "test-scenario"
             },
             "logFormat" : {
@@ -17,7 +17,7 @@ possible_solver_combinations = {
             },
             "solverStructureDiagramFile" : {
                 "description" : "filename of solver structure diagram",
-                "type" : "string",
+                "type" : [ "string" ],
                 "default" : "solver_structure.txt"
             }
         }
@@ -35,7 +35,7 @@ possible_solver_combinations = {
         "python_options" : {
             "prefactor" : {
                 "description" : "prefactor",
-                "type" : "double",
+                "type" : [ "double" ],
                 "default" : "1.0"
             }
         }
@@ -86,7 +86,7 @@ possible_solver_combinations = {
     },
     "Quadrature::Gauss" : {
         "template_arguments" : [
-            [ "1" , "2" , "3", "4", "5", "6", "7", "8", "10", "12", "16", "20", "24", "64" ]    
+            [ "1" , "2" , "3", "4", "5", "6", "7", "8", "10", "12", "16", "20", "24", "64" ]
         ]
     },
     "Quadrature::NewtonCotes" : {
