@@ -2,6 +2,14 @@
 # each class-dict can have a ordered list with template_arguments (assuming no args if omitted)
 # possible outer structures (runnables) have the key runnable set to True (assuming False if ommited)
 # lists of the form [ "Mesh::" ] get auto expanded to [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::Str..", ... ]
+
+# classes added so far:
+# OutputWriter::
+# SpatialDiscretization::FiniteElementMethod
+# Mesh::
+# BasisFunction::
+# Quadrature::
+# Equation::
 possible_solver_combinations = {
     "global" : {
         "python_options" : {
