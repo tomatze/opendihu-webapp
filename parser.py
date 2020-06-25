@@ -154,7 +154,7 @@ class Example:
             print('len does not match')
             return False
         for i in range(len(wanted_childs)):
-            if wanted_childs[i] == "Integer":
+            if wanted_childs[i] == ["Integer"]:
                 try:
                     int(node.childs[i].name)
                 except:
