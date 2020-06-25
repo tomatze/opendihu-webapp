@@ -128,7 +128,7 @@ class Example:
 
             self.root = stack[0].childs[0]
         except:
-            print('Error: failed to parse ' + src, file=sys.stderr)
+            printe('failed to parse ' + src)
 
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
     def create_src(self):
@@ -136,11 +136,11 @@ class Example:
         index = cpp_template.find(' problem(settings)')
         return cpp_template[:index] + indent(str(self.root), '  ') + cpp_template[index:]
 
-    # this checks if the tree is a valid combination
+    # this checks if the tree is a valid combination of templates
     def validate_src(self):
         # not valid, if the root is not a runnable
         if self.root.name not in self.runnables:
-            print(self.root.name + ' does not exist or is not runnable')
+            printe(self.root.name + ' does not exist or is not runnable')
             return False
         return self.validate_src_recursive(self.root)
 
@@ -152,17 +152,17 @@ class Example:
             # if the key node.name does not exist, we are at the bottom
             return True
         if len(wanted_childs) != len(node.childs):
-            print('len does not match')
+            printe(node.name + ' has the wrong number of template_arguments')
             return False
         for i in range(len(wanted_childs)):
             if wanted_childs[i] == ["Integer"]:
                 try:
                     int(node.childs[i].name)
                 except:
-                    print(node.childs[i].name + ' is not an Integer')
+                    printe(node.childs[i].name + ' is not an Integer')
                     return False
             elif node.childs[i].name not in wanted_childs[i]:
-                print(node.childs[i].name + ' is not in the list of possible template_arguments: ' + str(wanted_childs[i]))
+                printe(node.childs[i].name + ' is not in the list of possible template_arguments: ' + str(wanted_childs[i]))
                 return False
             if self.validate_src_recursive(node.childs[i]) == False:
                 return False
@@ -196,6 +196,9 @@ def main():
 # helper function to indent a multiline-string by a given indentation
 def indent(lines, indentation):
     return indentation + lines.replace('\n', '\n' + indentation)
+
+def printe(message):
+    print('Error: ' + message, file=sys.stderr)
 
 if __name__ == "__main__":
     main()
