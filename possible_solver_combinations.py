@@ -174,6 +174,14 @@ possible_solver_combinations = {
             [ "discretizableInTime" ]
         ]
     },
+    "TimeSteppingScheme::RepeatedCall" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            #TODO does this really accept any timeSteppingScheme
+            [ "timeSteppingScheme" ]
+        ]
+    },
     #specalizedSolvers:
     "TimeSteppingScheme::StaticBidomainSolver" : {
         "runnable" : True,
