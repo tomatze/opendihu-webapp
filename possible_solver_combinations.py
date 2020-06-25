@@ -14,10 +14,11 @@
 # lists of the form [ "Mesh::" ] get auto expanded to [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::Str..", ... ]
 
 # templates added so far:
-# TODO specalizedSolvers
-# TODO postprocessing
+# TODO add postprocessing
 # FastMonodomainSolver
 # MuscleContractionSolver
+# TODO add other specalized_solvers
+# e.g. SpatialDiscretization::HyperelasticitySolver in solid_mechanics/shear_test/src/compressible_mooney_rivlin.cpp
 # Control::MultipleInstances
 # Control::Coupling
 # Control::MapDofs
@@ -187,25 +188,25 @@ possible_solver_combinations = {
         "runnable" : True,
         "timeSteppingScheme" : True,
         "template_arguments" : [
-            [ "SpatialDiscretization::" ],
-            [ "SpatialDiscretization::" ]
+            [ "SpatialDiscretization::FiniteElementMethod" ],
+            [ "SpatialDiscretization::FiniteElementMethod" ]
         ]
     },
     "TimeSteppingScheme::MultidomainSolver" : {
         "runnable" : True,
         "timeSteppingScheme" : True,
         "template_arguments" : [
-            [ "SpatialDiscretization::" ],
-            [ "SpatialDiscretization::" ]
+            [ "SpatialDiscretization::FiniteElementMethod" ],
+            [ "SpatialDiscretization::FiniteElementMethod" ]
         ]
     },
     "TimeSteppingScheme::MultidomainWithFatSolver" : {
         "runnable" : True,
         "timeSteppingScheme" : True,
         "template_arguments" : [
-            [ "SpatialDiscretization::" ],
-            [ "SpatialDiscretization::" ],
-            [ "SpatialDiscretization::" ]
+            [ "SpatialDiscretization::FiniteElementMethod" ],
+            [ "SpatialDiscretization::FiniteElementMethod" ],
+            [ "SpatialDiscretization::FiniteElementMethod" ]
         ]
     },
 
@@ -319,6 +320,7 @@ possible_solver_combinations = {
     "Equation::SolidMechanics::TransverselyIsotropicMooneyRivlinIncompressible3D" : {},
     "Equation::SolidMechanics::TransverselyIsotropicMooneyRivlinIncompressibleActive3D" : {},
     "Equation::SolidMechanics::HyperelasticTendon" : {},
+    "Equation::SolidMechanics::HyperelasticityBase" : {},
     "Equation::Static::Poisson" : {},
     "Equation::Static::GeneralizedPoisson" : {},
 }
