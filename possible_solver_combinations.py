@@ -4,7 +4,10 @@
 # possible outer templates (runnables) have the key runnable set to True (assuming False if ommited)
 
 # templates that are discretizable in time have discretizableInTime set to True (assuming False if ommited)
-# "discretizableInTime" in template_arguments will get expanded to all classes, which are discretizableInTime
+# "discretizableInTime" in template_arguments will get expanded to all classes, which have discretizableInTime == True
+
+# templates that are a "TimeSteppingScheme" (e.g. all TimeSteppingScheme:: and OperatorSplitting::) have timeSteppingScheme set to True (assuming False if ommited)
+# "timeSteppingScheme" in template_arguments will get expanded to all classes, which have timeSteppingScheme == True
 
 # the keyword "Integer" can be used in template_arguments where an integer is expected (e.g. in CellmlAdapter)
 
@@ -13,8 +16,8 @@
 # templates added so far:
 # TODO specalizedSolvers
 # TODO postprocessing
-# OperatorSplitting::
 # Control::MultipleInstances
+# OperatorSplitting::
 # CellmlAdapter
 # FunctionSpace::
 # OutputWriter::
@@ -42,31 +45,33 @@ possible_solver_combinations = {
                 "type" : [ "string" ],
                 "default" : "solver_structure.txt"
             }
-            #TODO meta
+            #TODO add meta
         }
-    },
-
-
-    "OperatorSplitting::Strang" : {
-        "runnable" : True,
-        "template_arguments" : [
-            [ "TimeSteppingScheme::" ],
-            [ "TimeSteppingScheme::" ]
-        ]
-    },
-    "OperatorSplitting::Godunov" : {
-        "runnable" : True,
-        "template_arguments" : [
-            [ "TimeSteppingScheme::" ],
-            [ "TimeSteppingScheme::" ]
-        ]
     },
 
 
     "Control::MultipleInstances" : {
         "runnable" : True,
         "template_arguments" : [
-            [ "TimeSteppingScheme::" ]
+            [ "timeSteppingScheme::" ]
+        ]
+    },
+
+
+    "OperatorSplitting::Strang" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "timeSteppingScheme::" ],
+            [ "timeSteppingScheme::" ]
+        ]
+    },
+    "OperatorSplitting::Godunov" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "timeSteppingScheme::" ],
+            [ "timeSteppingScheme::" ]
         ]
     },
 
@@ -91,28 +96,33 @@ possible_solver_combinations = {
 
     "TimeSteppingScheme::ExplicitEuler" : {
         "runnable" : True,
+        "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]
     },
     "TimeSteppingScheme::ImplicitEuler" : {
+        "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]
     },
     "TimeSteppingScheme::Heun" : {
+        "timeSteppingScheme" : True,
         "runnable" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]
     },
     "TimeSteppingScheme::HeunAdaptive" : {
+        "timeSteppingScheme" : True,
         "runnable" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]
     },
     "TimeSteppingScheme::CrankNicolson" : {
+        "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]

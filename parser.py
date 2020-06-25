@@ -38,50 +38,59 @@ class Example:
         from possible_solver_combinations import possible_solver_combinations
         self.combinations = possible_solver_combinations
 
-        # create a list of keys and a list of runnables
+        # create a list of keys
         self.keys = list(self.combinations.keys())
+
+        # create lists of runnable, discretizableInTime, timeSteppingScheme
+        # runnable is used in validate_src(), the other lists are used to expand some template_arguments 
         self.runnables = []
+        self.discretizableInTime = []
+        self.timeSteppingScheme = []
         for i in range(0, len(self.keys)):
             if self.combinations[self.keys[i]].get('runnable', False) == True:
                 self.runnables.append(self.keys[i])
+            if self.combinations[self.keys[i]].get('discretizableInTime', False) == True:
+                self.discretizableInTime.append(self.keys[i])
+            if self.combinations[self.keys[i]].get('timeSteppingScheme', False) == True:
+                self.timeSteppingScheme.append(self.keys[i])
+
 
         # expand all template_arguments sublists of the form:
         # [ "Mesh::" ]
         # to the form:
         # [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::StructuredDeformableOfDimension" ... ]
-        for key, value in self.combinations.items():
+        # AND
+        # expand all template_arguments sublists of the form:
+        # [ "discretizableInTime" ]
+        # to the form:
+        # [ "SpatialDiscretization::FiniteElementMethod", "CellmlAdapter", ... ]
+        # AND
+        # expand all template_arguments sublists of the form:
+        # [ "timeSteppingScheme" ]
+        # to the form:
+        # [ "OperatorSplitting::Strang", "TimeSteppingScheme::Heun", ... ]
+        for _key, value in self.combinations.items():
             template_arguments = value.get("template_arguments", [])
             for i in range(0, len(template_arguments)):
                 template_argument = template_arguments[i]
                 for item in template_argument:
+                    # expand ::
                     if len(item) >= 2 and item[-1] == ':' and item[-2] == ':':
                         # if item ends with '::'
                         template_argument.remove(item)
                         for key_sub in self.keys:
                             if key_sub.startswith(item):
                                 template_argument.append(key_sub)
-
-
-        # create a list of discretizableInTime
-        self.discretizableInTime = []
-        for i in range(0, len(self.keys)):
-            if self.combinations[self.keys[i]].get('discretizableInTime', False) == True:
-                self.discretizableInTime.append(self.keys[i])
-
-        # expand all template_arguments sublists of the form:
-        # [ "discretizableInTime" ]
-        # to the form:
-        # [ "SpatialDiscretization::FiniteElementMethod", ... ]
-        for key, value in self.combinations.items():
-            template_arguments = value.get("template_arguments", [])
-            for i in range(0, len(template_arguments)):
-                template_argument = template_arguments[i]
-                for item in template_argument:
+                    # expand discretizableInTime
                     if item == "discretizableInTime":
                         template_argument.remove(item)
                         for key_sub in self.discretizableInTime:
                             template_argument.append(key_sub)
-
+                    # expand timeSteppingScheme
+                    if item == "timeSteppingScheme":
+                        template_argument.remove(item)
+                        for key_sub in self.timeSteppingScheme:
+                            template_argument.append(key_sub)
 
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
@@ -178,7 +187,7 @@ def main():
     example.parse_src(src)
     #print(example.root)
     #print(example.create_src())
-    print(example.combinations)
+    #print(example.combinations)
     print(example.validate_src())
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
