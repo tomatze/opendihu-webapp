@@ -16,12 +16,16 @@
 # templates added so far:
 # TODO specalizedSolvers
 # TODO postprocessing
+# FastMonodomainSolver
 # Control::MultipleInstances
+# Control::Coupling
 # OperatorSplitting::
 # CellmlAdapter
 # FunctionSpace::
-# OutputWriter::
+# OutputWriter::OutputSurface
+# TODO add other OutputWriters
 # TimeSteppingScheme::
+# TimeSteppingScheme::StaticBidomainSolver
 # SpatialDiscretization::FiniteElementMethod
 # Mesh::
 # BasisFunction::
@@ -50,9 +54,30 @@ possible_solver_combinations = {
     },
 
 
+    "FastMonodomainSolver" : {
+        # TODO is this runnable?
+        "runnable" : True,
+        #TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "Control::MultipleInstances" ]
+        ]
+    },
+
+
     "Control::MultipleInstances" : {
         "runnable" : True,
+        #TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme" : True,
         "template_arguments" : [
+            [ "timeSteppingScheme" ]
+        ]
+    },
+    "Control::Coupling" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "timeSteppingScheme" ],
             [ "timeSteppingScheme" ]
         ]
     },
@@ -108,15 +133,15 @@ possible_solver_combinations = {
         ]
     },
     "TimeSteppingScheme::Heun" : {
-        "timeSteppingScheme" : True,
         "runnable" : True,
+        "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]
     },
     "TimeSteppingScheme::HeunAdaptive" : {
-        "timeSteppingScheme" : True,
         "runnable" : True,
+        "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]
@@ -127,12 +152,24 @@ possible_solver_combinations = {
             [ "discretizableInTime" ]
         ]
     },
+    #specalizedSolvers:
+    "TimeSteppingScheme::StaticBidomainSolver" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "SpatialDiscretization::" ],
+            [ "SpatialDiscretization::" ]
+        ]
+    },
+
 
 
     "OutputWriter::OutputSurface" : {
         "runnable" : True,
+        #TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme" : True,
         "template_arguments" : [
-            [ "SpatialDiscretization::" ]
+            [ "timeSteppingScheme", "SpatialDiscretization::" ]
         ]
     },
 
@@ -167,6 +204,11 @@ possible_solver_combinations = {
         ]
     },
     "Mesh::UnstructuredDeformableOfDimension" : {
+        "template_arguments" : [
+            [ "1", "2", "3" ]
+        ]
+    },
+    "Mesh::CompositeOfDimension" : {
         "template_arguments" : [
             [ "1", "2", "3" ]
         ]
@@ -220,6 +262,7 @@ possible_solver_combinations = {
 
     "Equation::Dynamic::IsotropicDiffusion" : {},
     "Equation::Dynamic::AnisotropicDiffusion" : {},
+    "Equation::Dynamic::DirectionalDiffusion" : {},
     "Equation::Static::Laplace" : {},
     "Equation::Static::GeneralizedLaplace" : {},
     "Equation::Static::LinearElasticity" : {},
