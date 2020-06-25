@@ -12,8 +12,9 @@
 
 # classes added so far:
 # TODO specalizedSolvers
-# TODO operatorsplitting
 # TODO postprocessing
+# OperatorSplitting::
+# Control::MultipleInstances
 # CellmlAdapter
 # FunctionSpace::
 # OutputWriter::
@@ -43,6 +44,31 @@ possible_solver_combinations = {
             }
             #TODO meta
         }
+    },
+
+
+    "OperatorSplitting::Strang" : {
+        "runnable" : True,
+        "template_arguments" : [
+            [ "TimeSteppingScheme::" ],
+            [ "TimeSteppingScheme::" ]
+        ]
+    },
+
+    "OperatorSplitting::Godunov" : {
+        "runnable" : True,
+        "template_arguments" : [
+            [ "TimeSteppingScheme::" ],
+            [ "TimeSteppingScheme::" ]
+        ]
+    },
+
+
+    "Control::MultipleInstances" : {
+        "runnable" : True,
+        "template_arguments" : [
+            [ "TimeSteppingScheme::" ]
+        ]
     },
 
 
