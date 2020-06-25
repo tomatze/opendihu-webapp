@@ -26,6 +26,8 @@
 # TODO add other OutputWriters
 # TimeSteppingScheme::
 # TimeSteppingScheme::StaticBidomainSolver
+# TimeSteppingScheme::MultidomainSolver
+# TimeSteppingScheme::MultidomainWithFatSolver
 # SpatialDiscretization::FiniteElementMethod
 # Mesh::
 # BasisFunction::
@@ -165,6 +167,15 @@ possible_solver_combinations = {
         "runnable" : True,
         "timeSteppingScheme" : True,
         "template_arguments" : [
+            [ "SpatialDiscretization::" ],
+            [ "SpatialDiscretization::" ]
+        ]
+    },
+    "TimeSteppingScheme::MultidomainWithFatSolver" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "SpatialDiscretization::" ],
             [ "SpatialDiscretization::" ],
             [ "SpatialDiscretization::" ]
         ]
