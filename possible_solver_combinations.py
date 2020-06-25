@@ -1,16 +1,16 @@
-# each dict entry corresponds to a cpp-class 
-# each class-dict can have a ordered list with template_arguments (assuming no args if omitted)
+# each dict entry corresponds to a cpp-template
+# each template-dict can have a ordered list with template_arguments (assuming there are no template_arguments if omitted)
 
-# possible outer structures (runnables) have the key runnable set to True (assuming False if ommited)
+# possible outer templates (runnables) have the key runnable set to True (assuming False if ommited)
 
-# structures that are discretizable in time have discretizableInTime set to True (assuming False if ommited)
+# templates that are discretizable in time have discretizableInTime set to True (assuming False if ommited)
 # "discretizableInTime" in template_arguments will get expanded to all classes, which are discretizableInTime
 
 # the keyword "Integer" can be used in template_arguments where an integer is expected (e.g. in CellmlAdapter)
 
 # lists of the form [ "Mesh::" ] get auto expanded to [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::Str..", ... ]
 
-# classes added so far:
+# templates added so far:
 # TODO specalizedSolvers
 # TODO postprocessing
 # OperatorSplitting::
