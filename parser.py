@@ -145,7 +145,12 @@ class Example:
             print('len does not match')
             return False
         for i in range(len(wanted_childs)):
-            if node.childs[i].name not in wanted_childs[i]:
+            if wanted_childs[i] == "Integer":
+                try:
+                    int(node.childs[i].name)
+                except:
+                    return False
+            elif node.childs[i].name not in wanted_childs[i]:
                 print(node.childs[i].name + ' not in wanted_childs')
                 return False
             if self.validate_src_recursive(node.childs[i]) == False:

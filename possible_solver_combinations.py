@@ -6,12 +6,16 @@
 # structures that are discretizable in time have discretizableInTime set to True (assuming False if ommited)
 # "discretizableInTime" in template_arguments will get expanded to all classes, which are discretizableInTime
 
+# the keyword "Integer" can be used in template_arguments where an integer is expected (e.g. in CellmlAdapter)
+
 # lists of the form [ "Mesh::" ] get auto expanded to [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::Str..", ... ]
 
 # classes added so far:
 # TODO specalizedSolvers
 # TODO operatorsplitting
 # TODO postprocessing
+# CellmlAdapter
+# FunctionSpace::
 # OutputWriter::
 # TimeSteppingScheme::ExplicitEuler
 # SpatialDiscretization::FiniteElementMethod
@@ -42,7 +46,24 @@ possible_solver_combinations = {
     },
 
 
-    # TODO accept all DiscretizableInTime e.g. Cellmm (not only SpatialDiscretization)
+    "CellmlAdapter" : {
+        "discretizableInTime" : True,
+        "template_arguments" : [
+            [ "Integer" ],
+            [ "Integer" ],
+            [ "FunctionSpace::" ]
+        ]
+    },
+
+
+    "FunctionSpace::FunctionSpace" : {
+        "template_arguments" : [
+            [ "Mesh::" ],
+            [ "BasisFunction::" ]
+        ]
+    },
+
+
     "TimeSteppingScheme::ExplicitEuler" : {
         "runnable" : True,
         "template_arguments" : [
