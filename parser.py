@@ -158,9 +158,10 @@ class Example:
                 try:
                     int(node.childs[i].name)
                 except:
+                    print(node.childs[i].name + ' is not an Integer')
                     return False
             elif node.childs[i].name not in wanted_childs[i]:
-                print(node.childs[i].name + ' not in wanted_childs[i]: ' + str(wanted_childs[i]))
+                print(node.childs[i].name + ' is not in the list of possible template_arguments: ' + str(wanted_childs[i]))
                 return False
             if self.validate_src_recursive(node.childs[i]) == False:
                 return False
