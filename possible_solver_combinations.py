@@ -4,6 +4,9 @@
 # lists of the form [ "Mesh::" ] get auto expanded to [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::Str..", ... ]
 
 # classes added so far:
+# TODO specalizedSolvers
+# TODO operatorsplitting
+# TODO postprocessing
 # OutputWriter::
 # TimeSteppingScheme::ExplicitEuler
 # SpatialDiscretization::FiniteElementMethod
@@ -29,6 +32,7 @@ possible_solver_combinations = {
                 "type" : [ "string" ],
                 "default" : "solver_structure.txt"
             }
+            #TODO meta
         }
     },
 
