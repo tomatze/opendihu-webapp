@@ -17,8 +17,10 @@
 # TODO specalizedSolvers
 # TODO postprocessing
 # FastMonodomainSolver
+# MuscleContractionSolver
 # Control::MultipleInstances
 # Control::Coupling
+# Control::MapDofs
 # OperatorSplitting::
 # CellmlAdapter
 # FunctionSpace::
@@ -65,6 +67,15 @@ possible_solver_combinations = {
             [ "Control::MultipleInstances" ]
         ]
     },
+    "MuscleContractionSolver" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            # TODO this should only accept Mesh::StructuredDeformableOfDimension<3>
+            # and maybe Mesh::CompositeOfDimension<3>?
+            [ "Mesh::" ]
+        ]
+    },
 
 
     "Control::MultipleInstances" : {
@@ -80,6 +91,15 @@ possible_solver_combinations = {
         "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "timeSteppingScheme" ],
+            [ "timeSteppingScheme" ]
+        ]
+    },
+    "Control::MapDofs" : {
+        "runnable" : True,
+        #TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "FunctionSpace::" ],
             [ "timeSteppingScheme" ]
         ]
     },
