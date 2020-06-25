@@ -140,6 +140,7 @@ class Example:
     def validate_src(self):
         # not valid, if the root is not a runnable
         if self.root.name not in self.runnables:
+            print(self.root.name + ' does not exist or is not runnable')
             return False
         return self.validate_src_recursive(self.root)
 
