@@ -110,7 +110,6 @@ class Example:
             problem = '<' + problem + '>'
             stack = []
             stack.append(Node())
-            name = ''
             for char in problem:
                 if char == '<':
                     child = Node()
@@ -128,7 +127,7 @@ class Example:
 
             self.root = stack[0].childs[0]
         except:
-            printe('failed to parse ' + src)
+            printe('failed to parse src')
 
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
     def create_src(self):
