@@ -161,6 +161,14 @@ possible_solver_combinations = {
             [ "SpatialDiscretization::" ]
         ]
     },
+    "TimeSteppingScheme::MultidomainSolver" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "SpatialDiscretization::" ],
+            [ "SpatialDiscretization::" ]
+        ]
+    },
 
 
 

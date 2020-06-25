@@ -99,10 +99,26 @@ class Example:
             # isolate problem
             #problem = src.split('settings(argc, argv);')[1].split(' problem(')[0]
             problem = src.split('settings(argc, argv);')[1]
-            problem = re.compile('(.*)>(.*);').split(problem)[0] + '>'
+            problem = re.compile('(.*)>(.*)settings(.*);').split(problem)[0] + '>'
             # remove comments from problem
             problem = re.sub(r'(?m)(^.*)//.*\n?', r'\1\n', problem)
             # TODO maybe also remove multi-line comments
+            # resolve typedefs (e.g. typedef Mesh::StructuredDeformableOfDimension<3> MeshType;)
+            # get all lines staring with typedef
+            typedef_lines = []
+            for line in problem.split(';'):
+                line = line.lstrip()
+                if line.startswith('typedef'):
+                    typedef_lines.append(line)
+            # remove typedef lines from problem
+            problem = re.sub(r'(.*)typedef (.*);', '', problem)
+            # resolve typedefs
+            for line in typedef_lines:
+                # replace all whitspaces with a simple whitespace
+                line = re.sub(r'\s+', ' ', line)
+                # resolve the typedef by splitting the typedef-line at the spaces and replacing the strings in problem
+                parts = line.split(' ')
+                problem = problem.replace(parts[2], parts[1])
             # remove newlines tabs and spaces from problem
             problem = re.sub(r'\s+', '', problem)
 
@@ -161,7 +177,7 @@ class Example:
                     printe(node.childs[i].name + ' is not an Integer')
                     return False
             elif node.childs[i].name not in wanted_childs[i]:
-                printe(node.childs[i].name + ' is not in the list of possible template_arguments: ' + str(wanted_childs[i]))
+                printe(node.childs[i].name + ' is not in the list of possible template_arguments:\n' + str(wanted_childs[i]))
                 return False
             if self.validate_src_recursive(node.childs[i]) == False:
                 return False
