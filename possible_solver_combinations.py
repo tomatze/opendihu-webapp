@@ -17,7 +17,7 @@
 # CellmlAdapter
 # FunctionSpace::
 # OutputWriter::
-# TimeSteppingScheme::ExplicitEuler
+# TimeSteppingScheme::
 # SpatialDiscretization::FiniteElementMethod
 # Mesh::
 # BasisFunction::
@@ -66,6 +66,32 @@ possible_solver_combinations = {
 
     "TimeSteppingScheme::ExplicitEuler" : {
         "runnable" : True,
+        "template_arguments" : [
+            [ "discretizableInTime" ]
+        ]
+    },
+
+    "TimeSteppingScheme::ImplicitEuler" : {
+        "template_arguments" : [
+            [ "discretizableInTime" ]
+        ]
+    },
+
+    "TimeSteppingScheme::Heun" : {
+        "runnable" : True,
+        "template_arguments" : [
+            [ "discretizableInTime" ]
+        ]
+    },
+
+    "TimeSteppingScheme::HeunAdaptive" : {
+        "runnable" : True,
+        "template_arguments" : [
+            [ "discretizableInTime" ]
+        ]
+    },
+
+    "TimeSteppingScheme::CrankNicolson" : {
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]
