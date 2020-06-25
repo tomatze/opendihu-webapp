@@ -1,6 +1,11 @@
 # each dict entry corresponds to a cpp-class 
 # each class-dict can have a ordered list with template_arguments (assuming no args if omitted)
+
 # possible outer structures (runnables) have the key runnable set to True (assuming False if ommited)
+
+# structures that are discretizable in time have discretizableInTime set to True (assuming False if ommited)
+# "discretizableInTime" in template_arguments will get expanded to all classes, which are discretizableInTime
+
 # lists of the form [ "Mesh::" ] get auto expanded to [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::Str..", ... ]
 
 # classes added so far:
@@ -41,7 +46,7 @@ possible_solver_combinations = {
     "TimeSteppingScheme::ExplicitEuler" : {
         "runnable" : True,
         "template_arguments" : [
-            [ "SpatialDiscretization::" ]
+            [ "discretizableInTime" ]
         ]
     },
 
@@ -56,6 +61,7 @@ possible_solver_combinations = {
 
     "SpatialDiscretization::FiniteElementMethod" : {
         "runnable" : True,
+        "discretizableInTime" : True,
         "template_arguments" : [
             [ "Mesh::" ],
             [ "BasisFunction::" ],

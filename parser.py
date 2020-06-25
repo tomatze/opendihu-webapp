@@ -39,8 +39,8 @@ class Example:
         self.combinations = possible_solver_combinations
 
         # create a list of keys and a list of runnables
-        self.runnables = []
         self.keys = list(self.combinations.keys())
+        self.runnables = []
         for i in range(0, len(self.keys)):
             if self.combinations[self.keys[i]].get('runnable', False) == True:
                 self.runnables.append(self.keys[i])
@@ -60,6 +60,29 @@ class Example:
                         for key_sub in self.keys:
                             if key_sub.startswith(item):
                                 template_argument.append(key_sub)
+
+
+        # create a list of discretizableInTime
+        self.discretizableInTime = []
+        for i in range(0, len(self.keys)):
+            if self.combinations[self.keys[i]].get('discretizableInTime', False) == True:
+                self.discretizableInTime.append(self.keys[i])
+
+        # expand all template_arguments sublists of the form:
+        # [ "discretizableInTime" ]
+        # to the form:
+        # [ "SpatialDiscretization::FiniteElementMethod", ... ]
+        for key, value in self.combinations.items():
+            template_arguments = value.get("template_arguments", [])
+            for i in range(0, len(template_arguments)):
+                template_argument = template_arguments[i]
+                for item in template_argument:
+                    if item == "discretizableInTime":
+                        template_argument.remove(item)
+                        for key_sub in self.discretizableInTime:
+                            template_argument.append(key_sub)
+
+
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
     def parse_src(self, src):
@@ -148,8 +171,9 @@ def main():
     example = Example()
 
     example.parse_src(src)
-    #print(example.root) 
+    #print(example.root)
     #print(example.create_src())
+    print(example.combinations)
     print(example.validate_src())
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
