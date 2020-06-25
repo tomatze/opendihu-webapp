@@ -160,7 +160,7 @@ class Example:
                 except:
                     return False
             elif node.childs[i].name not in wanted_childs[i]:
-                print(node.childs[i].name + ' not in wanted_childs')
+                print(node.childs[i].name + ' not in wanted_childs[i]: ' + str(wanted_childs[i]))
                 return False
             if self.validate_src_recursive(node.childs[i]) == False:
                 return False

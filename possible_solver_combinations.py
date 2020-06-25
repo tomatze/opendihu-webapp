@@ -53,7 +53,7 @@ possible_solver_combinations = {
     "Control::MultipleInstances" : {
         "runnable" : True,
         "template_arguments" : [
-            [ "timeSteppingScheme::" ]
+            [ "timeSteppingScheme" ]
         ]
     },
 
@@ -62,16 +62,16 @@ possible_solver_combinations = {
         "runnable" : True,
         "timeSteppingScheme" : True,
         "template_arguments" : [
-            [ "timeSteppingScheme::" ],
-            [ "timeSteppingScheme::" ]
+            [ "timeSteppingScheme" ],
+            [ "timeSteppingScheme" ]
         ]
     },
     "OperatorSplitting::Godunov" : {
         "runnable" : True,
         "timeSteppingScheme" : True,
         "template_arguments" : [
-            [ "timeSteppingScheme::" ],
-            [ "timeSteppingScheme::" ]
+            [ "timeSteppingScheme" ],
+            [ "timeSteppingScheme" ]
         ]
     },
 
