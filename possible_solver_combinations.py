@@ -54,7 +54,6 @@ possible_solver_combinations = {
             [ "TimeSteppingScheme::" ]
         ]
     },
-
     "OperatorSplitting::Godunov" : {
         "runnable" : True,
         "template_arguments" : [
@@ -96,27 +95,23 @@ possible_solver_combinations = {
             [ "discretizableInTime" ]
         ]
     },
-
     "TimeSteppingScheme::ImplicitEuler" : {
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]
     },
-
     "TimeSteppingScheme::Heun" : {
         "runnable" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]
     },
-
     "TimeSteppingScheme::HeunAdaptive" : {
         "runnable" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
         ]
     },
-
     "TimeSteppingScheme::CrankNicolson" : {
         "template_arguments" : [
             [ "discretizableInTime" ]
@@ -180,12 +175,7 @@ possible_solver_combinations = {
             [ "0", "1" ]
         ]
     },
-    #"BasisFunction::Mixed" : [
-    #    [ "LowOrderBasisFunction" ],
-    #    [ "HighOrderBasisFunction" ]
-    #],
-    #"LowOrderBasisFunction" : [],
-    #"HighOrderBasisFunction" : [],
+    # TODO are there BasisFunction::Mixed?
 
 
     "Quadrature::ClenshawCurtis" : {
@@ -209,18 +199,13 @@ possible_solver_combinations = {
             [ "Quadrature::" ]
         ]
     },
-    #"Quadrature::Mixed" : [
-    #    [ "LowOrderQuadrature" ],
-    #    [ "HighOrderQuadrature" ]
-    #],
-    #"LowOrderQuadrature" : [],
-    #"HighOrderQuadrature" : [
-    #    [
-    #        "Quadrature::ClenshawCurtis",
-    #        "Quadrature::Gauss",
-    #        "Quadrature::NewtonCotes"
+    # TODO are there Quadrature::Mixed?
+    #"Quadrature::Mixed" : {
+    #    "template_arguments" : [
+    #       [ ],
+    #       [ "Quadrature::ClenshawCurtis", "Quadrature::Gauss", "Quadrature::NewtonCotes" ]
     #    ]
-    #],
+    #},
 
 
     "Equation::Dynamic::IsotropicDiffusion" : {},
