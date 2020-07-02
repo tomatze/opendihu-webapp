@@ -214,6 +214,16 @@ possible_solver_combinations = {
             [ "SpatialDiscretization::FiniteElementMethod" ]
         ]
     },
+    "PrescribedValues" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments_needed" : 1,
+        "template_arguments" : [
+            [ "FunctionSpace::FunctionSpace" ],
+            [ "1", "2", "3" ],
+            [ "1", "2", "3" ]
+        ]
+    },
 
 
 
