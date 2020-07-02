@@ -29,6 +29,7 @@
 # e.g. SpatialDiscretization::HyperelasticitySolver in solid_mechanics/shear_test/src/compressible_mooney_rivlin.cpp
 # Control::MultipleInstances
 # Control::Coupling
+# Control::LoadBalancing
 # Control::MapDofs
 # OperatorSplitting::
 # CellmlAdapter
@@ -136,6 +137,14 @@ possible_solver_combinations = {
         "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "timeSteppingScheme" ],
+            [ "timeSteppingScheme" ]
+        ]
+    },
+    "Control::LoadBalancing" : {
+        # TODO is this runnable
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
             [ "timeSteppingScheme" ]
         ]
     },
