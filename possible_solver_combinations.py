@@ -3,11 +3,15 @@
 
 # possible outer templates (runnables) have the key runnable set to True (assuming False if ommited)
 
-# templates that are discretizable in time have discretizableInTime set to True (assuming False if ommited)
+# templates that are discretizable in time have discretizableInTime set to True (assuming False if omited)
 # "discretizableInTime" in template_arguments will get expanded to all classes, which have discretizableInTime == True
 
-# templates that are a "TimeSteppingScheme" (e.g. all TimeSteppingScheme:: and OperatorSplitting::) have timeSteppingScheme set to True (assuming False if ommited)
+# templates that are a "TimeSteppingScheme" (e.g. all TimeSteppingScheme:: and OperatorSplitting::) have timeSteppingScheme set to True (assuming False if omited)
 # "timeSteppingScheme" in template_arguments will get expanded to all classes, which have timeSteppingScheme == True
+
+# templates with optional template_arguments can have the key template_arguments_needed set to the minimal required argument count
+# template_arguments_needed is assumed to be len(template_arguments) if template_arguments_needed is omitted
+# e.g. in BasisFunction::LagrangeOfOrder and PrescribedValues
 
 # the keyword "Integer" can be used in template_arguments where an integer is expected (e.g. in CellmlAdapter)
 
@@ -272,9 +276,9 @@ possible_solver_combinations = {
     },
     "BasisFunction::Hermite" : {},
     "BasisFunction::LagrangeOfOrder" : {
+        "template_arguments_needed" : 0,
         "template_arguments" : [
-            # TODO added the "" because the implicit order is 1 (template<int order=1>)
-            [ "", "1", "2" ]
+            [ "1", "2" ]
         ]
     },
     # TODO are there BasisFunction::Mixed?

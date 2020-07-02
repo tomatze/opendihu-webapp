@@ -6,6 +6,7 @@ import sys
 class Node:
     def __init__(self):
         self.name = ''
+        self.can_have_childs = False
         self.childs = []
 
     # this function converts the tree under this Node to a pretty string
@@ -14,6 +15,7 @@ class Node:
     def __repr__(self):
         return self.repr_recursive(0)
     def repr_recursive(self, depth):
+        #TODO fix repr to support Node.can_have_childs!!!!!
         indentation = '  ' * depth
         indentation_child = '  ' * (depth + 1)
         childs_string = ''
@@ -129,6 +131,7 @@ class Example:
             for char in problem:
                 if char == '<':
                     child = Node()
+                    stack[-1].can_have_childs = True
                     stack[-1].childs.append(child)
                     stack.append(child)
                 elif char == ',':
@@ -138,6 +141,9 @@ class Example:
                     stack.append(child)
                 elif char == '>':
                     stack.pop()
+                    # remove empty child in cas of <> we have can_have_childs for that
+                    if stack[-1].childs[0].name == "":
+                        stack[-1].childs = []
                 else:
                     stack[-1].name = stack[-1].name + char
 
@@ -167,13 +173,18 @@ class Example:
     def validate_src_recursive(self, node):
         try:
             wanted_childs = self.combinations[node.name].get("template_arguments", [])
+            argument_count_max = len(wanted_childs)
+            argument_count_min = self.combinations[node.name].get("template_arguments_needed", argument_count_max)
         except:
             # if the key node.name does not exist, we are at the bottom
             return True
-        if len(wanted_childs) != len(node.childs):
+        if "template_arguments" not in self.combinations[node.name] and node.can_have_childs:
+            printe(node.name + ' can not have any template_arguments (not even <>)')
+            return False
+        if argument_count_min > len(node.childs) or len(node.childs) > argument_count_max:
             printe(node.name + ' has the wrong number of template_arguments')
             return False
-        for i in range(len(wanted_childs)):
+        for i in range(len(node.childs)):
             if wanted_childs[i] == ["Integer"]:
                 try:
                     int(node.childs[i].name)
