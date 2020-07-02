@@ -154,10 +154,14 @@ class Example:
     # this checks if the tree is a valid combination of templates
     def validate_src(self):
         # not valid, if the root is not a runnable
-        if self.root.name not in self.runnables:
-            printe(self.root.name + ' does not exist or is not runnable')
+        try:
+            if self.root.name not in self.runnables:
+                printe(self.root.name + ' does not exist or is not runnable')
+                return False
+            return self.validate_src_recursive(self.root)
+        except:
+            # return false if self.root.name is None
             return False
-        return self.validate_src_recursive(self.root)
 
     # helper function to make validate_src() recursive
     def validate_src_recursive(self, node):
