@@ -150,6 +150,7 @@ possible_solver_combinations = {
         ]
     },
     "TimeSteppingScheme::ImplicitEuler" : {
+        "runnable" : True,
         "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
@@ -272,12 +273,14 @@ possible_solver_combinations = {
     "BasisFunction::Hermite" : {},
     "BasisFunction::LagrangeOfOrder" : {
         "template_arguments" : [
-            [ "0", "1" ]
+            # TODO added the "" because the implicit order is 1 (template<int order=1>)
+            [ "", "1", "2" ]
         ]
     },
     # TODO are there BasisFunction::Mixed?
 
 
+    "Quadrature::None" : {},
     "Quadrature::ClenshawCurtis" : {
         "template_arguments" : [
             [ "1", "2", "3", "4", "5", "6", "7", "64" ]
