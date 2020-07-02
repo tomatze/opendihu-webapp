@@ -13,7 +13,7 @@ class TestParser(unittest.TestCase):
             "diffusion/anisotropic_diffusion/src/anisotropic_diffusion2d.cpp",
             "diffusion/anisotropic_diffusion/src/anisotropic_diffusion3d.cpp",
             "diffusion/diffusion1d/src/diffusion_1d.cpp",
-            # IGNORE
+            # IGNORE because of surrounding if-statements
             #"diffusion/diffusion1d/src/diffusion_1d_pod.cpp",
             "diffusion/diffusion2d/src/diffusion_2d_1st_order.cpp",
             "diffusion/diffusion2d/src/diffusion_2d_2nd_order.cpp",
@@ -87,6 +87,7 @@ class TestParser(unittest.TestCase):
             "electrophysiology/multiple_fibers_cubes_partitioning/src/multiple_fibers_57_states.cpp",
             "electrophysiology/static_biceps_emg/failed/src/static_biceps_emg.cpp",
             "electrophysiology/static_biceps_emg/src/static_biceps_emg.cpp",
+            # TODO
             ##"fiber_tracing/parallel_fiber_estimation/src/fix.cpp",
             ##"fiber_tracing/parallel_fiber_estimation/src/generate.cpp",
             ##"fiber_tracing/parallel_fiber_estimation/src/generate_quadratic.cpp",
@@ -117,11 +118,13 @@ class TestParser(unittest.TestCase):
             "laplace/laplace_composite/src/laplace_composite_linear_3d.cpp",
             "poisson/poisson1d/poisson_example_1d.cpp",
             "poisson/poisson2d/poisson_example_2d.cpp",
+            # TODO
             ##"solid_mechanics/chaste/src/3d_muscle.cpp",
             ##"solid_mechanics/chaste/src/solving_elasticity_problems_tutorial.cpp",
             ##"solid_mechanics/dynamic_mooney_rivlin/gelatine1/src/dynamic.cpp",
             ##"solid_mechanics/dynamic_mooney_rivlin/gelatine2/src/dynamic.cpp",
             "solid_mechanics/dynamic_mooney_rivlin/muscle/src/dynamic_transversely_isotropic.cpp",
+            # TODO
             ##"solid_mechanics/dynamic_mooney_rivlin/rod/src/dynamic_isotropic.cpp",
             "solid_mechanics/dynamic_mooney_rivlin/rod/src/dynamic_transversely_isotropic.cpp",
             "solid_mechanics/dynamic_mooney_rivlin/tendon/src/tendon.cpp",
@@ -130,6 +133,7 @@ class TestParser(unittest.TestCase):
             "solid_mechanics/linear_elasticity/with_3d_activation/src/lin_elasticity_with_3d_activation_linear.cpp",
             "solid_mechanics/linear_elasticity/with_3d_activation/src/lin_elasticity_with_3d_activation_quadratic.cpp",
             "solid_mechanics/linear_elasticity/with_fiber_activation/src/lin_elasticity_with_fibers.cpp",
+            # TODO
             ##"solid_mechanics/mooney_rivlin_febio/src/febio.cpp",
             ##"solid_mechanics/mooney_rivlin_febio/src/opendihu.cpp",
             ##"solid_mechanics/mooney_rivlin_isotropic/src/3d_hyperelasticity.cpp",
@@ -138,6 +142,7 @@ class TestParser(unittest.TestCase):
             ##"solid_mechanics/shear_test/src/compressible_mooney_rivlin_decoupled.cpp",
             ##"solid_mechanics/shear_test/src/incompressible_mooney_rivlin.cpp",
             "solid_mechanics/shear_test/src/linear.cpp",
+            # TODO
             ##"solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin.cpp",
             ##"solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin_decoupled.cpp",
             ##"solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin_febio.cpp",
@@ -145,6 +150,7 @@ class TestParser(unittest.TestCase):
             ##"solid_mechanics/tensile_test/src/compressible_mooney_rivlin_decoupled.cpp",
             ##"solid_mechanics/tensile_test/src/incompressible_mooney_rivlin.cpp",
             "solid_mechanics/tensile_test/src/linear.cpp",
+            # TODO
             ##"solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin.cpp",
             ##"solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin_decoupled.cpp",
             ##"solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin_febio.cpp",
