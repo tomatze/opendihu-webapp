@@ -19,8 +19,12 @@
 
 # templates added so far:
 # TODO add postprocessing
-# FastMonodomainSolver
+# PreciceAdapter::ContractionDirichletBoundaryConditions
+# PreciceAdapter::ContractionNeumannBoundaryConditions
+# PreciceAdapter::PartitionedFibers
+# PreciceAdapter::MuscleContraction
 # MuscleContractionSolver
+# FastMonodomainSolver
 # TODO add other specalized_solvers
 # e.g. SpatialDiscretization::HyperelasticitySolver in solid_mechanics/shear_test/src/compressible_mooney_rivlin.cpp
 # Control::MultipleInstances
@@ -31,10 +35,14 @@
 # FunctionSpace::
 # OutputWriter::OutputSurface
 # TODO add other OutputWriters
+# PrescribedValues
 # TimeSteppingScheme::
+# TimeSteppingScheme::DynamicHyperelasticitySolver
 # TimeSteppingScheme::StaticBidomainSolver
 # TimeSteppingScheme::MultidomainSolver
 # TimeSteppingScheme::MultidomainWithFatSolver
+# TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio
+# TimeSteppingScheme::QuasiStaticLinearElasticitySolver
 # SpatialDiscretization::FiniteElementMethod
 # Mesh::
 # BasisFunction::
@@ -63,13 +71,36 @@ possible_solver_combinations = {
     },
 
 
-    "FastMonodomainSolver" : {
-        # TODO is this runnable?
+    "PreciceAdapter::ContractionDirichletBoundaryConditions" : {
         "runnable" : True,
         #TODO can this be handled like a timeSteppingScheme?
         "timeSteppingScheme" : True,
         "template_arguments" : [
-            [ "Control::MultipleInstances" ]
+            [ "timeSteppingScheme" ]
+        ]
+    },
+    "PreciceAdapter::ContractionNeumannBoundaryConditions" : {
+        "runnable" : True,
+        #TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "timeSteppingScheme" ]
+        ]
+    },
+    "PreciceAdapter::PartitionedFibers" : {
+        "runnable" : True,
+        #TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "timeSteppingScheme" ]
+        ]
+    },
+    "PreciceAdapter::MuscleContraction" : {
+        "runnable" : True,
+        #TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "MuscleContractionSolver" ]
         ]
     },
     "MuscleContractionSolver" : {
@@ -79,6 +110,15 @@ possible_solver_combinations = {
             # TODO this should only accept Mesh::StructuredDeformableOfDimension<3>
             # and maybe Mesh::CompositeOfDimension<3>?
             [ "Mesh::" ]
+        ]
+    },
+    "FastMonodomainSolver" : {
+        # TODO is this runnable?
+        "runnable" : True,
+        #TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "Control::MultipleInstances" ]
         ]
     },
 
@@ -130,6 +170,7 @@ possible_solver_combinations = {
 
     "CellmlAdapter" : {
         "discretizableInTime" : True,
+        "template_arguments_needed" : 2,
         "template_arguments" : [
             [ "Integer" ],
             [ "Integer" ],
@@ -189,6 +230,17 @@ possible_solver_combinations = {
         ]
     },
     #specalizedSolvers:
+    "TimeSteppingScheme::DynamicHyperelasticitySolver" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        # TODO is there even 1 needed argument?
+        "template_arguments_needed" : 1,
+        "template_arguments" : [
+            [ "Equation::" ],
+            # TODO this should only accept Mesh::StructuredDeformableOfDimension<3>
+            [ "Mesh::StructuredRegularFixedOfDimension" ]
+        ]
+    },
     "TimeSteppingScheme::StaticBidomainSolver" : {
         "runnable" : True,
         "timeSteppingScheme" : True,
@@ -214,6 +266,19 @@ possible_solver_combinations = {
             [ "SpatialDiscretization::FiniteElementMethod" ]
         ]
     },
+    "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True
+    },
+    "TimeSteppingScheme::QuasiStaticLinearElasticitySolver" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "SpatialDiscretization::FiniteElementMethod" ]
+        ]
+    },
+
+
     "PrescribedValues" : {
         "runnable" : True,
         "timeSteppingScheme" : True,
