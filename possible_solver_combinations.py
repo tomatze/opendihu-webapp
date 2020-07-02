@@ -238,6 +238,13 @@ possible_solver_combinations = {
             [ "timeSteppingScheme" ]
         ]
     },
+    "TimeSteppingScheme::RepeatedCallStatic" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "SpatialDiscretization::FiniteElementMethod" ]
+        ]
+    },
     #specalizedSolvers:
     "TimeSteppingScheme::DynamicHyperelasticitySolver" : {
         "runnable" : True,
@@ -306,7 +313,7 @@ possible_solver_combinations = {
         #TODO can this be handled like a timeSteppingScheme?
         "timeSteppingScheme" : True,
         "template_arguments" : [
-            [ "timeSteppingScheme", "SpatialDiscretization::" ]
+            [ "timeSteppingScheme", "SpatialDiscretization::FiniteElementMethod" ]
         ]
     },
 
