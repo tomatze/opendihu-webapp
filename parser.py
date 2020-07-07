@@ -97,16 +97,12 @@ class Example:
 
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
-    def parse_src(self, src):
+    def parse_src(self, problem):
         try:
-            # isolate problem
-            #problem = src.split('settings(argc, argv);')[1].split(' problem(')[0]
-            problem = src.split('settings(argc, argv);')[1]
-            problem = re.compile('(.*)>(.*)settings(.*);').split(problem)[0] + '>'
-            problem = re.compile('(.*)settings(.*);').split(problem)[0]
             # remove comments from problem
             problem = re.sub(r'(?m)(^.*)//.*\n?', r'\1\n', problem)
             # TODO maybe also remove multi-line comments
+
             # resolve typedefs (e.g. typedef Mesh::StructuredDeformableOfDimension<3> MeshType;)
             # get all lines staring with typedef
             typedef_lines = []
@@ -123,8 +119,14 @@ class Example:
                 # resolve the typedef by splitting the typedef-line at the spaces and replacing the strings in problem
                 parts = line.split(' ')
                 problem = problem.replace(parts[2], parts[1])
+
             # remove newlines tabs and spaces from problem
             problem = re.sub(r'\s+', '', problem)
+
+            # isolate problem
+            problem = problem.split('settings(argc,argv);')[1]
+            problem = re.compile(r'>([^>]*)\(settings\);').split(problem)[0] + '>'
+
 
             # create tree from problem with a simple parser
             problem = '<' + problem + '>'
