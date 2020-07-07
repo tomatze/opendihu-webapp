@@ -120,13 +120,16 @@ class Example:
                 parts = line.split(' ')
                 problem = problem.replace(parts[2], parts[1])
 
-            # remove newlines tabs and spaces from problem
-            problem = re.sub(r'\s+', '', problem)
+            # replace newlines tabs and spaces with spaces
+            problem = re.sub(r'\s+', ' ', problem)
 
             # isolate problem
-            problem = problem.split('settings(argc,argv);')[1]
+            problem = problem.split('settings(argc, argv);')[1]
             problem = re.compile(r'>([^>]*)\(settings\);').split(problem)[0] + '>'
+            problem = re.compile(r' ([A-Za-z]*)\(settings\);').split(problem)[0]
 
+            # remove spaces
+            problem = re.sub(r' ', '', problem)
 
             # create tree from problem with a simple parser
             problem = '<' + problem + '>'
