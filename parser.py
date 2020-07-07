@@ -157,7 +157,7 @@ class Example:
             self.root = stack[0].childs[0]
         except:
             printe('failed to parse src')
-            traceback.print_exc()
+            #traceback.print_exc()
 
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
     def create_src(self):
