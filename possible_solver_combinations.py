@@ -19,14 +19,16 @@
 
 # templates added so far:
 # TODO add postprocessing
+# Postprocessing::ParallelFiberEstimation
+# Postprocessing::StreamlineTracer
 # PreciceAdapter::ContractionDirichletBoundaryConditions
 # PreciceAdapter::ContractionNeumannBoundaryConditions
 # PreciceAdapter::PartitionedFibers
 # PreciceAdapter::MuscleContraction
 # MuscleContractionSolver
 # FastMonodomainSolver
+# SpatialDiscretization::HyperelasticitySolver
 # TODO add other specalized_solvers
-# e.g. SpatialDiscretization::HyperelasticitySolver in solid_mechanics/shear_test/src/compressible_mooney_rivlin.cpp
 # Control::MultipleInstances
 # Control::Coupling
 # Control::LoadBalancing
@@ -43,7 +45,9 @@
 # TimeSteppingScheme::MultidomainSolver
 # TimeSteppingScheme::MultidomainWithFatSolver
 # TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio
+# TimeSteppingScheme::NonlinearElasticitySolverFebio
 # TimeSteppingScheme::QuasiStaticLinearElasticitySolver
+# TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverChaste
 # SpatialDiscretization::FiniteElementMethod
 # Mesh::
 # BasisFunction::
@@ -69,6 +73,20 @@ possible_solver_combinations = {
             }
             #TODO add meta
         }
+    },
+
+
+    "Postprocessing::ParallelFiberEstimation" : {
+        "runnable" : True,
+        "template_arguments" : [
+            [ "BasisFunction::" ]
+        ]
+    },
+    "Postprocessing::StreamlineTracer" : {
+        "runnable" : True,
+        "template_arguments" : [
+            [ "discretizableInTime" ]
+        ]
     },
 
 
@@ -120,6 +138,16 @@ possible_solver_combinations = {
         "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "Control::MultipleInstances" ]
+        ]
+    },
+    "SpatialDiscretization::HyperelasticitySolver" : {
+        "runnable" : True,
+        #TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme" : True,
+        "template_arguments_needed" : 0,
+        "template_arguments" : [
+            [ "Equation::SolidMechanics::TransverselyIsotropicMooneyRivlinIncompressible3D" ]
+            # TODO can this handle more template_arguments?
         ]
     },
 
@@ -249,8 +277,7 @@ possible_solver_combinations = {
     "TimeSteppingScheme::DynamicHyperelasticitySolver" : {
         "runnable" : True,
         "timeSteppingScheme" : True,
-        # TODO is there even 1 needed argument?
-        "template_arguments_needed" : 1,
+        "template_arguments_needed" : 0,
         "template_arguments" : [
             [ "Equation::" ],
             # TODO this should only accept Mesh::StructuredDeformableOfDimension<3>
@@ -286,11 +313,22 @@ possible_solver_combinations = {
         "runnable" : True,
         "timeSteppingScheme" : True
     },
+    "TimeSteppingScheme::NonlinearElasticitySolverFebio" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True
+    },
     "TimeSteppingScheme::QuasiStaticLinearElasticitySolver" : {
         "runnable" : True,
         "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "SpatialDiscretization::FiniteElementMethod" ]
+        ]
+    },
+    "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverChaste" : {
+        "runnable" : True,
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "Integer" ]
         ]
     },
 
