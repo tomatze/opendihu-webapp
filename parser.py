@@ -148,7 +148,7 @@ class Example:
                     stack.append(child)
                 elif char == '>':
                     stack.pop()
-                    # remove empty child in cas of <> we have can_have_childs for that
+                    # remove empty child in case of <> we have can_have_childs for that
                     if stack[-1].childs[0].name == "":
                         stack[-1].childs = []
                 else:
