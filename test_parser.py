@@ -84,7 +84,7 @@ class TestParser(unittest.TestCase):
             "electrophysiology/multiple_fibers_cubes_partitioning/src/multiple_fibers_57_states.cpp",
             "electrophysiology/static_biceps_emg/failed/src/static_biceps_emg.cpp",
             "electrophysiology/static_biceps_emg/src/static_biceps_emg.cpp",
-            # TODO problem.fixInvalidFibersInFile();
+            # IGNORE problem.fixInvalidFibersInFile();
             "fiber_tracing/parallel_fiber_estimation/src/fix.cpp",
             "fiber_tracing/parallel_fiber_estimation/src/generate.cpp",
             "fiber_tracing/parallel_fiber_estimation/src/generate_quadratic.cpp",
