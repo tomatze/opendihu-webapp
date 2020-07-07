@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import re
 import sys
+import traceback
 
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
@@ -102,6 +103,7 @@ class Example:
             #problem = src.split('settings(argc, argv);')[1].split(' problem(')[0]
             problem = src.split('settings(argc, argv);')[1]
             problem = re.compile('(.*)>(.*)settings(.*);').split(problem)[0] + '>'
+            problem = re.compile('(.*)settings(.*);').split(problem)[0]
             # remove comments from problem
             problem = re.sub(r'(?m)(^.*)//.*\n?', r'\1\n', problem)
             # TODO maybe also remove multi-line comments
@@ -150,6 +152,7 @@ class Example:
             self.root = stack[0].childs[0]
         except:
             printe('failed to parse src')
+            traceback.print_exc()
 
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
     def create_src(self):
