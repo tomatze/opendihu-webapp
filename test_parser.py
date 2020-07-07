@@ -138,18 +138,19 @@ class TestParser(unittest.TestCase):
             #"solid_mechanics/shear_test/src/compressible_mooney_rivlin_decoupled.cpp",
             #"solid_mechanics/shear_test/src/incompressible_mooney_rivlin.cpp",
             "solid_mechanics/shear_test/src/linear.cpp",
-            # TODO
+            # IGNORE because of Material
             #"solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin.cpp",
             #"solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin_decoupled.cpp",
-            #"solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin_febio.cpp",
+            "solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin_febio.cpp",
+            # IGNORE because of Material
             #"solid_mechanics/tensile_test/src/compressible_mooney_rivlin.cpp",
             #"solid_mechanics/tensile_test/src/compressible_mooney_rivlin_decoupled.cpp",
             #"solid_mechanics/tensile_test/src/incompressible_mooney_rivlin.cpp",
             "solid_mechanics/tensile_test/src/linear.cpp",
-            # TODO
+            # IGNORE because of Material
             #"solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin.cpp",
             #"solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin_decoupled.cpp",
-            #"solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin_febio.cpp",
+            "solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin_febio.cpp",
         ]
 
         for path in paths:
