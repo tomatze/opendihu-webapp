@@ -125,6 +125,7 @@ possible_solver_combinations = {
     "MuscleContractionSolver" : {
         "runnable" : True,
         "timeSteppingScheme" : True,
+        "template_arguments_needed" : 0,
         "template_arguments" : [
             # TODO this should only accept Mesh::StructuredDeformableOfDimension<3>
             # and maybe Mesh::CompositeOfDimension<3>?

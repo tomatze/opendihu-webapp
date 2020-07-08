@@ -20,16 +20,14 @@ class TestParser(unittest.TestCase):
             "diffusion/diffusion3d/src/diffusion.cpp",
             "diffusion/reaction_diffusion2d/src/diffusion_2d_1st_order.cpp",
             "diffusion/reaction_diffusion2d/src/reaction_diffusion_2d.cpp",
-            # TODO IGNORE because of MuscleContractionSolver<> needs template_argument
-            #"electrophysiology/biceps_contraction/opendihu/src/biceps_contraction.cpp",
-            #"electrophysiology/biceps_contraction/opendihu/src/biceps_contraction_no_cell.cpp",
-            #"electrophysiology/biceps_contraction/opendihu/src/biceps_contraction_notfast.cpp",
-            #"electrophysiology/biceps_contraction/opendihu_precice_opendihu/src/contraction.cpp",
+            "electrophysiology/biceps_contraction/opendihu/src/biceps_contraction.cpp",
+            "electrophysiology/biceps_contraction/opendihu/src/biceps_contraction_no_cell.cpp",
+            "electrophysiology/biceps_contraction/opendihu/src/biceps_contraction_notfast.cpp",
+            "electrophysiology/biceps_contraction/opendihu_precice_opendihu/src/contraction.cpp",
             "electrophysiology/biceps_contraction/opendihu_precice_opendihu/src/fibers.cpp",
-            # TODO IGNORE because of MuscleContractionSolver<> needs template_argument
-            #"electrophysiology/biceps_contraction/opendihu_precice_with_tendons/src/biceps_contraction.cpp",
-            #"electrophysiology/biceps_contraction/opendihu_precice_with_tendons/src/biceps_contraction_no_cell.cpp",
-            #"electrophysiology/biceps_contraction/opendihu_precice_with_tendons/src/muscle_precice.cpp",
+            "electrophysiology/biceps_contraction/opendihu_precice_with_tendons/src/biceps_contraction.cpp",
+            "electrophysiology/biceps_contraction/opendihu_precice_with_tendons/src/biceps_contraction_no_cell.cpp",
+            "electrophysiology/biceps_contraction/opendihu_precice_with_tendons/src/muscle_precice.cpp",
             "electrophysiology/biceps_contraction/opendihu_precice_with_tendons/src/tendon.cpp",
             "electrophysiology/biceps_contraction/opendihu_precice_with_tendons/src/tendon_precice.cpp",
             "electrophysiology/cellml/hodgkin-huxley_shorten_ocallaghan_davidson_soboleva_2007/src/cellml.cpp",
@@ -71,8 +69,7 @@ class TestParser(unittest.TestCase):
             #"electrophysiology/monodomain/shorten_ocallaghan_davidson_soboleva_2007/src/shorten_implicit.cpp",
             "electrophysiology/multidomain_contraction/src/multidomain_contraction.cpp",
             "electrophysiology/multidomain_contraction/src/multidomain_contraction_hodgkin_huxley_razumova.cpp",
-            # TODO IGNORE because of MuscleContractionSolver<> needs template_argument
-            #"electrophysiology/multidomain_contraction/src/multidomain_contraction_without_fat.cpp",
+            "electrophysiology/multidomain_contraction/src/multidomain_contraction_without_fat.cpp",
             "electrophysiology/multidomain_neuromuscular/src/multidomain_neuromuscular.cpp",
             "electrophysiology/multidomain_no_fat/src/multidomain.cpp",
             "electrophysiology/multidomain_no_fat/src/multidomain_output.cpp",
@@ -84,7 +81,7 @@ class TestParser(unittest.TestCase):
             "electrophysiology/multiple_fibers_cubes_partitioning/src/multiple_fibers_57_states.cpp",
             "electrophysiology/static_biceps_emg/failed/src/static_biceps_emg.cpp",
             "electrophysiology/static_biceps_emg/src/static_biceps_emg.cpp",
-            # IGNORE problem.fixInvalidFibersInFile();
+            # TODO problem.fixInvalidFibersInFile();
             "fiber_tracing/parallel_fiber_estimation/src/fix.cpp",
             "fiber_tracing/parallel_fiber_estimation/src/generate.cpp",
             "fiber_tracing/parallel_fiber_estimation/src/generate_quadratic.cpp",
