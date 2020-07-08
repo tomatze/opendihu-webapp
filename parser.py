@@ -16,7 +16,6 @@ class Node:
     def __repr__(self):
         return self.repr_recursive(0)
     def repr_recursive(self, depth):
-        #TODO fix repr to support Node.can_have_childs!!!!!
         indentation = '  ' * depth
         indentation_child = '  ' * (depth + 1)
         childs_string = ''
@@ -26,7 +25,10 @@ class Node:
             else:
                 childs_string = childs_string + ',\n' + indentation_child + child.repr_recursive(depth + 1)
         if childs_string == '':
-            return self.name
+            if self.can_have_childs:
+                return self.name + '<>'
+            else:
+                return self.name
         else:
             return self.name + '<' + childs_string + '\n' + indentation + '>'
 
@@ -99,9 +101,9 @@ class Example:
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
     def parse_src(self, problem):
         try:
-            # remove comments from problem
+            # remove single-line-comments from problem
             problem = re.sub(r'(?m)(^.*)//.*\n?', r'\1\n', problem)
-            # TODO maybe also remove multi-line comments
+            # TODO maybe also remove multi-line-comments
 
             # remove LOG(DEBUG) lines
             problem = re.sub(r'(.*)LOG\(DEBUG\)<<(.*)', '', problem)
@@ -229,9 +231,9 @@ def main():
 
     example.parse_src(src)
     #print(example.root)
-    #print(example.create_src())
     #print(example.combinations)
     print(example.validate_src())
+    print(example.create_src())
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
 # helper function to indent a multiline-string by a given indentation
