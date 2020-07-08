@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 import unittest
 
 import parser
@@ -151,7 +152,6 @@ class TestParser(unittest.TestCase):
             file = open(path_example + path, "r")
             src = file.read()
             file.close()
-            #print('\n' + path)
             example.parse_src(src)
             self.assertEqual(example.validate_src(), True, msg=path)
 
