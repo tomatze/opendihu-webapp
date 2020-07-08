@@ -32,11 +32,28 @@ class Node:
         else:
             return self.name + '<' + childs_string + '\n' + indentation + '>'
 
+    def compare(self, node):
+        if self.name != node.name:
+            return False
+        if self.can_have_childs != node.can_have_childs:
+            return False
+        if len(self.childs) != len(node.childs):
+            return False
+        for i in range(len(self.childs)):
+            if self.childs[i].compare(node.childs[i]) == False:
+                return False
+        return True
+
 
 # this class holds a tree of Node objects
 # the tree represents the structure of a example.cpp
 class Example:
     def __init__(self):
+        # read in the template.cpp, so we don't have to read it in multiple times
+        file_cpp_template = open("template.cpp", "r")
+        self.cpp_template = file_cpp_template.read()
+        file_cpp_template.close()
+
         self.root = None
 
         # import possible combinations
@@ -166,9 +183,8 @@ class Example:
 
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
     def create_src(self):
-        cpp_template = open("template.cpp", "r").read()
-        index = cpp_template.find(' problem(settings)')
-        return cpp_template[:index] + indent(str(self.root), '  ') + cpp_template[index:]
+        index = self.cpp_template.find(' problem(settings)')
+        return self.cpp_template[:index] + indent(str(self.root), '  ') + self.cpp_template[index:]
 
     # this checks if the tree is a valid combination of templates
     def validate_src(self):
