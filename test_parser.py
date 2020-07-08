@@ -57,12 +57,10 @@ class TestParser(unittest.TestCase):
             "electrophysiology/monodomain/hodgkin_huxley/src/hodgkin_huxley_explicit.cpp",
             "electrophysiology/monodomain/new_slow_TK_2014_12_08/src/shorten_explicit.cpp",
             "electrophysiology/monodomain/new_slow_TK_2014_12_08/src/shorten_implicit.cpp",
-            # TODO
-            #"electrophysiology/monodomain/new_slow_TK_2014_12_08/src/shorten_pod.cpp",
+            "electrophysiology/monodomain/new_slow_TK_2014_12_08/src/shorten_pod.cpp",
             "electrophysiology/monodomain/pod/src/hodgkin_huxley_explicit.cpp",
             "electrophysiology/monodomain/pod/src/hodgkin_huxley_godunov.cpp",
-            # TODO
-            #"electrophysiology/monodomain/pod/src/hodgkin_huxley_pod.cpp",
+            "electrophysiology/monodomain/pod/src/hodgkin_huxley_pod.cpp",
             "electrophysiology/monodomain/pod/src/hodgkin_huxley_strang.cpp",
             "electrophysiology/monodomain/shorten_ocallaghan_davidson_soboleva_2007/src/shorten_explicit.cpp",
             "electrophysiology/monodomain/shorten_ocallaghan_davidson_soboleva_2007/src/shorten_implicit.cpp",

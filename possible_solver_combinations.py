@@ -35,6 +35,10 @@
 # Control::MapDofs
 # OperatorSplitting::
 # CellmlAdapter
+# ModelOrderReduction::POD
+# ModelOrderReduction::LinearPart
+# ModelOrderReduction::ExplicitEulerReduced
+# ModelOrderReduction::ImplicitEulerReduced
 # FunctionSpace::
 # OutputWriter::OutputSurface
 # TODO add other OutputWriters
@@ -213,6 +217,28 @@ possible_solver_combinations = {
             [ "Integer" ],
             [ "Integer" ],
             [ "FunctionSpace::" ]
+        ]
+    },
+
+
+    "ModelOrderReduction::POD" : {
+        "discretizableInTime" : True,
+        "template_arguments" : [
+            [ "discretizableInTime" ],
+            [ "ModelOrderReduction::LinearPart" ]
+        ]
+    },
+    "ModelOrderReduction::LinearPart" : {},
+    "ModelOrderReduction::ExplicitEulerReduced" : {
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "TimeSteppingScheme::ExplicitEuler" ]
+        ]
+    },
+    "ModelOrderReduction::ImplicitEulerReduced" : {
+        "timeSteppingScheme" : True,
+        "template_arguments" : [
+            [ "TimeSteppingScheme::ImplicitEuler" ]
         ]
     },
 
