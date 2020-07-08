@@ -208,7 +208,7 @@ possible_solver_combinations = {
 
     "CellmlAdapter" : {
         "discretizableInTime" : True,
-        "template_arguments_needed" : 2,
+        "template_arguments_needed" : 1,
         "template_arguments" : [
             [ "Integer" ],
             [ "Integer" ],

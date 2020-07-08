@@ -32,9 +32,8 @@ class TestParser(unittest.TestCase):
             "electrophysiology/biceps_contraction/opendihu_precice_with_tendons/src/tendon_precice.cpp",
             "electrophysiology/cellml/hodgkin-huxley_shorten_ocallaghan_davidson_soboleva_2007/src/cellml.cpp",
             "electrophysiology/cellml/shorten/src/cellml.cpp",
-            # TODO IGNORE because cellml needs at least 2 template_arguments
-            #"electrophysiology/cellml_on_gpu/multiple_instances/src/cellml.cpp",
-            #"electrophysiology/cellml_on_gpu/single_instance/src/cellml.cpp",
+            "electrophysiology/cellml_on_gpu/multiple_instances/src/cellml.cpp",
+            "electrophysiology/cellml_on_gpu/single_instance/src/cellml.cpp",
             "electrophysiology/cuboid/src/cuboid.cpp",
             "electrophysiology/fibers_emg/src/fast_fibers_emg.cpp",
             "electrophysiology/fibers_emg/src/fast_fibers_shorten_emg.cpp",
