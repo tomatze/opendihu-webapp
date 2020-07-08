@@ -103,6 +103,9 @@ class Example:
             problem = re.sub(r'(?m)(^.*)//.*\n?', r'\1\n', problem)
             # TODO maybe also remove multi-line comments
 
+            # remove LOG(DEBUG) lines
+            problem = re.sub(r'(.*)LOG\(DEBUG\)<<(.*)', '', problem)
+
             # resolve typedefs (e.g. typedef Mesh::StructuredDeformableOfDimension<3> MeshType;)
             # get all lines staring with typedef
             typedef_lines = []
