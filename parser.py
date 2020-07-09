@@ -119,6 +119,7 @@ class Example:
     def parse_src(self, problem):
         try:
             # remove single-line-comments from problem
+            # TODO save comments in tree and print them in repr
             problem = re.sub(r'(?m)(^.*)//.*\n?', r'\1\n', problem)
             # TODO maybe also remove multi-line-comments
 

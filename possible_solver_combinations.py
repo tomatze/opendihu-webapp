@@ -96,32 +96,24 @@ possible_solver_combinations = {
 
     "PreciceAdapter::ContractionDirichletBoundaryConditions" : {
         "runnable" : True,
-        #TODO can this be handled like a timeSteppingScheme?
-        "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "timeSteppingScheme" ]
         ]
     },
     "PreciceAdapter::ContractionNeumannBoundaryConditions" : {
         "runnable" : True,
-        #TODO can this be handled like a timeSteppingScheme?
-        "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "timeSteppingScheme" ]
         ]
     },
     "PreciceAdapter::PartitionedFibers" : {
         "runnable" : True,
-        #TODO can this be handled like a timeSteppingScheme?
-        "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "timeSteppingScheme" ]
         ]
     },
     "PreciceAdapter::MuscleContraction" : {
         "runnable" : True,
-        #TODO can this be handled like a timeSteppingScheme?
-        "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "MuscleContractionSolver" ]
         ]
@@ -360,8 +352,7 @@ possible_solver_combinations = {
     },
 
 
-    "PrescribedValues" : {
-        "runnable" : True,
+    "PrescribedValues" : { "runnable" : True,
         "timeSteppingScheme" : True,
         "template_arguments_needed" : 1,
         "template_arguments" : [
