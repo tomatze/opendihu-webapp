@@ -7,6 +7,7 @@ import traceback
 class Node:
     def __init__(self):
         self.name = ''
+        self.comment = ''
         self.can_have_childs = False
         self.childs = []
 
@@ -19,11 +20,19 @@ class Node:
         indentation = '  ' * depth
         indentation_child = '  ' * (depth + 1)
         childs_string = ''
-        for child in self.childs:
+        for i in range(len(self.childs)):
+            child = self.childs[i]
+            #print(child.name + ' : ' + child.comment)
+            comment_string = ''
+            if child.comment != '':
+                comment_string = ' //' + child.comment
+            # add ',' if this is not the last child
+            if i < len(self.childs) - 1:
+                comment_string = ',' + comment_string
             if childs_string == '':
-                childs_string = '\n' + indentation_child + child.repr_recursive(depth + 1)
+                childs_string = '\n' + indentation_child + child.repr_recursive(depth + 1) + comment_string
             else:
-                childs_string = childs_string + ',\n' + indentation_child + child.repr_recursive(depth + 1)
+                childs_string = childs_string + '\n' + indentation_child + child.repr_recursive(depth + 1) + comment_string
         if childs_string == '':
             if self.can_have_childs:
                 return self.name + '<>'
@@ -36,6 +45,8 @@ class Node:
     # returning True if equal, False otherwise
     def compare(self, node):
         if self.name != node.name:
+            return False
+        if self.comment != node.comment:
             return False
         if self.can_have_childs != node.can_have_childs:
             return False
@@ -121,8 +132,10 @@ class Example:
     def parse_src(self, problem):
         try:
             # remove single-line-comments from problem
+            #problem = re.sub(r'(?m)^(.*)//.*\n?', r'\1\n', problem)
+            # mark comments with 'α commentβ' instead of '// comment' so they are easy to parse
+            problem = re.sub(r'(?m)^(.*)//(.*)\n?', r'\1α\2β\n', problem)
             # TODO save comments in tree and print them in repr
-            problem = re.sub(r'(?m)(^.*)//.*\n?', r'\1\n', problem)
             # TODO maybe also remove multi-line-comments
 
             # remove LOG(DEBUG) lines
@@ -154,30 +167,43 @@ class Example:
             problem = re.compile(r' ([A-Za-z]*)\(settings\);').split(problem)[0]
 
             # remove spaces
-            problem = re.sub(r' ', '', problem)
+            #problem = re.sub(r' ', '', problem)
 
             # create tree from problem with a simple parser
             problem = '<' + problem + '>'
             stack = []
             stack.append(Node())
+            comment_mode = False
+            comment_node = stack[0]
             for char in problem:
-                if char == '<':
-                    child = Node()
-                    stack[-1].can_have_childs = True
-                    stack[-1].childs.append(child)
-                    stack.append(child)
-                elif char == ',':
-                    stack.pop()
-                    child = Node()
-                    stack[-1].childs.append(child)
-                    stack.append(child)
-                elif char == '>':
-                    stack.pop()
-                    # remove empty child in case of <> we have can_have_childs for that
-                    if stack[-1].childs[0].name == "":
-                        stack[-1].childs = []
+                if comment_mode:
+                    if char == 'β':
+                        comment_mode = False
+                    else:
+                        comment_node.comment = comment_node.comment + char
                 else:
-                    stack[-1].name = stack[-1].name + char
+                    if char == ' ':
+                            pass
+                    elif char == 'α':
+                        comment_mode = True
+                    elif char == '<':
+                        child = Node()
+                        stack[-1].can_have_childs = True
+                        stack[-1].childs.append(child)
+                        stack.append(child)
+                    elif char == ',':
+                        comment_node = stack.pop()
+                        child = Node()
+                        stack[-1].childs.append(child)
+                        stack.append(child)
+                    elif char == '>':
+                        stack.pop()
+                        comment_node = stack[-1]
+                        # remove empty child in case of <> we have can_have_childs for that
+                        if stack[-1].childs[0].name == "":
+                            stack[-1].childs = []
+                    else:
+                        stack[-1].name = stack[-1].name + char
 
             self.root = stack[0].childs[0]
         except:
