@@ -50,7 +50,7 @@ class Node:
         if self.name != node.name:
             return False
         if self.comment != node.comment:
-            print(self.name + ' : ' + self.comment + ' =! ' + node.comment)
+            #print(self.name + ' : ' + self.comment + ' =! ' + node.comment)
             return False
         if self.can_have_childs != node.can_have_childs:
             return False
