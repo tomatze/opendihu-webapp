@@ -32,6 +32,8 @@ class Node:
         else:
             return self.name + '<' + childs_string + '\n' + indentation + '>'
 
+    # this function can compare this Node to another Node
+    # returning True if equal, False otherwise
     def compare(self, node):
         if self.name != node.name:
             return False
