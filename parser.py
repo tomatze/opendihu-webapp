@@ -15,7 +15,10 @@ class Node:
     # you can print the string to visualize the tree
     # this is also used to created cpp-source-code from a tree
     def __repr__(self):
-        return self.repr_recursive(0)
+        root_comment = ''
+        if self.comment != '':
+            root_comment = '//' + self.comment + '\n'
+        return root_comment + self.repr_recursive(0)
     def repr_recursive(self, depth):
         indentation = '  ' * depth
         indentation_child = '  ' * (depth + 1)
@@ -47,6 +50,7 @@ class Node:
         if self.name != node.name:
             return False
         if self.comment != node.comment:
+            print(self.name + ' : ' + self.comment + ' =! ' + node.comment)
             return False
         if self.can_have_childs != node.can_have_childs:
             return False
@@ -191,6 +195,7 @@ class Example:
                         stack[-1].can_have_childs = True
                         stack[-1].childs.append(child)
                         stack.append(child)
+                        comment_node = child
                     elif char == ',':
                         comment_node = stack.pop()
                         child = Node()
