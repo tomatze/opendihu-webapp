@@ -265,12 +265,7 @@ class Example:
         pass
 
 def main():
-    #path_example = "../opendihu/examples/"
-    #settings = open(path_example + "laplace/laplace1d/settings_linear_quadratic_dirichlet.py", "r").read()
     src = open(str(sys.argv[1]), "r").read()
-    #src = open(path_example + "laplace/laplace1d/src/laplace_linear.cpp", "r").read()
-    #src = open(path_example + "laplace/laplace3d_surface/src/laplace_surface.cpp", "r").read()
-    #src = open(path_example + "electrophysiology/biceps_contraction/opendihu/src/biceps_contraction.cpp", "r").read()
 
     example = Example()
 
@@ -278,6 +273,7 @@ def main():
     #print(example.root)
     #print(example.combinations)
     print(example.validate_src())
+    print('\n')
     print(example.create_src())
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
