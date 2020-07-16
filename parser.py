@@ -131,6 +131,9 @@ class Example:
                         for key_sub in self.timeSteppingScheme:
                             template_argument.append(key_sub)
 
+        self.settings_prefix = ''
+        self.settings_postfix = ''
+
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
     def parse_src(self, problem):
@@ -266,11 +269,22 @@ class Example:
         return self.combinations[name]["template_arguments"]
 
 
-    def parse_settings(self):
-        pass
+    def parse_settings(self, settings):
+        try:
+            pass
+            split1 = settings.split('config = {\n')
+            self.settings_prefix = split1[0]
+            settings = split1[1]
+            split2 = re.compile(r'(?m)^}').split(settings, 1)
+            settings = split2[0]
+            self.settings_postfix = split2[1]
+            print(settings)
+        except:
+            printe('failed to parse settings')
 
 def main():
     src = open(str(sys.argv[1]), "r").read()
+    settings = open(str(sys.argv[2]), "r").read()
 
     example = Example()
 
@@ -281,6 +295,8 @@ def main():
     print('\n')
     print(example.create_src())
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
+
+    example.parse_settings(settings)
 
 # helper function to indent a multiline-string by a given indentation
 def indent(lines, indentation):
