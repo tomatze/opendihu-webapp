@@ -271,14 +271,13 @@ class Example:
 
     def parse_settings(self, settings):
         try:
-            pass
+            # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
             split1 = settings.split('config = {\n')
             self.settings_prefix = split1[0]
             settings = split1[1]
             split2 = re.compile(r'(?m)^}').split(settings, 1)
             settings = split2[0]
             self.settings_postfix = split2[1]
-            print(settings)
         except:
             printe('failed to parse settings')
 
