@@ -207,7 +207,13 @@ possible_solver_combinations = {
         "template_arguments" : [
             [ "timeSteppingScheme" ],
             [ "timeSteppingScheme" ]
-        ]
+        ],
+        "python_options" : {
+            #TODO
+            "StrangSplitting" : {
+                "timeSteppWidth"
+            }
+        }
     },
     "OperatorSplitting::Godunov" : {
         "runnable" : True,
