@@ -74,6 +74,23 @@ possible_solver_combinations = {
                 "description" : "filename of solver structure diagram",
                 "type" : [ "string" ],
                 "default" : "solver_structure.txt"
+            },
+            "mappingsBetweenMeshesLogFile" : {
+                "description" : "logfile for mappings between meshes",
+                "type" : [ "string" ],
+                "default" : "mappings_between_meshes.txt"
+            },
+            "Meshes" : {
+                # TODO
+                "description" : "",
+                "type" : [ "string" ],
+                "default" : ""
+            },
+            "mappingsBetweenMeshes" : {
+                # TODO
+                "description" : "",
+                "type" : [ "string" ],
+                "default" : ""
             }
             #TODO add meta
         }
