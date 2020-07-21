@@ -3,6 +3,10 @@ import re
 import sys
 import traceback
 
+from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
+import token
+from io import BytesIO
+
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
     def __init__(self):
@@ -278,6 +282,32 @@ class Example:
             split2 = re.compile(r'(?m)^}').split(settings, 1)
             settings = split2[0]
             self.settings_postfix = split2[1]
+            # split settings into tokens using tokenize from the stdlib
+            tokens = tokenize(BytesIO(settings.encode('utf-8')).readline)
+            for t in tokens:
+                token_value = t.string
+                token_type = t.exact_type
+                print(str(token.tok_name[token_type]) + "\t" + str(token_value))
+                if token_type == token.COMMENT:
+                    print(token_value)
+            ## parse config{} to a python dict while preserving all variables and comments
+            #config = {}
+            #stack = []
+            #stack.append(config)
+            #key = ""
+            #for i in range(len(settings)):
+            #    char = settings[i]
+
+            #    if char == '"':
+            #        pass
+            #    elif char == ":":
+            #        stack.append(stack[-1][key])
+            #        key = ''
+            #    elif char == "[":
+            #        stack.append([])
+            #        stack = stack[0]
+            #    else:
+            #        key = key + char
         except:
             printe('failed to parse settings')
 
