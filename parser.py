@@ -327,11 +327,13 @@ class Example:
                 else:
                     printe("should not be reached " + token_value)
             else:
+                # handle comma ',' (only if we are not in nested braces)
                 if len(nested_stack) == 0 and token_type == token.COMMA:
                     value_mode = False
                     # add the next dict-entry to the list
                     stack[-1].append(SettingsEntry())
                     continue
+                # handle curly braces '{}'
                 if token_type == token.RBRACE:
                     if len(nested_stack) == 0:
                         value_mode = False
@@ -350,10 +352,16 @@ class Example:
                         continue
                     else:
                         nested_stack.append(token_type)
+
+                # handle normal brackets '()' and squarebrackets '[]'
                 if token_type == token.LSQB or token_type == token.LPAR:
                     nested_stack.append(token_type)
                 if token_type == token.RSQB or token_type == token.RPAR:
                     nested_stack.pop()
+
+                # ignore newlines
+                if token_type == token.NEWLINE or token_type == token.NL:
+                    continue
 
 
                 # if not already continued, token_value must be part of the value
