@@ -298,49 +298,69 @@ class Example:
         # iterate over tokens to create list of SettingsEntry
         config = []
         stack = []
+        nested_stack = []
         stack.append(config)
+        value_mode = False
         for t in tokens:
             token_value = t.string
             token_type = t.exact_type
             #print(token.tok_name[token_type] + token_value)
-            if token_type == token.COMMENT:
-                # add the comment to the last list entry
-                # TODO this will fail on empty list
-                try:
-                    stack[-1][-1].comment = token_value
-                except:
-                    printe("cannot add comment. list is empty")
-            elif token_type == token.COMMA:
-                # add the next dict-entry to the list
-                stack[-1].append(SettingsEntry())
-            elif token_type == token.LBRACE:
-                # detected child dict
-                value = []
-                stack[-1][-1].value = value
-                stack.append(value)
-            elif token_type == token.RBRACE:
-                # closing child dict
-                stack.pop()
-            elif token_type == token.ENCODING or token_type == token.INDENT or token_type == token.NEWLINE or token_type == token.NL or token_type == token.DEDENT or token_type == token.ENDMARKER:
-                # ignore some tokens
-                pass
-            else:
-                # token_type is none of the above (e.g. token.STRING)
-                if len(stack[-1]) == 0:
-                    # list is empty -> add entry
-                    stack[-1].append(SettingsEntry())
-                if stack[-1][-1].key == None:
-                    # last entry in list has no key -> token_value must be the key
+            if not value_mode:
+                if token_type == token.STRING or token_type == token.NUMBER:
+                    # we got a new key (keys are always token.STRING or token.NUMBER)
+                    if len(stack[-1]) == 0 or stack[-1][-1].key is not None:
+                        # list is empty or last entry has key already -> add entry
+                        stack[-1].append(SettingsEntry())
                     stack[-1][-1].key = token_value
+                elif token_type == token.COMMENT:
+                    # add the comment to the last list entry
+                    # TODO this will fail on empty list
+                    try:
+                        stack[-1][-1].comment = token_value
+                    except:
+                        printe("cannot add comment. list is empty")
+                elif token_type == token.COLON:
+                    value_mode = True
+                elif token_type == token.ENCODING or token_type == token.INDENT or token_type == token.NEWLINE or token_type == token.NL or token_type == token.DEDENT or token_type == token.ENDMARKER:
+                    # ignore some tokens
+                    pass
                 else:
-                    if token_type == token.COLON and stack[-1][-1].value == None:
-                        # ignore ':' if value is None
+                    printe("should not be reached " + token_value)
+            else:
+                if len(nested_stack) == 0 and token_type == token.COMMA:
+                    value_mode = False
+                    # add the next dict-entry to the list
+                    stack[-1].append(SettingsEntry())
+                    continue
+                if token_type == token.RBRACE:
+                    if len(nested_stack) == 0:
+                        value_mode = False
+                        # closing child dict
+                        stack.pop()
                         continue
-                    # last entry in list has no value -> token_value must be part of the value
-                    if stack[-1][-1].value == None:
-                        stack[-1][-1].value = str(token_value)
                     else:
-                        stack[-1][-1].value = str(stack[-1][-1].value) + token_value
+                        nested_stack.pop()
+                if token_type == token.LBRACE:
+                    if len(nested_stack) == 0:
+                        value_mode = False
+                        # detected child dict
+                        value = []
+                        stack[-1][-1].value = value
+                        stack.append(value)
+                        continue
+                    else:
+                        nested_stack.append(token_type)
+                if token_type == token.LSQB or token_type == token.LPAR:
+                    nested_stack.append(token_type)
+                if token_type == token.RSQB or token_type == token.RPAR:
+                    nested_stack.pop()
+
+
+                # if not already continued, token_value must be part of the value
+                if stack[-1][-1].value == None:
+                    stack[-1][-1].value = str(token_value)
+                else:
+                    stack[-1][-1].value = str(stack[-1][-1].value) + " " + token_value
 
 
         print(config)
