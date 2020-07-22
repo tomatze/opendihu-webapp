@@ -7,6 +7,16 @@ from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 import token
 from io import BytesIO
 
+# this class represents a python-setting with potential subsettings
+class SettingsEntry:
+    def __init__(self):
+        self.key = None
+        self.comment = None
+        self.value = None
+
+    def __repr__(self):
+        return str(self.key) + ' : ' + str(self.value)
+
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
     def __init__(self):
@@ -274,42 +284,69 @@ class Example:
 
 
     def parse_settings(self, settings):
-        try:
-            # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
-            split1 = settings.split('config = {\n')
-            self.settings_prefix = split1[0]
-            settings = split1[1]
-            split2 = re.compile(r'(?m)^}').split(settings, 1)
-            settings = split2[0]
-            self.settings_postfix = split2[1]
-            # split settings into tokens using tokenize from the stdlib
-            tokens = tokenize(BytesIO(settings.encode('utf-8')).readline)
-            for t in tokens:
-                token_value = t.string
-                token_type = t.exact_type
-                print(str(token.tok_name[token_type]) + "\t" + str(token_value))
-                if token_type == token.COMMENT:
-                    print(token_value)
-            ## parse config{} to a python dict while preserving all variables and comments
-            #config = {}
-            #stack = []
-            #stack.append(config)
-            #key = ""
-            #for i in range(len(settings)):
-            #    char = settings[i]
+        #try:
+        # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
+        split1 = settings.split('config = {\n')
+        self.settings_prefix = split1[0]
+        settings = split1[1]
+        split2 = re.compile(r'(?m)^}').split(settings, 1)
+        settings = split2[0]
+        self.settings_postfix = split2[1]
+        # split settings into tokens using tokenize from the stdlib
+        tokens = tokenize(BytesIO(settings.encode('utf-8')).readline)
 
-            #    if char == '"':
-            #        pass
-            #    elif char == ":":
-            #        stack.append(stack[-1][key])
-            #        key = ''
-            #    elif char == "[":
-            #        stack.append([])
-            #        stack = stack[0]
-            #    else:
-            #        key = key + char
-        except:
-            printe('failed to parse settings')
+        # iterate over tokens to create list of SettingsEntry
+        config = []
+        stack = []
+        stack.append(config)
+        for t in tokens:
+            token_value = t.string
+            token_type = t.exact_type
+            #print(token.tok_name[token_type] + token_value)
+            if token_type == token.COMMENT:
+                # add the comment to the last list entry
+                # TODO this will fail on empty list
+                try:
+                    stack[-1][-1].comment = token_value
+                except:
+                    printe("cannot add comment. list is empty")
+            elif token_type == token.COMMA:
+                # add the next dict-entry to the list
+                stack[-1].append(SettingsEntry())
+            elif token_type == token.LBRACE:
+                # detected child dict
+                value = []
+                stack[-1][-1].value = value
+                stack.append(value)
+            elif token_type == token.RBRACE:
+                # closing child dict
+                stack.pop()
+            elif token_type == token.ENCODING or token_type == token.INDENT or token_type == token.NEWLINE or token_type == token.NL or token_type == token.DEDENT or token_type == token.ENDMARKER:
+                # ignore some tokens
+                pass
+            else:
+                # token_type is none of the above (e.g. token.STRING)
+                if len(stack[-1]) == 0:
+                    # list is empty -> add entry
+                    stack[-1].append(SettingsEntry())
+                if stack[-1][-1].key == None:
+                    # last entry in list has no key -> token_value must be the key
+                    stack[-1][-1].key = token_value
+                else:
+                    if token_type == token.COLON and stack[-1][-1].value == None:
+                        # ignore ':' if value is None
+                        continue
+                    # last entry in list has no value -> token_value must be part of the value
+                    if stack[-1][-1].value == None:
+                        stack[-1][-1].value = str(token_value)
+                    else:
+                        stack[-1][-1].value = str(stack[-1][-1].value) + token_value
+
+
+        print(config)
+
+        #except:
+        #    printe('failed to parse settings')
 
 def main():
     src = open(str(sys.argv[1]), "r").read()
