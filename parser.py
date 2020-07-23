@@ -7,6 +7,10 @@ from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 import token
 from io import BytesIO
 
+#TODO
+class SettingsComment:
+    def __init__(self):
+        pass
 # this class represents a python-setting with potential subsettings
 class SettingsDictEntry:
     def __init__(self):
