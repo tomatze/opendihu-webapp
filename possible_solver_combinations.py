@@ -28,9 +28,9 @@
 # MuscleContractionSolver
 # FastMonodomainSolver
 # SpatialDiscretization::HyperelasticitySolver
-# TODO add other specalized_solvers
 # Control::MultipleInstances
 # Control::Coupling
+# TODO Control::MultipleCoupling
 # Control::LoadBalancing
 # Control::MapDofs
 # OperatorSplitting::
