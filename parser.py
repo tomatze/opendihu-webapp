@@ -8,14 +8,29 @@ import token
 from io import BytesIO
 
 # this class represents a python-setting with potential subsettings
-class SettingsEntry:
+class SettingsDictEntry:
     def __init__(self):
         self.key = None
-        self.comment = None
         self.value = None
+        self.comment = None
 
     def __repr__(self):
         return str(self.key) + ' : ' + str(self.value)
+
+class SettingsListEntry:
+    def __init__(self):
+        self.value = None
+        self.comment = None
+
+    def __repr__(self):
+        return str(self.value)
+
+class SettingsDict(list):
+    def dummy_function(self):
+        pass
+class SettingsList(list):
+    def dummy_function(self):
+        pass
 
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
@@ -295,22 +310,23 @@ class Example:
         # split settings into tokens using tokenize from the stdlib
         tokens = tokenize(BytesIO(settings.encode('utf-8')).readline)
 
-        # iterate over tokens to create list of SettingsEntry
-        config = []
+        # iterate over tokens to create SettingsDict
+        config = SettingsDict()
         stack = []
-        nested_stack = []
         stack.append(config)
-        value_mode = False
+        mode_stack = []
+        mode_stack.append("key")
+        nested_counter = 0
         for t in tokens:
             token_value = t.string
             token_type = t.exact_type
             #print(token.tok_name[token_type] + token_value)
-            if not value_mode:
+            if mode_stack[-1] == "key":
                 if token_type == token.STRING or token_type == token.NUMBER:
                     # we got a new key (keys are always token.STRING or token.NUMBER)
                     if len(stack[-1]) == 0 or stack[-1][-1].key is not None:
                         # list is empty or last entry has key already -> add entry
-                        stack[-1].append(SettingsEntry())
+                        stack[-1].append(SettingsDictEntry())
                     stack[-1][-1].key = token_value
                 elif token_type == token.COMMENT:
                     # add the comment to the last list entry
@@ -320,50 +336,66 @@ class Example:
                     except:
                         printe("cannot add comment. list is empty")
                 elif token_type == token.COLON:
-                    value_mode = True
+                    mode_stack.append("value")
                 elif token_type == token.ENCODING or token_type == token.INDENT or token_type == token.NEWLINE or token_type == token.NL or token_type == token.DEDENT or token_type == token.ENDMARKER:
                     # ignore some tokens
                     pass
+                elif token_type == token.COMMA:
+                    # ignore comma if not in value or list mode
+                    pass
                 else:
-                    printe("should not be reached " + token_value)
-            else:
+                    printe("should not be reached " + token_value + " " + t.line)
+
+            elif mode_stack[-1] == "value" or mode_stack[-1] == "list":
                 # handle comma ',' (only if we are not in nested braces)
-                if len(nested_stack) == 0 and token_type == token.COMMA:
-                    value_mode = False
-                    # add the next dict-entry to the list
-                    stack[-1].append(SettingsEntry())
-                    continue
-                # handle curly braces '{}'
-                if token_type == token.RBRACE:
-                    if len(nested_stack) == 0:
-                        value_mode = False
-                        # closing child dict
-                        stack.pop()
-                        continue
+                if nested_counter == 0 and token_type == token.COMMA:
+                    if isinstance(stack[-1], SettingsDict):
+                        mode_stack.pop()
                     else:
-                        nested_stack.pop()
+                        stack[-1].append(SettingsListEntry())
+                    continue
+
+                # handle curly braces '{}'
                 if token_type == token.LBRACE:
-                    if len(nested_stack) == 0:
-                        value_mode = False
-                        # detected child dict
-                        value = []
+                    if nested_counter == 0:
+                        mode_stack.append("key")
+                        value = SettingsDict()
                         stack[-1][-1].value = value
                         stack.append(value)
                         continue
-                    else:
-                        nested_stack.append(token_type)
+                if token_type == token.RBRACE:
+                    if nested_counter == 0:
+                        # pop 2 times because of key+value on mode_stack
+                        mode_stack.pop()
+                        mode_stack.pop()
+                        stack.pop()
+                        continue
 
-                # handle normal brackets '()' and squarebrackets '[]'
-                if token_type == token.LSQB or token_type == token.LPAR:
-                    nested_stack.append(token_type)
-                if token_type == token.RSQB or token_type == token.RPAR:
-                    nested_stack.pop()
+                # handle square brackets '[]'
+                if token_type == token.LSQB:
+                    if nested_counter == 0:
+                        mode_stack.append("list")
+                        # detected child list
+                        value = SettingsList()
+                        value.append(SettingsListEntry())
+                        stack[-1][-1].value = value
+                        stack.append(value)
+                        continue
+                if token_type == token.RSQB:
+                    if nested_counter == 0:
+                        mode_stack.pop()
+                        stack.pop()
+                        continue
+
+                # handle parentheses '()'
+                if token_type == token.LPAR:
+                    nested_counter = nested_counter + 1
+                if token_type == token.RPAR:
+                    nested_counter = nested_counter - 1
 
                 # ignore newlines
                 if token_type == token.NEWLINE or token_type == token.NL:
                     continue
-
-
                 # if not already continued, token_value must be part of the value
                 if stack[-1][-1].value == None:
                     stack[-1][-1].value = str(token_value)
