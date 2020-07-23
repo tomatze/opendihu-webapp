@@ -397,6 +397,7 @@ class Example:
                 if token_type == token.NEWLINE or token_type == token.NL:
                     continue
                 # if not already continued, token_value must be part of the value
+                # TODO don't always add a space (e.g. not before and after '.')
                 if stack[-1][-1].value == None:
                     stack[-1][-1].value = str(token_value)
                 else:
