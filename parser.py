@@ -10,13 +10,14 @@ from io import BytesIO
 #TODO
 class SettingsComment:
     def __init__(self):
-        pass
+        self.comment = None
+
 # this class represents a python-setting with potential subsettings
 class SettingsDictEntry:
     def __init__(self):
         self.key = None
         self.value = None
-        self.comment = None
+        self.comments = []
 
     def __repr__(self):
         return str(self.key) + ' : ' + str(self.value)
@@ -24,7 +25,7 @@ class SettingsDictEntry:
 class SettingsListEntry:
     def __init__(self):
         self.value = None
-        self.comment = None
+        self.comments = []
 
     def __repr__(self):
         return str(self.value)
@@ -319,56 +320,74 @@ class Example:
         stack = []
         stack.append(config)
         mode_stack = []
-        mode_stack.append("key")
+        mode_stack.append("dict_key")
         nested_counter = 0
+
+        token_buffer = []
+        append_comment = False
         for t in tokens:
             token_value = t.string
             token_type = t.exact_type
-            #print(token.tok_name[token_type] + token_value)
-            if mode_stack[-1] == "key":
+            print(token.tok_name[token_type] + token_value)
+            # don't append comments to SettingsDictEntry or SettingsListEntry after newline
+            if token_type == token.NL or token_type == token.NEWLINE:
+                append_comment = False
+            elif token_type == token.COMMENT:
+                if append_comment:
+                    # append the comment to the last list entry
+                    stack[-1][-1].comments.append(token_value)
+                else:
+                    # add floating comment to the current SettingsDict or SettingsList
+                    c = SettingsComment()
+                    c.comment = token_value
+                    stack[-1].append(c)
+            elif mode_stack[-1] == "dict_key":
                 if token_type == token.STRING or token_type == token.NUMBER:
                     # we got a new key (keys are always token.STRING or token.NUMBER)
-                    if len(stack[-1]) == 0 or stack[-1][-1].key is not None:
-                        # list is empty or last entry has key already -> add entry
-                        stack[-1].append(SettingsDictEntry())
+                    #if len(stack[-1]) == 0 or stack[-1][-1].key is not None:
+                    # list is empty or last entry has key already -> add entry
+                    stack[-1].append(SettingsDictEntry())
+                    append_comment = True
                     stack[-1][-1].key = token_value
-                elif token_type == token.COMMENT:
-                    # add the comment to the last list entry
-                    # TODO this will fail on empty list
-                    try:
-                        stack[-1][-1].comment = token_value
-                    except:
-                        printe("cannot add comment. list is empty")
                 elif token_type == token.COLON:
-                    mode_stack.append("value")
-                elif token_type == token.ENCODING or token_type == token.INDENT or token_type == token.NEWLINE or token_type == token.NL or token_type == token.DEDENT or token_type == token.ENDMARKER:
-                    # ignore some tokens
-                    pass
-                elif token_type == token.COMMA:
-                    # ignore comma if not in value or list mode
-                    pass
+                    mode_stack.append("dict_value")
                 else:
-                    printe("should not be reached " + token_value + " " + t.line)
+                    #printe("should not be reached " + token_value + " " + t.line)
+                    pass
 
-            elif mode_stack[-1] == "value" or mode_stack[-1] == "list":
+            elif mode_stack[-1] == "dict_value" or mode_stack[-1] == "list":
                 # handle comma ',' (only if we are not in nested braces)
                 if nested_counter == 0 and token_type == token.COMMA:
+                    append_comment = True
                     if isinstance(stack[-1], SettingsDict):
+                        if len(token_buffer) > 0:
+                            stack[-1][-1].value = untokenize(token_buffer)
+                            token_buffer = []
                         mode_stack.pop()
                     else:
-                        stack[-1].append(SettingsListEntry())
+                        if len(token_buffer) > 0:
+                            list_entry = SettingsListEntry()
+                            list_entry.value = untokenize(token_buffer)
+                            stack[-1].append(list_entry)
+                            token_buffer = []
                     continue
 
                 # handle curly braces '{}'
                 if token_type == token.LBRACE:
                     if nested_counter == 0:
-                        mode_stack.append("key")
-                        value = SettingsDict()
-                        stack[-1][-1].value = value
-                        stack.append(value)
+                        mode_stack.append("dict_key")
+                        dict = SettingsDict()
+                        if isinstance(stack[-1], SettingsList):
+                            stack[-1].append(SettingsListEntry)
+                        stack[-1][-1].value = dict
+                        stack.append(dict)
+                        append_comment = False
                         continue
                 if token_type == token.RBRACE:
                     if nested_counter == 0:
+                        if len(token_buffer) > 0:
+                            stack[-1][-1].value = untokenize(token_buffer)
+                            token_buffer = []
                         # pop 2 times because of key+value on mode_stack
                         mode_stack.pop()
                         mode_stack.pop()
@@ -380,13 +399,22 @@ class Example:
                     if nested_counter == 0:
                         mode_stack.append("list")
                         # detected child list
-                        value = SettingsList()
-                        value.append(SettingsListEntry())
-                        stack[-1][-1].value = value
-                        stack.append(value)
+                        list = SettingsList()
+                        #value.append(SettingsListEntry())
+                        if isinstance(stack[-1], SettingsList):
+                            stack[-1].append(SettingsListEntry)
+                        stack[-1][-1].value = list
+                        stack.append(list)
+                        append_comment = False
                         continue
                 if token_type == token.RSQB:
                     if nested_counter == 0:
+                        if len(token_buffer) > 0:
+                            list_entry = SettingsListEntry()
+                            list_entry.value = untokenize(token_buffer)
+                            stack[-1].append(list_entry)
+                            print('\n' + stack[-1][-1].value + '\n')
+                            token_buffer = []
                         mode_stack.pop()
                         stack.pop()
                         continue
@@ -397,15 +425,18 @@ class Example:
                 if token_type == token.RPAR:
                     nested_counter = nested_counter - 1
 
-                # ignore newlines
-                if token_type == token.NEWLINE or token_type == token.NL:
-                    continue
+                # handle other tokens
                 # if not already continued, token_value must be part of the value
-                # TODO don't always add a space (e.g. not before and after '.')
-                if stack[-1][-1].value == None:
-                    stack[-1][-1].value = str(token_value)
-                else:
-                    stack[-1][-1].value = str(stack[-1][-1].value) + " " + token_value
+                token_buffer.append(t)
+
+                #if stack[-1][-1].value == None:
+                #    stack[-1][-1].value = str(token_value)
+                #else:
+                #    if token_type == token.DOT:
+                #        stack[-1][-1].value = str(stack[-1][-1].value) + token_value
+                #        pass
+                #    else:
+                #        stack[-1][-1].value = str(stack[-1][-1].value) + " " + token_value
 
 
         print(config)
