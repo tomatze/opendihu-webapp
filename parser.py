@@ -361,13 +361,13 @@ class Example:
                     append_comment = True
                     if isinstance(stack[-1], SettingsDict):
                         if len(token_buffer) > 0:
-                            stack[-1][-1].value = untokenize(token_buffer)
+                            stack[-1][-1].value = tokens_to_string(token_buffer)
                             token_buffer = []
                         mode_stack.pop()
                     else:
                         if len(token_buffer) > 0:
                             list_entry = SettingsListEntry()
-                            list_entry.value = untokenize(token_buffer)
+                            list_entry.value = tokens_to_string(token_buffer)
                             stack[-1].append(list_entry)
                             token_buffer = []
                     continue
@@ -386,7 +386,7 @@ class Example:
                 if token_type == token.RBRACE:
                     if nested_counter == 0:
                         if len(token_buffer) > 0:
-                            stack[-1][-1].value = untokenize(token_buffer)
+                            stack[-1][-1].value = tokens_to_string(token_buffer)
                             token_buffer = []
                         # pop 2 times because of key+value on mode_stack
                         mode_stack.pop()
@@ -400,7 +400,6 @@ class Example:
                         mode_stack.append("list")
                         # detected child list
                         list = SettingsList()
-                        #value.append(SettingsListEntry())
                         if isinstance(stack[-1], SettingsList):
                             stack[-1].append(SettingsListEntry)
                         stack[-1][-1].value = list
@@ -411,8 +410,9 @@ class Example:
                     if nested_counter == 0:
                         if len(token_buffer) > 0:
                             list_entry = SettingsListEntry()
-                            list_entry.value = untokenize(token_buffer)
+                            list_entry.value = tokens_to_string(token_buffer)
                             stack[-1].append(list_entry)
+                            print(len(token_buffer))
                             print('\n' + stack[-1][-1].value + '\n')
                             token_buffer = []
                         mode_stack.pop()
@@ -428,15 +428,6 @@ class Example:
                 # handle other tokens
                 # if not already continued, token_value must be part of the value
                 token_buffer.append(t)
-
-                #if stack[-1][-1].value == None:
-                #    stack[-1][-1].value = str(token_value)
-                #else:
-                #    if token_type == token.DOT:
-                #        stack[-1][-1].value = str(stack[-1][-1].value) + token_value
-                #        pass
-                #    else:
-                #        stack[-1][-1].value = str(stack[-1][-1].value) + " " + token_value
 
 
         print(config)
@@ -463,6 +454,10 @@ def main():
 # helper function to indent a multiline-string by a given indentation
 def indent(lines, indentation):
     return indentation + lines.replace('\n', '\n' + indentation)
+
+# helper function wrapping pythons untokenize-function to improve readability of the returned string
+def tokens_to_string(tokens):
+    return untokenize(tokens).splitlines()[-1].strip()
 
 def printe(message):
     print('Error: ' + message, file=sys.stderr)
