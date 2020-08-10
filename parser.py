@@ -303,134 +303,134 @@ class Example:
 
 
     def parse_settings(self, settings):
-        #try:
-        # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
-        split1 = settings.split('config = {\n')
-        self.settings_prefix = split1[0]
-        settings = split1[1]
-        split2 = re.compile(r'(?m)^}').split(settings, 1)
-        settings = split2[0]
-        self.settings_postfix = split2[1]
-        # split settings into tokens using tokenize from the stdlib
-        tokens = tokenize(BytesIO(settings.encode('utf-8')).readline)
+        try:
+            # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
+            split1 = settings.split('config = {\n')
+            self.settings_prefix = split1[0]
+            settings = split1[1]
+            split2 = re.compile(r'(?m)^}').split(settings, 1)
+            settings = split2[0]
+            self.settings_postfix = split2[1]
+            # split settings into tokens using tokenize from the stdlib
+            tokens = tokenize(BytesIO(settings.encode('utf-8')).readline)
 
-        # iterate over tokens to create SettingsDict
-        config = SettingsDict()
-        stack = []
-        stack.append(config)
-        mode_stack = []
-        mode_stack.append("dict_key")
-        nested_counter = 0
+            # iterate over tokens to create SettingsDict
+            config = SettingsDict()
+            stack = []
+            stack.append(config)
+            mode_stack = []
+            mode_stack.append("dict_key")
+            nested_counter = 0
 
-        token_buffer = []
-        append_comment = False
-        for t in tokens:
-            token_value = t.string
-            token_type = t.exact_type
-            #print(token.tok_name[token_type] + token_value)
-            # don't append comments to SettingsDictEntry or SettingsListEntry after newline
-            if token_type == token.NL or token_type == token.NEWLINE:
-                append_comment = False
-            elif token_type == token.COMMENT:
-                if append_comment:
-                    # append the comment to the last list entry
-                    stack[-1][-1].comments.append(token_value)
-                else:
-                    # add floating comment to the current SettingsDict or SettingsList
-                    c = SettingsComment()
-                    c.comment = token_value
-                    stack[-1].append(c)
-            elif mode_stack[-1] == "dict_key":
-                if token_type == token.STRING or token_type == token.NUMBER:
-                    # we got a new key (keys are always token.STRING or token.NUMBER)
-                    #if len(stack[-1]) == 0 or stack[-1][-1].key is not None:
-                    # list is empty or last entry has key already -> add entry
-                    stack[-1].append(SettingsDictEntry())
-                    append_comment = True
-                    stack[-1][-1].key = token_value
-                elif token_type == token.COLON:
-                    mode_stack.append("dict_value")
-                else:
-                    #printe("should not be reached " + token_value + " " + t.line)
-                    pass
-
-            elif mode_stack[-1] == "dict_value" or mode_stack[-1] == "list":
-                # handle comma ',' (only if we are not in nested braces)
-                if nested_counter == 0 and token_type == token.COMMA:
-                    append_comment = True
-                    if isinstance(stack[-1], SettingsDict):
-                        if len(token_buffer) > 0:
-                            stack[-1][-1].value = tokens_to_string(token_buffer)
-                            token_buffer = []
-                        mode_stack.pop()
+            token_buffer = []
+            append_comment = False
+            for t in tokens:
+                token_value = t.string
+                token_type = t.exact_type
+                #print(token.tok_name[token_type] + token_value)
+                # don't append comments to SettingsDictEntry or SettingsListEntry after newline
+                if token_type == token.NL or token_type == token.NEWLINE:
+                    append_comment = False
+                # handle comments
+                elif token_type == token.COMMENT:
+                    if append_comment:
+                        # append the comment to the last list entry
+                        stack[-1][-1].comments.append(token_value)
                     else:
-                        if len(token_buffer) > 0:
-                            list_entry = SettingsListEntry()
-                            list_entry.value = tokens_to_string(token_buffer)
-                            stack[-1].append(list_entry)
-                            token_buffer = []
-                    continue
-
-                # handle curly braces '{}'
-                if token_type == token.LBRACE:
-                    if nested_counter == 0:
-                        mode_stack.append("dict_key")
-                        dict = SettingsDict()
-                        if isinstance(stack[-1], SettingsList):
-                            stack[-1].append(SettingsListEntry)
-                        stack[-1][-1].value = dict
-                        stack.append(dict)
-                        append_comment = False
-                        continue
-                if token_type == token.RBRACE:
-                    if nested_counter == 0:
-                        if len(token_buffer) > 0:
-                            stack[-1][-1].value = tokens_to_string(token_buffer)
-                            token_buffer = []
-                        # pop 2 times because of key+value on mode_stack
-                        mode_stack.pop()
-                        mode_stack.pop()
-                        stack.pop()
-                        continue
-
-                # handle square brackets '[]'
-                if token_type == token.LSQB:
-                    if nested_counter == 0:
-                        mode_stack.append("list")
-                        # detected child list
-                        list = SettingsList()
-                        if isinstance(stack[-1], SettingsList):
-                            stack[-1].append(SettingsListEntry)
-                        stack[-1][-1].value = list
-                        stack.append(list)
-                        append_comment = False
-                        continue
-                if token_type == token.RSQB:
-                    if nested_counter == 0:
-                        if len(token_buffer) > 0:
-                            list_entry = SettingsListEntry()
-                            list_entry.value = tokens_to_string(token_buffer)
-                            stack[-1].append(list_entry)
-                            token_buffer = []
-                        mode_stack.pop()
-                        stack.pop()
+                        # add floating comment to the current SettingsDict or SettingsList
+                        c = SettingsComment()
+                        c.comment = token_value
+                        stack[-1].append(c)
+                # handle dictionary keys
+                elif mode_stack[-1] == "dict_key":
+                    if token_type == token.STRING or token_type == token.NUMBER:
+                        # we got a new key (keys are always token.STRING or token.NUMBER)
+                        stack[-1].append(SettingsDictEntry())
+                        append_comment = True
+                        stack[-1][-1].key = token_value
+                    elif token_type == token.COLON:
+                        mode_stack.append("dict_value")
+                    else:
+                        #printe("should not be reached " + token_value + " " + t.line)
+                        pass
+                # handle dictionary values and list entries
+                elif mode_stack[-1] == "dict_value" or mode_stack[-1] == "list":
+                    # handle comma ',' (only if we are not in nested braces)
+                    if nested_counter == 0 and token_type == token.COMMA:
+                        append_comment = True
+                        if isinstance(stack[-1], SettingsDict):
+                            if len(token_buffer) > 0:
+                                stack[-1][-1].value = tokens_to_string(token_buffer)
+                                token_buffer = []
+                            mode_stack.pop()
+                        else:
+                            if len(token_buffer) > 0:
+                                list_entry = SettingsListEntry()
+                                list_entry.value = tokens_to_string(token_buffer)
+                                stack[-1].append(list_entry)
+                                token_buffer = []
                         continue
 
-                # handle parentheses '()'
-                if token_type == token.LPAR:
-                    nested_counter = nested_counter + 1
-                if token_type == token.RPAR:
-                    nested_counter = nested_counter - 1
+                    # handle curly braces '{}'
+                    if token_type == token.LBRACE:
+                        if nested_counter == 0:
+                            mode_stack.append("dict_key")
+                            dict = SettingsDict()
+                            if isinstance(stack[-1], SettingsList):
+                                stack[-1].append(SettingsListEntry)
+                            stack[-1][-1].value = dict
+                            stack.append(dict)
+                            append_comment = False
+                            continue
+                    if token_type == token.RBRACE:
+                        if nested_counter == 0:
+                            if len(token_buffer) > 0:
+                                stack[-1][-1].value = tokens_to_string(token_buffer)
+                                token_buffer = []
+                            # pop 2 times because of key+value on mode_stack
+                            mode_stack.pop()
+                            mode_stack.pop()
+                            stack.pop()
+                            continue
 
-                # handle other tokens
-                # if not already continued, token_value must be part of the value
-                token_buffer.append(t)
+                    # handle square brackets '[]'
+                    if token_type == token.LSQB:
+                        if nested_counter == 0:
+                            mode_stack.append("list")
+                            # detected child list
+                            list = SettingsList()
+                            if isinstance(stack[-1], SettingsList):
+                                stack[-1].append(SettingsListEntry)
+                            stack[-1][-1].value = list
+                            stack.append(list)
+                            append_comment = False
+                            continue
+                    if token_type == token.RSQB:
+                        if nested_counter == 0:
+                            if len(token_buffer) > 0:
+                                list_entry = SettingsListEntry()
+                                list_entry.value = tokens_to_string(token_buffer)
+                                stack[-1].append(list_entry)
+                                token_buffer = []
+                            mode_stack.pop()
+                            stack.pop()
+                            continue
+
+                    # handle parentheses '()'
+                    if token_type == token.LPAR:
+                        nested_counter = nested_counter + 1
+                    if token_type == token.RPAR:
+                        nested_counter = nested_counter - 1
+
+                    # handle other tokens
+                    # if not already continued, token_value must be part of the value
+                    token_buffer.append(t)
 
 
-        print(config)
+            print(config)
 
-        #except:
-        #    printe('failed to parse settings')
+        except:
+            printe('failed to parse settings')
 
 def main():
     src = open(str(sys.argv[1]), "r").read()
