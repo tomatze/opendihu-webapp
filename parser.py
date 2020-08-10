@@ -7,7 +7,6 @@ from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 import token
 from io import BytesIO
 
-#TODO
 class SettingsComment:
     def __init__(self):
         self.comment = None
@@ -328,7 +327,7 @@ class Example:
         for t in tokens:
             token_value = t.string
             token_type = t.exact_type
-            print(token.tok_name[token_type] + token_value)
+            #print(token.tok_name[token_type] + token_value)
             # don't append comments to SettingsDictEntry or SettingsListEntry after newline
             if token_type == token.NL or token_type == token.NEWLINE:
                 append_comment = False
@@ -412,8 +411,6 @@ class Example:
                             list_entry = SettingsListEntry()
                             list_entry.value = tokens_to_string(token_buffer)
                             stack[-1].append(list_entry)
-                            print(len(token_buffer))
-                            print('\n' + stack[-1][-1].value + '\n')
                             token_buffer = []
                         mode_stack.pop()
                         stack.pop()
