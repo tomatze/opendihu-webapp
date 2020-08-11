@@ -16,6 +16,10 @@ class SettingsComment:
         indentation = '  ' * depth
         return indentation + self.comment + '\n'
 
+class SettingsEmptyLine:
+    def repr(self, depth):
+        return '\n'
+
 # this class represents a python-setting with potential subsettings
 class SettingsDictEntry:
     def __init__(self):
@@ -53,8 +57,6 @@ class SettingsListEntry:
         return indentation + value + ',' + comments + '\n'
 
 class SettingsDict(list):
-    def dummy_function(self):
-        pass
     def repr(self, depth):
         indentation = '  ' * depth
         entries = ''
@@ -63,8 +65,6 @@ class SettingsDict(list):
         return '{' + '\n' + entries + indentation + '}'
 
 class SettingsList(list):
-    def dummy_function(self):
-        pass
     def repr(self, depth):
         indentation = '  ' * depth
         entries = ''
@@ -360,13 +360,17 @@ class Example:
 
         token_buffer = []
         append_comment = False
+        token_type_last = None
         for t in tokens:
             token_value = t.string
             token_type = t.exact_type
             #print(token.tok_name[token_type] + token_value)
-            # don't append comments to SettingsDictEntry or SettingsListEntry after newline
             if token_type == token.NL or token_type == token.NEWLINE:
+                # don't append comments to SettingsDictEntry or SettingsListEntry after newline
                 append_comment = False
+                # handle empty lines
+                if token_type_last == token.NL or token_type_last == token.NEWLINE:
+                    stack[-1].append(SettingsEmptyLine())
             # handle comments
             elif token_type == token.COMMENT:
                 if append_comment:
@@ -387,7 +391,6 @@ class Example:
                     stack[-1][-1].value = dict
                     stack.append(dict)
                     append_comment = False
-                    continue
             elif token_type == token.RBRACE:
                 if nested_counter == 0:
                     if len(token_buffer) > 0:
@@ -397,7 +400,6 @@ class Example:
                     mode_stack.pop()
                     mode_stack.pop()
                     stack.pop()
-                    continue
             # handle square brackets '[]'
             elif token_type == token.LSQB:
                 if nested_counter == 0:
@@ -409,7 +411,6 @@ class Example:
                     stack[-1][-1].value = list
                     stack.append(list)
                     append_comment = False
-                    continue
             elif token_type == token.RSQB:
                 if nested_counter == 0:
                     if len(token_buffer) > 0:
@@ -419,7 +420,6 @@ class Example:
                         token_buffer = []
                     mode_stack.pop()
                     stack.pop()
-                    continue
 
             # handle dictionary keys
             elif mode_stack[-1] == "dict_key":
@@ -458,6 +458,7 @@ class Example:
                     if token_type == token.RPAR:
                         nested_counter = nested_counter - 1
 
+            token_type_last = token_type
 
         print(config)
         print(config.repr(0))
