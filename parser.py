@@ -425,7 +425,7 @@ class Example:
                     stack[-1].append(c)
             # handle curly braces '{}'
             elif token_type == token.LBRACE:
-                if mode_stack[-1] == "list_comprehension" or mode_stack[-1] == 'conditional_condition':
+                if mode_stack[-1] == "list_comprehension" or mode_stack[-1] == 'conditional':
                     nested_counter = nested_counter + 1
                 elif nested_counter == 0:
                     mode_stack.append("dict_key")
@@ -439,7 +439,7 @@ class Example:
                     stack.append(dict)
                     append_comment = False
             elif token_type == token.RBRACE:
-                if mode_stack[-1] == "list_comprehension" or mode_stack[-1] == 'conditional_condition':
+                if mode_stack[-1] == "list_comprehension" or mode_stack[-1] == 'conditional':
                     nested_counter = nested_counter - 1
                 elif nested_counter == 0:
                     if len(token_buffer) > 0:
@@ -451,7 +451,7 @@ class Example:
                     stack.pop()
             # handle square brackets '[]'
             elif token_type == token.LSQB:
-                if mode_stack[-1] == "list_comprehension" or mode_stack[-1] == 'conditional_condition':
+                if mode_stack[-1] == "list_comprehension" or mode_stack[-1] == 'conditional':
                     nested_counter = nested_counter + 1
                 elif nested_counter == 0:
                     mode_stack.append("list")
@@ -475,9 +475,8 @@ class Example:
                         mode_stack.pop()
                         mode_stack.pop()
                     else:
-                        # count brackets to the nested counter if we are in list_comprehension mode
                         nested_counter = nested_counter - 1
-                elif mode_stack[-1] == 'conditional_condition':
+                elif mode_stack[-1] == 'conditional':
                     nested_counter = nested_counter - 1
                 elif nested_counter == 0:
                     if len(token_buffer) > 0:
@@ -485,8 +484,6 @@ class Example:
                             list_entry = SettingsListEntry()
                             list_entry.value = tokens_to_string(token_buffer)
                             stack[-1].append(list_entry)
-                        #elif isinstance(stack[-1], SettingsConditional):
-                        #    stack[-1].else_block = tokens_to_string(token_buffer)
                         token_buffer = []
                     mode_stack.pop()
                     stack.pop()
@@ -502,7 +499,7 @@ class Example:
                     mode_stack.append("dict_value")
 
             # handle dictionary values and list entries
-            elif mode_stack[-1] == "dict_value" or mode_stack[-1] == "list" or mode_stack[-1] == "list_comprehension" or mode_stack[-1] == "conditional_condition":
+            elif mode_stack[-1] == "dict_value" or mode_stack[-1] == "list" or mode_stack[-1] == "list_comprehension" or mode_stack[-1] == "conditional":
                 # handle comma ',' (only if we are not in nested braces)
                 if nested_counter == 0 and token_type == token.COMMA:
                     append_comment = True
@@ -518,18 +515,15 @@ class Example:
                             stack[-1].append(list_entry)
                             token_buffer = []
                 elif nested_counter == 0 and token_type == token.NAME and token_value == 'if':
-                    for i in range(len(stack)):
-                        print(str(i) + '\n' + str(stack[i]) + '\n\n')
                     nested_counter = nested_counter + 1
-                    mode_stack.append("conditional_condition")
-                    # get the last entry we added and replace it with a SettingsConditionalList containing the entry
-                    #first_condition_value = stack.pop()
+                    mode_stack.append('conditional')
+                    # get the value of the last entry we added and replace it with a SettingsConditional containing the old value
                     first_condition_value = stack[-1][-1].value
                     stack[-1][-1].value = SettingsConditional()
                     stack[-1][-1].value.if_block = first_condition_value
-                    #stack[-2][-1] = stack[-1]
+
                     stack.append(stack[-1][-1].value)
-                elif mode_stack[-1] == 'conditional_condition' and nested_counter == 1 and token_type == token.NAME and token_value == 'else':
+                elif mode_stack[-1] == 'conditional' and nested_counter == 1 and token_type == token.NAME and token_value == 'else':
                     nested_counter = 0
                     mode_stack.pop()
                     stack[-1].condition = tokens_to_string(token_buffer)
@@ -538,8 +532,8 @@ class Example:
                     # handle list-comprehensions like [ ... for i in range 10]
                     if nested_counter == 0 and token_type == token.NAME and token_value == 'for':
                         nested_counter = nested_counter + 1
-                        mode_stack.append("list_comprehension")
-                    # handle if-elif-else statements
+                        mode_stack.append('list_comprehension')
+
                     # handle other tokens
                     # if not already continued, token_value must be part of the value
                     token_buffer.append(t)
