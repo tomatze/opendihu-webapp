@@ -7,70 +7,88 @@ from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 import token
 from io import BytesIO
 
+# a floating comment within a SettingsDict or SettingsList
 class SettingsComment:
     def __init__(self):
         self.comment = None
-    def __repr__(self):
-        return str(self.comment)
-    def repr(self, depth):
-        indentation = '  ' * depth
-        return indentation + self.comment + '\n'
 
-class SettingsEmptyLine:
-    def repr(self, depth):
-        return '\n'
+# an empty line within a SettingsDict or SettingsList
+# this is used to restore simple formatting
+class SettingsEmptyLine: pass
 
-# this class represents a python-setting with potential subsettings
+# normal entry in a SettingsDict
 class SettingsDictEntry:
     def __init__(self):
         self.key = None
         self.value = None
         self.comments = []
-    def __repr__(self):
-        return str(self.key) + ' : ' + str(self.value)
-    def repr(self, depth):
-        indentation = '  ' * depth
-        comments = ''
-        for comment in self.comments:
-            comments = comments + ' ' + comment
-        if isinstance(self.value, str):
-            value = self.value
-        else:
-            value = self.value.repr(depth)
-        return indentation + self.key + ' : '+ value + ',' + comments + '\n'
 
+# represents a python-settings-dict
+class SettingsDict(list):
+    def __repr__(self):
+        return self.repr(0)
+    def repr(self, depth):
+        indentation = '  '
+        r = ''
+        for i in range(len(self)):
+            entrie = self[i]
+            if isinstance(entrie, SettingsDictEntry):
+                comments = ''
+                for comment in entrie.comments:
+                    comments = comments + ' ' + comment
+                if isinstance(entrie.value, str):
+                    value = entrie.value
+                else:
+                    value = entrie.value.repr(depth + 1)
+                optional_comma = ','
+                if i == len(self) - 1:
+                    optional_comma = ''
+                entrie_r = indentation * (depth + 1) + entrie.key + ' : '+ value + optional_comma + comments
+            elif isinstance(entrie, SettingsComment):
+                entrie_r = indentation * (depth + 1) + entrie.comment
+            elif isinstance(entrie, SettingsEmptyLine):
+                entrie_r = ''
+            r = r + '\n' + entrie_r
+        return '{' + r + '\n' + indentation * depth + '}'
+
+# normal entry for a SettingsList
 class SettingsListEntry:
     def __init__(self):
         self.value = None
         self.comments = []
-    def __repr__(self):
-        return str(self.value)
-    def repr(self, depth):
-        indentation = '  ' * depth
-        comments = ''
-        for comment in self.comments:
-            comments = comments + ' ' + comment
-        if isinstance(self.value, str):
-            value = self.value
-        else:
-            value = self.value.repr(depth)
-        return indentation + value + ',' + comments + '\n'
 
-class SettingsDict(list):
-    def repr(self, depth):
-        indentation = '  ' * depth
-        entries = ''
-        for entrie in self:
-            entries = entries + entrie.repr(depth + 1)
-        return '{' + '\n' + entries + indentation + '}'
-
+# represents a list stored in a SettingsDictEntry.value or a SettingsListEntry.value
 class SettingsList(list):
+    def __init__(self):
+        self.list_comprehension = None
+    def __repr__(self):
+        return self.repr(0)
     def repr(self, depth):
-        indentation = '  ' * depth
-        entries = ''
-        for entrie in self:
-            entries = entries + entrie.repr(depth + 1)
-        return '[' + '\n' + entries + indentation + ']'
+        indentation = '  '
+        r = ''
+        for i in range(len(self)):
+            entrie = self[i]
+            if isinstance(entrie, SettingsListEntry):
+                comments = ''
+                for comment in entrie.comments:
+                    comments = comments + ' ' + comment
+                if isinstance(entrie.value, str):
+                    value = entrie.value
+                else:
+                    value = entrie.value.repr(depth + 1)
+                optional_comma = ','
+                comprehension = ''
+                if i == len(self) - 1:
+                    optional_comma = ''
+                    if self.list_comprehension:
+                        comprehension = ' ' + self.list_comprehension
+                entrie_r = indentation * (depth + 1) + value + comprehension + optional_comma + comments
+            elif isinstance(entrie, SettingsComment):
+                entrie_r = indentation * (depth + 1) + entrie.comment
+            elif isinstance(entrie, SettingsEmptyLine):
+                entrie_r = ''
+            r = r + '\n' + entrie_r
+        return '[' + r + '\n' + indentation * depth + ']'
 
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
@@ -338,6 +356,7 @@ class Example:
         return self.combinations[name]["template_arguments"]
 
 
+    # takes a string of a settings.py and parses its config-dict
     def parse_settings(self, settings):
         #try:
         # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
@@ -412,7 +431,14 @@ class Example:
                     stack.append(list)
                     append_comment = False
             elif token_type == token.RSQB:
-                if nested_counter == 0:
+                if nested_counter == 1 and mode_stack[-1] == "list_comprehension":
+                    stack[-1].list_comprehension = tokens_to_string(token_buffer)
+                    token_buffer = []
+                    nested_counter = 0
+                    mode_stack.pop()
+                    mode_stack.pop()
+                    stack.pop()
+                elif nested_counter == 0:
                     if len(token_buffer) > 0:
                         list_entry = SettingsListEntry()
                         list_entry.value = tokens_to_string(token_buffer)
@@ -432,7 +458,7 @@ class Example:
                     mode_stack.append("dict_value")
 
             # handle dictionary values and list entries
-            elif mode_stack[-1] == "dict_value" or mode_stack[-1] == "list":
+            elif mode_stack[-1] == "dict_value" or mode_stack[-1] == "list" or mode_stack[-1] == "list_comprehension":
                 # handle comma ',' (only if we are not in nested braces)
                 if nested_counter == 0 and token_type == token.COMMA:
                     append_comment = True
@@ -448,6 +474,10 @@ class Example:
                             stack[-1].append(list_entry)
                             token_buffer = []
                 else:
+                    # handle list-comprehensions like [ ... for i in range 10]
+                    if nested_counter == 0 and token_type == token.NAME and token_value == 'for':
+                        nested_counter = nested_counter + 1
+                        mode_stack.append("list_comprehension")
                     # handle other tokens
                     # if not already continued, token_value must be part of the value
                     token_buffer.append(t)
@@ -461,7 +491,6 @@ class Example:
             token_type_last = token_type
 
         print(config)
-        print(config.repr(0))
 
         #except:
         #    printe('failed to parse settings')
@@ -490,6 +519,7 @@ def indent(lines, indentation):
 def tokens_to_string(tokens):
     return untokenize(tokens).splitlines()[-1].strip()
 
+# use printe() instead of print() to print errors to stderr instead of stdout
 def printe(message):
     print('Error: ' + message, file=sys.stderr)
 
