@@ -79,8 +79,11 @@ class SettingsDict(list):
                     stack[-1][-1].comments.append(token_value)
                 else:
                     # add floating comment to the current SettingsDict or SettingsList
-                    c = SettingsComment()
-                    c.comment = token_value
+                    if token_value == '### CHILD ###':
+                        c = SettingsChildPlaceholder()
+                    else:
+                        c = SettingsComment()
+                        c.comment = token_value
                     stack[-1].append(c)
             # handle curly braces '{}'
             elif token_type == token.LBRACE:
@@ -236,17 +239,15 @@ class SettingsDict(list):
             r = r + '\n' + entrie_r
         return '{' + r + '\n' + indentation * depth + '}'
 
+    # replaces the first found SettingsChildPlaceholder with the entries of child_dict
     def replaceChildPlaceholder(self, child_dict):
         for i in range(len(self)):
             dict_entry = self[i]
-            if isinstance(dict_entry, SettingsComment):
-                if dict_entry.comment == '### CHILD ###':
-                    print('found childcomment')
-                    self.pop(i)
-                    while len(child_dict) > 0:
-                        self.insert(i, child_dict.pop())
-                    print('replaced')
-                    return True
+            if isinstance(dict_entry, SettingsChildPlaceholder):
+                self.pop(i)
+                while len(child_dict) > 0:
+                    self.insert(i, child_dict.pop())
+                return True
             elif isinstance(dict_entry, SettingsDictEntry) and isinstance(dict_entry.value, SettingsDict):# or isinstance(dict_entry.value, SettingsList):
                 if dict_entry.value.replaceChildPlaceholder(child_dict):
                     return True

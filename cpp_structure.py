@@ -64,12 +64,12 @@ class Node:
                 return False
         return True
 
+    # creates a SettingsDict with default settings recursively
     def get_default_settings_dict(self):
         relevant_src = get_default_python_settings_for_classname(self.name)
         own_dict = SettingsDict(relevant_src)
         for child in self.childs:
             child_dict = child.get_default_settings_dict()
-            print(child_dict)
             own_dict.replaceChildPlaceholder(child_dict)
         return own_dict
 
@@ -290,7 +290,6 @@ def get_default_python_settings_for_classname(name):
         possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
         return possible_solver_combinations_src.split('"' + name + '" : {')[1].split('\n    }')[0].split('"python_options" : {')[1].split('\n        }')[0]
     except:
-        print(name + ' has no python_options')
         if '::' in name:
             #print(name[:-2].rsplit('::', 1, )[0] + '::')
             if name.split('::')[1] == '':
