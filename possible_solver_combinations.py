@@ -60,38 +60,13 @@
 possible_solver_combinations = {
     "global" : {
         "python_options" : {
-            "scenarioName" : {
-                "description" : "name of the scenario",
-                "type" : [ "string" ],
-                "default" : "test-scenario"
-            },
-            "logFormat" : {
-                "description" : "output-format of logfiles",
-                "type" : [ "csv", "json" ],
-                "default" : "csv"
-            },
-            "solverStructureDiagramFile" : {
-                "description" : "filename of solver structure diagram",
-                "type" : [ "string" ],
-                "default" : "solver_structure.txt"
-            },
-            "mappingsBetweenMeshesLogFile" : {
-                "description" : "logfile for mappings between meshes",
-                "type" : [ "string" ],
-                "default" : "mappings_between_meshes.txt"
-            },
-            "Meshes" : {
-                # TODO
-                "description" : "",
-                "type" : [ "string" ],
-                "default" : ""
-            },
-            "mappingsBetweenMeshes" : {
-                # TODO
-                "description" : "",
-                "type" : [ "string" ],
-                "default" : ""
-            }
+            "scenarioName" : "test-scenario",
+            "logFormat" : "csv", # csv or json
+            "solverStructureDiagramFile" : "solver_structure.txt",
+            "Meshes" : {},
+            "mappingsBetweenMeshesLogFile" : "mappings_between_meshes.txt",
+            "mappingsBetweenMeshes" : {},
+            "Solvers" : {},
             #TODO add meta
         }
     },
@@ -363,6 +338,7 @@ possible_solver_combinations = {
             [ "SpatialDiscretization::FiniteElementMethod" ]
         ],
         "python_options" : {
+            # TODO
             "test" : 1,
             ### CHILD ###
             ### CHILD ###

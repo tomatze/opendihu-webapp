@@ -279,7 +279,11 @@ class CPPTree:
         return self.combinations[name]["template_arguments"]
 
     def get_default_python_settings(self):
-        return self.root.get_default_settings_dict()
+        default_python_settings_global = SettingsDict(get_default_global_python_settings())
+        default_python_settings = self.root.get_default_settings_dict()
+        while len(default_python_settings_global) > 0:
+            default_python_settings.insert(0, default_python_settings_global.pop())
+        return default_python_settings
 
 # helper function to indent a multiline-string by a given indentation
 def indent(lines, indentation):
@@ -296,3 +300,7 @@ def get_default_python_settings_for_classname(name):
                 return
             return get_default_python_settings_for_classname(name[:-2].rsplit('::', 1, )[0] + '::')
         return
+
+def get_default_global_python_settings():
+        possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
+        return possible_solver_combinations_src.split('\n    "global" : {\n        "python_options" : {')[1].split('\n        }\n    },')[0]
