@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 
 import sys
+import inspect
 
 from cpp_structure import CPPTree
-from python_settings import PythonSettings
+from python_settings import PythonSettings, SettingsDict
+import possible_solver_combinations
 
 def main():
     src = open(str(sys.argv[1]), "r").read()
@@ -20,9 +22,10 @@ def main():
     python_settings = PythonSettings(settings)
     print(python_settings.dict)
 
-# use printe() instead of print() to print errors to stderr instead of stdout
-def printe(message):
-    print('Error: ' + message, file=sys.stderr)
+    possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
+    relevant_src = possible_solver_combinations_src.split('"SpatialDiscretization::FiniteElementMethod" : {')[1].split('\n    }')[0].split('"python_options" : {')[1].split('\n        }')[0]
+    dict = SettingsDict(relevant_src)
+    print(dict)
 
 if __name__ == "__main__":
     main()

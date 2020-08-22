@@ -2,6 +2,7 @@ import re
 import traceback
 
 from helpers import printe
+from possible_solver_combinations import possible_solver_combinations
 
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
@@ -73,8 +74,6 @@ class CPPTree:
 
         self.root = None
 
-        # import possible combinations
-        from possible_solver_combinations import possible_solver_combinations
         self.combinations = possible_solver_combinations
 
         # create a list of keys

@@ -40,94 +40,15 @@ class SettingsDictEntry:
 
 # represents a python-settings-dict
 class SettingsDict(list):
-    def __repr__(self):
-        return self.repr(0)
-    def repr(self, depth):
-        if len(self) == 0:
-            return '{}'
-        indentation = '  '
-        r = ''
-        for i in range(len(self)):
-            entrie = self[i]
-            if isinstance(entrie, SettingsDictEntry):
-                comments = ''
-                for comment in entrie.comments:
-                    comments = comments + ' ' + comment
-                if isinstance(entrie.value, str):
-                    value = entrie.value
-                else:
-                    value = entrie.value.repr(depth + 1)
-                optional_comma = ','
-                if i == len(self) - 1:
-                    optional_comma = ''
-                entrie_r = indentation * (depth + 1) + entrie.key + ' : '+ value + optional_comma + comments
-            elif isinstance(entrie, SettingsComment):
-                entrie_r = indentation * (depth + 1) + entrie.comment
-            elif isinstance(entrie, SettingsEmptyLine):
-                entrie_r = ''
-            r = r + '\n' + entrie_r
-        return '{' + r + '\n' + indentation * depth + '}'
+    def __init__(self, settings = None):
+        if settings == None:
+            return
 
-# normal entry for a SettingsList
-class SettingsListEntry:
-    def __init__(self):
-        self.value = None
-        self.comments = []
-
-# represents a list stored in a SettingsDictEntry.value or a SettingsListEntry.value
-class SettingsList(list):
-    def __init__(self):
-        self.list_comprehension = None
-    def __repr__(self):
-        return self.repr(0)
-    def repr(self, depth):
-        if len(self) == 0:
-            return '[]'
-        indentation = '  '
-        r = ''
-        for i in range(len(self)):
-            entrie = self[i]
-            if isinstance(entrie, SettingsListEntry):
-                comments = ''
-                for comment in entrie.comments:
-                    comments = comments + ' ' + comment
-                if isinstance(entrie.value, str):
-                    value = entrie.value
-                else:
-                    value = entrie.value.repr(depth + 1)
-                optional_comma = ','
-                comprehension = ''
-                if i == len(self) - 1:
-                    optional_comma = ''
-                    if self.list_comprehension:
-                        comprehension = ' ' + self.list_comprehension
-                entrie_r = indentation * (depth + 1) + value + comprehension + optional_comma + comments
-            elif isinstance(entrie, SettingsComment):
-                entrie_r = indentation * (depth + 1) + entrie.comment
-            elif isinstance(entrie, SettingsEmptyLine):
-                entrie_r = ''
-            r = r + '\n' + entrie_r
-        return '[' + r + '\n' + indentation * depth + ']'
-
-class PythonSettings():
-    dict = None
-    # takes a string of a settings.py and parses its config-dict
-    def __init__(self, settings):
-        #try:
-        # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
-        split1 = settings.split('config = {\n')
-        self.settings_prefix = split1[0]
-        settings = split1[1]
-        split2 = re.compile(r'(?m)^}').split(settings, 1)
-        settings = split2[0]
-        self.settings_postfix = split2[1]
         # split settings into tokens using tokenize from the stdlib
         tokens = tokenize(BytesIO(settings.encode('utf-8')).readline)
 
-        # iterate over tokens to create SettingsDict
-        self.dict = SettingsDict()
         stack = []
-        stack.append(self.dict)
+        stack.append(self)
         mode_stack = []
         mode_stack.append("dict_key")
         nested_counter = 0
@@ -279,7 +200,92 @@ class PythonSettings():
 
             token_type_last = token_type
 
-        #print(config)
+
+    def __repr__(self):
+        return self.repr(0)
+    def repr(self, depth):
+        if len(self) == 0:
+            return '{}'
+        indentation = '  '
+        r = ''
+        for i in range(len(self)):
+            entrie = self[i]
+            if isinstance(entrie, SettingsDictEntry):
+                comments = ''
+                for comment in entrie.comments:
+                    comments = comments + ' ' + comment
+                if isinstance(entrie.value, str):
+                    value = entrie.value
+                else:
+                    value = entrie.value.repr(depth + 1)
+                optional_comma = ','
+                if i == len(self) - 1:
+                    optional_comma = ''
+                entrie_r = indentation * (depth + 1) + entrie.key + ' : '+ value + optional_comma + comments
+            elif isinstance(entrie, SettingsComment):
+                entrie_r = indentation * (depth + 1) + entrie.comment
+            elif isinstance(entrie, SettingsEmptyLine):
+                entrie_r = ''
+            r = r + '\n' + entrie_r
+        return '{' + r + '\n' + indentation * depth + '}'
+
+# normal entry for a SettingsList
+class SettingsListEntry:
+    def __init__(self):
+        self.value = None
+        self.comments = []
+
+# represents a list stored in a SettingsDictEntry.value or a SettingsListEntry.value
+class SettingsList(list):
+    def __init__(self):
+        self.list_comprehension = None
+    def __repr__(self):
+        return self.repr(0)
+    def repr(self, depth):
+        if len(self) == 0:
+            return '[]'
+        indentation = '  '
+        r = ''
+        for i in range(len(self)):
+            entrie = self[i]
+            if isinstance(entrie, SettingsListEntry):
+                comments = ''
+                for comment in entrie.comments:
+                    comments = comments + ' ' + comment
+                if isinstance(entrie.value, str):
+                    value = entrie.value
+                else:
+                    value = entrie.value.repr(depth + 1)
+                optional_comma = ','
+                comprehension = ''
+                if i == len(self) - 1:
+                    optional_comma = ''
+                    if self.list_comprehension:
+                        comprehension = ' ' + self.list_comprehension
+                entrie_r = indentation * (depth + 1) + value + comprehension + optional_comma + comments
+            elif isinstance(entrie, SettingsComment):
+                entrie_r = indentation * (depth + 1) + entrie.comment
+            elif isinstance(entrie, SettingsEmptyLine):
+                entrie_r = ''
+            r = r + '\n' + entrie_r
+        return '[' + r + '\n' + indentation * depth + ']'
+
+class PythonSettings():
+    dict = None
+    # takes a string of a settings.py and parses its config-dict
+    def __init__(self, settings):
+        #try:
+        # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
+        split1 = settings.split('config = {\n')
+        self.settings_prefix = split1[0]
+        settings = split1[1]
+        split2 = re.compile(r'(?m)^}').split(settings, 1)
+        settings = split2[0]
+        self.settings_postfix = split2[1]
+
+        # iterate over tokens to create SettingsDict
+        self.dict = SettingsDict(settings)
+                #print(config)
 
         #except:
         #    printe('failed to parse settings')

@@ -407,10 +407,8 @@ possible_solver_combinations = {
             [ "Equation::" ]
         ],
         "python_options" : {
-            "prefactor" : {
-                "description" : "prefactor",
-                "type" : [ "double" ],
-                "default" : "1.0"
+            "FiniteElementMethod" : {
+                "prefactor" : 1.0 # this is the prefactor
             }
         }
     },
