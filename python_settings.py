@@ -9,6 +9,11 @@ class SettingsComment:
     def __init__(self):
         self.comment = None
 
+# a placeholder in a SettingsDict, which can be replaced with some SettingsDictEntrys
+# this gets created when parsing python_options from possible_solver_combinations
+# it is marked with the floating comment '### CHILD ###'
+class SettingsChildPlaceholder: pass
+
 # an empty line within a SettingsDict or SettingsList
 # this is used to restore simple formatting
 class SettingsEmptyLine: pass
@@ -103,6 +108,7 @@ class SettingsDict(list):
                     mode_stack.pop()
                     mode_stack.pop()
                     stack.pop()
+                    append_comment = True
             # handle square brackets '[]'
             elif token_type == token.LSQB:
                 if mode_stack[-1] == "list_comprehension" or mode_stack[-1] == 'conditional':
@@ -141,6 +147,7 @@ class SettingsDict(list):
                         token_buffer = []
                     mode_stack.pop()
                     stack.pop()
+                    append_comment = True
 
             # handle dictionary keys
             elif mode_stack[-1] == "dict_key":
@@ -229,6 +236,21 @@ class SettingsDict(list):
             r = r + '\n' + entrie_r
         return '{' + r + '\n' + indentation * depth + '}'
 
+    def replaceChildPlaceholder(self, child_dict):
+        for i in range(len(self)):
+            dict_entry = self[i]
+            if isinstance(dict_entry, SettingsComment):
+                if dict_entry.comment == '### CHILD ###':
+                    print('found childcomment')
+                    self.pop(i)
+                    while len(child_dict) > 0:
+                        self.insert(i, child_dict.pop())
+                    print('replaced')
+                    return True
+            elif isinstance(dict_entry, SettingsDictEntry) and isinstance(dict_entry.value, SettingsDict):# or isinstance(dict_entry.value, SettingsList):
+                if dict_entry.value.replaceChildPlaceholder(child_dict):
+                    return True
+
 # normal entry for a SettingsList
 class SettingsListEntry:
     def __init__(self):
@@ -293,4 +315,3 @@ class PythonSettings():
 # helper function wrapping pythons untokenize-function to improve readability of the returned string
 def tokens_to_string(tokens):
     return untokenize(tokens).splitlines()[-1].strip()
-

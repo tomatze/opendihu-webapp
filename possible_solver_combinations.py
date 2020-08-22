@@ -172,7 +172,13 @@ possible_solver_combinations = {
         "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "timeSteppingScheme" ]
-        ]
+        ],
+        "python_options" : {
+            "MultipleInstances": {
+                "nInstances": 1,
+                "instances": []
+            }
+        }
     },
     "Control::Coupling" : {
         "runnable" : True,
@@ -211,8 +217,14 @@ possible_solver_combinations = {
         "python_options" : {
             #TODO
             "StrangSplitting" : {
-                "timeSteppWidth"
-            }
+                "timeSteppWidth" : 1e-1,
+                "Term1" : {
+                    ### CHILD ###
+                },
+                "Term2" : {
+                    ### CHILD ###
+                }
+            },
         }
     },
     "OperatorSplitting::Godunov" : {
@@ -349,7 +361,13 @@ possible_solver_combinations = {
             [ "SpatialDiscretization::FiniteElementMethod" ],
             [ "SpatialDiscretization::FiniteElementMethod" ],
             [ "SpatialDiscretization::FiniteElementMethod" ]
-        ]
+        ],
+        "python_options" : {
+            "test" : 1,
+            ### CHILD ###
+            ### CHILD ###
+            ### CHILD ###
+        }
     },
     "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio" : {
         "runnable" : True,
@@ -408,7 +426,10 @@ possible_solver_combinations = {
         ],
         "python_options" : {
             "FiniteElementMethod" : {
-                "prefactor" : 1.0 # this is the prefactor
+                "prefactor" : 1.0, # this is the prefactor
+                "rightHandSide" : {},
+                "inputMeshIsGlobal" : True,
+                ### CHILDS ###
             }
         }
     },

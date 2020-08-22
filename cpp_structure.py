@@ -1,8 +1,10 @@
 import re
 import traceback
+import inspect
 
 from helpers import printe
-from possible_solver_combinations import possible_solver_combinations
+import possible_solver_combinations
+from python_settings import SettingsDict, SettingsList, SettingsComment
 
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
@@ -62,6 +64,15 @@ class Node:
                 return False
         return True
 
+    def get_default_settings_dict(self):
+        relevant_src = get_default_python_settings_for_classname(self.name)
+        own_dict = SettingsDict(relevant_src)
+        for child in self.childs:
+            child_dict = child.get_default_settings_dict()
+            print(child_dict)
+            own_dict.replaceChildPlaceholder(child_dict)
+        return own_dict
+
 
 # this class holds a tree of Node objects
 # the tree represents the structure of a example.cpp
@@ -74,7 +85,7 @@ class CPPTree:
 
         self.root = None
 
-        self.combinations = possible_solver_combinations
+        self.combinations = possible_solver_combinations.possible_solver_combinations
 
         # create a list of keys
         self.keys = list(self.combinations.keys())
@@ -267,7 +278,22 @@ class CPPTree:
     def get_possible_childs(self, name):
         return self.combinations[name]["template_arguments"]
 
+    def get_default_python_settings(self):
+        return self.root.get_default_settings_dict()
+
 # helper function to indent a multiline-string by a given indentation
 def indent(lines, indentation):
     return indentation + lines.replace('\n', '\n' + indentation)
 
+def get_default_python_settings_for_classname(name):
+    try:
+        possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
+        return possible_solver_combinations_src.split('"' + name + '" : {')[1].split('\n    }')[0].split('"python_options" : {')[1].split('\n        }')[0]
+    except:
+        print(name + ' has no python_options')
+        if '::' in name:
+            #print(name[:-2].rsplit('::', 1, )[0] + '::')
+            if name.split('::')[1] == '':
+                return
+            return get_default_python_settings_for_classname(name[:-2].rsplit('::', 1, )[0] + '::')
+        return

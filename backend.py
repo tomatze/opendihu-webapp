@@ -1,10 +1,9 @@
 #!/usr/bin/python3
 
 import sys
-import inspect
 
 from cpp_structure import CPPTree
-from python_settings import PythonSettings, SettingsDict
+from python_settings import PythonSettings
 import possible_solver_combinations
 
 def main():
@@ -18,14 +17,12 @@ def main():
     print(cpp_tree.create_src())
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
-    settings = open(str(sys.argv[2]), "r").read()
-    python_settings = PythonSettings(settings)
-    print(python_settings.dict)
+    print(cpp_tree.get_default_python_settings())
 
-    possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
-    relevant_src = possible_solver_combinations_src.split('"SpatialDiscretization::FiniteElementMethod" : {')[1].split('\n    }')[0].split('"python_options" : {')[1].split('\n        }')[0]
-    dict = SettingsDict(relevant_src)
-    print(dict)
+    #settings = open(str(sys.argv[2]), "r").read()
+    #python_settings = PythonSettings(settings)
+    #print(python_settings.dict)
+
 
 if __name__ == "__main__":
     main()
