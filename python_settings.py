@@ -37,6 +37,7 @@ class SettingsConditional():
             value2 = self.else_block.repr(depth + 1)
         return value1 + ' if ' + self.condition + ' else ' + value2
 
+
 # normal entry in a SettingsDict
 class SettingsDictEntry:
     def __init__(self):
@@ -46,6 +47,7 @@ class SettingsDictEntry:
 
 # represents a python-settings-dict
 class SettingsDict(list):
+    # init an empty SettingsDict or parse a settings-string to a SettingsDict
     def __init__(self, settings = None):
         if settings == None:
             return
@@ -253,6 +255,7 @@ class SettingsDict(list):
                 if dict_entry.value.replaceChildPlaceholder(child_dict):
                     return True
 
+
 # normal entry for a SettingsList
 class SettingsListEntry:
     def __init__(self):
@@ -294,10 +297,11 @@ class SettingsList(list):
             r = r + '\n' + entrie_r
         return '[' + r + '\n' + indentation * depth + ']'
 
-# this holds a complete settings.py by parsing its config and storing the rest of the file in prefix and postfix
+
+# this holds a complete settings.py by parsing its config-dict and storing the rest of the file in prefix and postfix
 class PythonSettings():
     prefix = None
-    dict = None
+    config_dict = None
     postfix = None
     # takes a string of a settings.py and parses it
     def __init__(self, settings):
@@ -311,12 +315,13 @@ class PythonSettings():
             self.postfix = split2[1]
 
             # iterate over tokens to create SettingsDict
-            self.dict = SettingsDict(settings)
+            self.config_dict = SettingsDict(settings)
         except:
             printe('failed to parse python-settings')
 
     def __repr__(self):
-        return self.prefix + 'config = ' + str(self.dict) + self.postfix
+        return self.prefix + 'config = ' + str(self.config_dict) + self.postfix
+
 
 # helper function wrapping pythons untokenize-function to improve readability of the returned string
 def tokens_to_string(tokens):
