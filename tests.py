@@ -173,7 +173,7 @@ class TestParser(unittest.TestCase):
             example1.parse_cpp_src(src1)
             src2 = str(example1)
             example2.parse_cpp_src(src2)
-            self.assertEqual(example1.root.compare(example2.root), True, msg=path)
+            self.assertEqual(example1.root.childs[0].compare(example2.root.childs[0]), True, msg=path)
 
 if __name__ == '__main__':
     unittest.main()

@@ -9,19 +9,20 @@ import possible_solver_combinations
 def main():
     src = open(str(sys.argv[1]), "r").read()
     cpp_tree = CPPTree()
-    cpp_tree.parse_src(src)
+    cpp_tree.parse_cpp_src(src)
     #print(example.root)
     #print(example.combinations)
-    print(cpp_tree.validate_src())
+    print(cpp_tree.validate_cpp_src())
     print('\n')
     print(cpp_tree)
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
-    print(cpp_tree.get_default_python_settings())
-
     settings = open(str(sys.argv[2]), "r").read()
-    python_settings = PythonSettings(settings)
-    print(python_settings)
+    cpp_tree.parse_python_settings(settings)
+    #print(cpp_tree.get_python_settings_dict())
+
+    #python_settings = PythonSettings(settings)
+    #print(python_settings)
 
 
 if __name__ == "__main__":

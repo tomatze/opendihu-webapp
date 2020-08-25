@@ -4,7 +4,7 @@ import inspect
 
 from helpers import printe, indent
 import possible_solver_combinations
-from python_settings import SettingsDict, SettingsList, SettingsComment
+from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder
 
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
@@ -14,31 +14,84 @@ class Node:
         self.can_have_childs = False
         self.childs = []
 
-        self.settings_dict = None
+        self.settings_dict_default = None
 
-    # sets self.settings_dict to default if dict=None or to dict
-    def set_python_settings_dict(self, dict=None):
-        if dict:
-            self.settings_dict = dict
-        else:
+    # sets self.settings_dict_default to the values gotten from possible_solver_combinations
+    # this is not in __init__(), because self.name (used here) gets defined later
+    def get_default_python_settings_dict(self):
+        if not self.settings_dict_default:
             relevant_python_src = get_default_python_settings_src_for_classname(self.name)
-            self.settings_dict = SettingsDict(relevant_python_src)
+            self.settings_dict_default = SettingsDict(relevant_python_src)
+        return self.settings_dict_default
 
-    # returns self.settings_dict with SettingsChildPlaceholders replaced with child dicts
-    def get_python_settings_dict(self):
+    ## returns self.settings_dict with SettingsChildPlaceholders replaced with child dicts
+    def get_python_settings_dict_recursive(self):
+        # copy self.settings_dict so we don't replace the SettingsChildPlaceholders in it
         own_dict = self.settings_dict
         for child in self.childs:
             # for every child replace the ### CHILD ### placeholder with the childs dict
-            own_dict.replaceChildPlaceholder(child.settings_dict)
+            own_dict.replaceChildPlaceholder(child.get_python_settings_dict_recursive())
+        return own_dict
+
+    # parse a settings_dict recursively
+    # returning the rest, it could not match
+    def parse_python_settings(self, settings_dict):
+        self.get_default_python_settings_dict()
+        self.settings_dict = SettingsDict()
+        child_settings_dict = SettingsDict()
+        while len(settings_dict) > 0:
+            # don't check comments etc
+            if isinstance(settings_dict[0], SettingsComment):
+                # all comments are just added to the settings_dict
+                self.settings_dict.append(settings_dict.remove(0))
+            elif isinstance(settings_dict[0], SettingsDictEntry):
+                # SettingsDictEntrys are compared to the ones in self.settings_dict_default
+                found_equal_entry = False
+                for j in range(len(self.settings_dict_default)):
+                    if isinstance(self.settings_dict_default[j], SettingsDictEntry) and settings_dict[0].key == self.settings_dict_default[j].key:
+                        found_equal_entry = True
+                        # if we found an equal one in defaults, append it
+                        self.settings_dict.append(settings_dict.pop(0))
+                        break
+                if not found_equal_entry:
+                    # if we did not find an equal one in defaults, give this entry to childs
+                    child_settings_dict.append(settings_dict.pop(0))
+        # if we have childs, try to give them the rest of our entries
+        for child in self.childs:
+            child_settings_dict_len = len(child_settings_dict)
+            child_settings_dict = child.parse_python_settings(child_settings_dict)
+            if child_settings_dict_len != len(child_settings_dict):
+                self.settings_dict.append(SettingsChildPlaceholder())
+        # the entries not used by our childs get returned and may be used by siblings
+        print(self.settings_dict)
+        print()
+        return child_settings_dict
+
+    # check if self.settings_dict is structural equal to self.settings_dict_default
+    # also do this for childs
+    #def validate_python_settings(self):
+    #    # for each entry check if there is an equal one in the other settings_dict
+    #    for i in range(len(self.settings_dict)):
+    #        # don't check comments etc
+    #        if isinstance(self.settings_dict[i], SettingsDictEntry):
+    #            found_equal_entry = False
+    #            for j in range(len(self.settings_dict_default)):
+    #                if self.settings_dict[i].compare_structure(self.settings_dict_default[j]):
+    #                    found_equal_entry = True
+    #                    break
+    #            if not found_equal_entry:
+    #                return False
+    #    return True
+
 
     # this function converts the tree under this Node to a pretty string
     # you can print the string to visualize the tree
     # this is also used to created cpp-source-code from a tree
     def __repr__(self):
-        root_comment = ''
+        comment = ''
         if self.comment != '':
-            root_comment = '//' + self.comment + '\n'
-        return root_comment + self.repr_recursive(0)
+            comment = '//' + self.comment + '\n'
+        return comment + self.repr_recursive(0)
     def repr_recursive(self, depth):
         indentation = '  ' * depth
         indentation_child = '  ' * (depth + 1)
@@ -81,15 +134,15 @@ class Node:
                 return False
         return True
 
-    # creates a SettingsDict with default settings recursively
-    def get_default_settings_dict(self):
-        relevant_src = get_default_python_settings_src_for_classname(self.name)
-        own_dict = SettingsDict(relevant_src)
-        for child in self.childs:
-            # for every child replace the ### CHILD ### placeholder with the childs dict
-            child_dict = child.get_default_settings_dict()
-            own_dict.replaceChildPlaceholder(child_dict)
-        return own_dict
+    ## creates a SettingsDict with default settings recursively
+    #def get_default_settings_dict(self):
+    #    relevant_src = get_default_python_settings_src_for_classname(self.name)
+    #    own_dict = SettingsDict(relevant_src)
+    #    for child in self.childs:
+    #        # for every child replace the ### CHILD ### placeholder with the childs dict
+    #        child_dict = child.get_default_settings_dict()
+    #        own_dict.replaceChildPlaceholder(child_dict)
+    #    return own_dict
 
 
 # this class holds a tree of Node objects
@@ -101,7 +154,10 @@ class CPPTree:
         self.cpp_template = file_cpp_template.read()
         file_cpp_template.close()
 
-        self.root = None
+        #self.root = None
+
+        self.root = Node()
+        self.root.name = 'GLOBAL'
 
         self.combinations = possible_solver_combinations.possible_solver_combinations
 
@@ -164,7 +220,7 @@ class CPPTree:
 
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
-    def parse_src(self, problem):
+    def parse_cpp_src(self, problem):
         try:
             # remove single-line-comments from problem
             #problem = re.sub(r'(?m)^(.*)//.*\n?', r'\1\n', problem)
@@ -241,7 +297,9 @@ class CPPTree:
                     else:
                         stack[-1].name = stack[-1].name + char
 
-            self.root = stack[0].childs[0]
+            child = stack[0].childs[0]
+            self.root.childs.append(child)
+            #self.root = stack[0].childs[0]
         except:
             printe('failed to parse src')
             #traceback.print_exc()
@@ -249,22 +307,22 @@ class CPPTree:
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
     def __repr__(self):
         index = self.cpp_template.find(' problem(settings)')
-        return self.cpp_template[:index] + indent(str(self.root), '  ') + self.cpp_template[index:]
+        return self.cpp_template[:index] + indent(str(self.root.childs[0]), '  ') + self.cpp_template[index:]
 
     # this checks if the tree is a valid combination of templates
-    def validate_src(self):
-        # not valid, if the root is not a runnable
+    def validate_cpp_src(self):
+        # not valid, if the root.childs[0] is not a runnable
         try:
-            if self.root.name not in self.runnables:
-                printe(self.root.name + ' does not exist or is not runnable')
+            if self.root.childs[0].name not in self.runnables:
+                printe(self.root.childs[0].name + ' does not exist or is not runnable')
                 return False
-            return self.validate_src_recursive(self.root)
+            return self.validate_cpp_src_recursive(self.root.childs[0])
         except:
             # return false if self.root.name is None
             return False
 
     # helper function to make validate_src() recursive
-    def validate_src_recursive(self, node):
+    def validate_cpp_src_recursive(self, node):
         try:
             wanted_childs = self.combinations[node.name].get("template_arguments", [])
             argument_count_max = len(wanted_childs)
@@ -288,7 +346,7 @@ class CPPTree:
             elif node.childs[i].name not in wanted_childs[i]:
                 printe(node.childs[i].name + ' is not in the list of possible template_arguments:\n' + str(wanted_childs[i]))
                 return False
-            if self.validate_src_recursive(node.childs[i]) == False:
+            if self.validate_cpp_src_recursive(node.childs[i]) == False:
                 return False
         return True
 
@@ -296,12 +354,17 @@ class CPPTree:
     def get_possible_childs(self, name):
         return self.combinations[name]["template_arguments"]
 
-    def get_default_python_settings(self):
-        default_python_settings_global = SettingsDict(get_default_python_settings_src_global())
-        default_python_settings = self.root.get_default_settings_dict()
-        while len(default_python_settings_global) > 0:
-            default_python_settings.insert(0, default_python_settings_global.pop())
-        return default_python_settings
+    ## after parsing the cpp_src, we can parse the python settings and map them to the nodes
+    def parse_python_settings(self, settings):
+        # save PythonSettings so we also have the prefix and postfix
+        self.python_settings = PythonSettings(settings)
+        self.root.parse_python_settings(self.python_settings.config_dict)
+
+    def get_python_settings_dict(self):
+        config_dict = self.root.get_python_settings_dict_recursive()
+        return config_dict
+        #self.python_settings.config_dict = config_dict
+
 
 # returns the python-src of the python_options for a given classname from possible_solver_combinations
 def get_default_python_settings_src_for_classname(name):
@@ -318,6 +381,6 @@ def get_default_python_settings_src_for_classname(name):
         return
 
 # returns the python-src of the global python_options from possible_solver_combinations
-def get_default_python_settings_src_global():
-        possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
-        return possible_solver_combinations_src.split('\n    "global" : {\n        "python_options" : {')[1].split('\n        }\n    },')[0]
+#def get_default_python_settings_src_global():
+#        possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
+#        return possible_solver_combinations_src.split('\n    "global" : {\n        "python_options" : {')[1].split('\n        }\n    },')[0]

@@ -58,16 +58,17 @@
 # Quadrature::
 # Equation::
 possible_solver_combinations = {
-    "global" : {
+    "GLOBAL" : {
         "python_options" : {
             "scenarioName" : "test-scenario",
             "logFormat" : "csv", # csv or json
             "solverStructureDiagramFile" : "solver_structure.txt",
             "Meshes" : {},
             "mappingsBetweenMeshesLogFile" : "mappings_between_meshes.txt",
-            "mappingsBetweenMeshes" : {},
+            "MappingsBetweenMeshes" : {},
             "Solvers" : {},
             #TODO add meta
+            "meta" : {}
         }
     },
 

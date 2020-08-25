@@ -13,7 +13,10 @@ class SettingsComment:
 # a placeholder in a SettingsDict, which can be replaced with some SettingsDictEntrys
 # this gets created when parsing python_options from possible_solver_combinations
 # it is marked with the floating comment '### CHILD ###'
-class SettingsChildPlaceholder: pass
+class SettingsChildPlaceholder(SettingsComment):
+    def __init__(self):
+        super().__init__()
+        self.comment = '### CHILD ###'
 
 # an empty line within a SettingsDict or SettingsList
 # this is used to restore simple formatting
@@ -255,20 +258,6 @@ class SettingsDict(list):
                 if dict_entry.value.replaceChildPlaceholder(child_dict):
                     return True
 
-    # TODO not finished
-    def compare_structure(self, settings_dict):
-        # for each entry check if there is an equal one in the other settings_dict
-        for i in range(len(self)):
-            # don't check comments etc
-            if isinstance(self[i], SettingsDictEntry):
-                found_equal_entry = False
-                for j in range(len(settings_dict)):
-                    if self[i].compare_structure(settings_dict[j]):
-                        found_equal_entry = True
-                        break
-                if not found_equal_entry:
-                    return False
-        return True
 
 
 
