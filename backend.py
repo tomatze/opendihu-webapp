@@ -14,7 +14,7 @@ def main():
     #print(example.combinations)
     print(cpp_tree.validate_src())
     print('\n')
-    print(cpp_tree.create_src())
+    print(cpp_tree)
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
     print(cpp_tree.get_default_python_settings())

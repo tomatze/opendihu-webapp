@@ -14,6 +14,16 @@ class Node:
         self.can_have_childs = False
         self.childs = []
 
+        self.settings_dict = None
+
+        relevant_src = get_default_python_settings_src_for_classname(self.name)
+        own_dict = SettingsDict(relevant_src)
+        for child in self.childs:
+            # for every child replace the ### CHILD ### placeholder with the childs dict
+            child_dict = child.get_default_settings_dict()
+            own_dict.replaceChildPlaceholder(child_dict)
+        #return own_dict
+
     # this function converts the tree under this Node to a pretty string
     # you can print the string to visualize the tree
     # this is also used to created cpp-source-code from a tree
@@ -230,7 +240,7 @@ class CPPTree:
             #traceback.print_exc()
 
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
-    def create_src(self):
+    def __repr__(self):
         index = self.cpp_template.find(' problem(settings)')
         return self.cpp_template[:index] + indent(str(self.root), '  ') + self.cpp_template[index:]
 
