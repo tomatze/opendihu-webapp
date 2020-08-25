@@ -1,6 +1,7 @@
 import re
 
 from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
+from helpers import printe
 import token
 from io import BytesIO
 
@@ -293,25 +294,29 @@ class SettingsList(list):
             r = r + '\n' + entrie_r
         return '[' + r + '\n' + indentation * depth + ']'
 
+# this holds a complete settings.py by parsing its config and storing the rest of the file in prefix and postfix
 class PythonSettings():
+    prefix = None
     dict = None
-    # takes a string of a settings.py and parses its config-dict
+    postfix = None
+    # takes a string of a settings.py and parses it
     def __init__(self, settings):
-        #try:
-        # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
-        split1 = settings.split('config = {\n')
-        self.settings_prefix = split1[0]
-        settings = split1[1]
-        split2 = re.compile(r'(?m)^}').split(settings, 1)
-        settings = split2[0]
-        self.settings_postfix = split2[1]
+        try:
+            # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
+            split1 = settings.split('config = {\n')
+            self.prefix = split1[0]
+            settings = split1[1]
+            split2 = re.compile(r'(?m)^}').split(settings, 1)
+            settings = split2[0]
+            self.postfix = split2[1]
 
-        # iterate over tokens to create SettingsDict
-        self.dict = SettingsDict(settings)
-                #print(config)
+            # iterate over tokens to create SettingsDict
+            self.dict = SettingsDict(settings)
+        except:
+            printe('failed to parse python-settings')
 
-        #except:
-        #    printe('failed to parse settings')
+    def __repr__(self):
+        return self.prefix + 'config = ' + str(self.dict) + self.postfix
 
 # helper function wrapping pythons untokenize-function to improve readability of the returned string
 def tokens_to_string(tokens):

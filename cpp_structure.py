@@ -2,7 +2,7 @@ import re
 import traceback
 import inspect
 
-from helpers import printe
+from helpers import printe, indent
 import possible_solver_combinations
 from python_settings import SettingsDict, SettingsList, SettingsComment
 
@@ -66,9 +66,10 @@ class Node:
 
     # creates a SettingsDict with default settings recursively
     def get_default_settings_dict(self):
-        relevant_src = get_default_python_settings_for_classname(self.name)
+        relevant_src = get_default_python_settings_src_for_classname(self.name)
         own_dict = SettingsDict(relevant_src)
         for child in self.childs:
+            # for every child replace the ### CHILD ### placeholder with the childs dict
             child_dict = child.get_default_settings_dict()
             own_dict.replaceChildPlaceholder(child_dict)
         return own_dict
@@ -279,18 +280,16 @@ class CPPTree:
         return self.combinations[name]["template_arguments"]
 
     def get_default_python_settings(self):
-        default_python_settings_global = SettingsDict(get_default_global_python_settings())
+        default_python_settings_global = SettingsDict(get_default_python_settings_src_global())
         default_python_settings = self.root.get_default_settings_dict()
         while len(default_python_settings_global) > 0:
             default_python_settings.insert(0, default_python_settings_global.pop())
         return default_python_settings
 
-# helper function to indent a multiline-string by a given indentation
-def indent(lines, indentation):
-    return indentation + lines.replace('\n', '\n' + indentation)
-
-def get_default_python_settings_for_classname(name):
+# returns the python-src of the python_options for a given classname from possible_solver_combinations
+def get_default_python_settings_src_for_classname(name):
     try:
+        # TODO save possible_solver_combinations_src in a global variable, so its only loaded once and not every time this function is called
         possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
         return possible_solver_combinations_src.split('"' + name + '" : {')[1].split('\n    }')[0].split('"python_options" : {')[1].split('\n        }')[0]
     except:
@@ -298,9 +297,10 @@ def get_default_python_settings_for_classname(name):
             #print(name[:-2].rsplit('::', 1, )[0] + '::')
             if name.split('::')[1] == '':
                 return
-            return get_default_python_settings_for_classname(name[:-2].rsplit('::', 1, )[0] + '::')
+            return get_default_python_settings_src_for_classname(name[:-2].rsplit('::', 1, )[0] + '::')
         return
 
-def get_default_global_python_settings():
+# returns the python-src of the global python_options from possible_solver_combinations
+def get_default_python_settings_src_global():
         possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
         return possible_solver_combinations_src.split('\n    "global" : {\n        "python_options" : {')[1].split('\n        }\n    },')[0]

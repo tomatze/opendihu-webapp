@@ -19,9 +19,9 @@ def main():
 
     print(cpp_tree.get_default_python_settings())
 
-    #settings = open(str(sys.argv[2]), "r").read()
-    #python_settings = PythonSettings(settings)
-    #print(python_settings.dict)
+    settings = open(str(sys.argv[2]), "r").read()
+    python_settings = PythonSettings(settings)
+    print(python_settings)
 
 
 if __name__ == "__main__":
