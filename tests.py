@@ -2,7 +2,7 @@
 
 import unittest
 
-import parser
+import cpp_structure
 
 class TestParser(unittest.TestCase):
 
@@ -152,27 +152,27 @@ class TestParser(unittest.TestCase):
 
     # this test parses all cpp examples and validates them
     def test_parse_and_validate_examples(self):
-        example = parser.Example()
+        example = cpp_structure.CPPTree()
         for path in self.example_paths:
             file = open(path, "r")
             src = file.read()
             file.close()
-            example.parse_src(src)
-            self.assertEqual(example.validate_src(), True, msg=path)
+            example.parse_cpp_src(src)
+            self.assertEqual(example.validate_cpp_src(), True, msg=path)
 
     # this test parses all examples (src1) and creates their src (src2)
     # it then parses src2 and compares the trees of both examples
     # if this fails, there is probably something wrong in Node.create_src()
     def test_create_src(self):
-        example1 = parser.Example()
-        example2 = parser.Example()
+        example1 = cpp_structure.CPPTree()
+        example2 = cpp_structure.CPPTree()
         for path in self.example_paths:
             file = open(path, "r")
             src1 = file.read()
             file.close()
-            example1.parse_src(src1)
-            src2 = example1.create_src()
-            example2.parse_src(src2)
+            example1.parse_cpp_src(src1)
+            src2 = str(example1)
+            example2.parse_cpp_src(src2)
             self.assertEqual(example1.root.compare(example2.root), True, msg=path)
 
 if __name__ == '__main__':
