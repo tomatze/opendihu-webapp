@@ -28,60 +28,55 @@ class Node:
     def get_python_settings_dict_recursive(self):
         # copy self.settings_dict so we don't replace the SettingsChildPlaceholders in it
         own_dict = self.settings_dict
-        for child in self.childs:
-            # for every child replace the ### CHILD ### placeholder with the childs dict
-            own_dict.replaceChildPlaceholder(child.get_python_settings_dict_recursive())
-        return own_dict
+        try:
+            for child in self.childs:
+                # for every child replace the ### CHILD ### placeholder with the childs dict
+                own_dict.replaceChildPlaceholder(child.get_python_settings_dict_recursive())
+        except:
+            printe('falied to replace SettingsChildPlaceholder')
+        finally:
+            return own_dict
 
     # parse a settings_dict recursively
     # returning the rest, it could not match
     def parse_python_settings(self, settings_dict):
-        self.get_default_python_settings_dict()
+        settings_dict_default = self.get_default_python_settings_dict()
         self.settings_dict = SettingsDict()
-        child_settings_dict = SettingsDict()
-        while len(settings_dict) > 0:
-            # don't check comments etc
-            if isinstance(settings_dict[0], SettingsComment):
-                # all comments are just added to the settings_dict
-                self.settings_dict.append(settings_dict.remove(0))
-            elif isinstance(settings_dict[0], SettingsDictEntry):
-                # SettingsDictEntrys are compared to the ones in self.settings_dict_default
+        #child_settings_dict = SettingsDict()
+        # loop through all options in defaults
+        while len(settings_dict_default) > 0:
+            if isinstance(settings_dict_default[0], SettingsDictEntry):
                 found_equal_entry = False
-                for j in range(len(self.settings_dict_default)):
-                    if isinstance(self.settings_dict_default[j], SettingsDictEntry) and settings_dict[0].key == self.settings_dict_default[j].key:
+                for j in range(len(settings_dict)):
+                    #if isinstance(settings_dict[j], SettingsComment):
+                    #    # all comments are just added to the settings_dict
+                    #    self.settings_dict.append(settings_dict.pop(j))
+                    #    break
+                    if isinstance(settings_dict[j], SettingsDictEntry) and settings_dict_default[0].key == settings_dict[j].key:
                         found_equal_entry = True
                         # if we found an equal one in defaults, append it
-                        self.settings_dict.append(settings_dict.pop(0))
+                        self.settings_dict.append(settings_dict.pop(j))
+                        #TODO parse value of settings_dict.pop(j) instead of just appending it with the whole value
                         break
                 if not found_equal_entry:
-                    # if we did not find an equal one in defaults, give this entry to childs
-                    child_settings_dict.append(settings_dict.pop(0))
-        # if we have childs, try to give them the rest of our entries
-        for child in self.childs:
-            child_settings_dict_len = len(child_settings_dict)
-            child_settings_dict = child.parse_python_settings(child_settings_dict)
-            if child_settings_dict_len != len(child_settings_dict):
+                    #TODO uncomment this (just commented for better readability)
+                    #self.settings_dict.append(settings_dict_default[0])
+                    #printe('adding default entry, because we could not find one')
+                    pass
+                    #TODO childs
+            elif isinstance(settings_dict_default[0], SettingsChildPlaceholder):
                 self.settings_dict.append(SettingsChildPlaceholder())
-        # the entries not used by our childs get returned and may be used by siblings
-        print(self.settings_dict)
-        print()
-        return child_settings_dict
+            settings_dict_default.pop(0)
 
-    # check if self.settings_dict is structural equal to self.settings_dict_default
-    # also do this for childs
-    #def validate_python_settings(self):
-    #    # for each entry check if there is an equal one in the other settings_dict
-    #    for i in range(len(self.settings_dict)):
-    #        # don't check comments etc
-    #        if isinstance(self.settings_dict[i], SettingsDictEntry):
-    #            found_equal_entry = False
-    #            for j in range(len(self.settings_dict_default)):
-    #                if self.settings_dict[i].compare_structure(self.settings_dict_default[j]):
-    #                    found_equal_entry = True
-    #                    break
-    #            if not found_equal_entry:
-    #                return False
-    #    return True
+        #print(settings_dict)
+        for child in self.childs:
+            settings_dict = child.parse_python_settings(settings_dict)
+        #print('remaining entries:\n' + str(settings_dict))
+
+        #print(self.settings_dict)
+        #print()
+        # the entries not used by us or our childs get returned and may get used by siblings
+        return settings_dict
 
 
     # this function converts the tree under this Node to a pretty string
@@ -358,7 +353,8 @@ class CPPTree:
     def parse_python_settings(self, settings):
         # save PythonSettings so we also have the prefix and postfix
         self.python_settings = PythonSettings(settings)
-        self.root.parse_python_settings(self.python_settings.config_dict)
+        rest = self.root.parse_python_settings(self.python_settings.config_dict)
+        print('rest:\n' + str(rest))
 
     def get_python_settings_dict(self):
         config_dict = self.root.get_python_settings_dict_recursive()

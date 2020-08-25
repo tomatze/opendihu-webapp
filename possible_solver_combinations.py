@@ -69,6 +69,7 @@ possible_solver_combinations = {
             "Solvers" : {},
             #TODO add meta
             "meta" : {}
+            ### CHILD ###
         }
     },
 
@@ -193,7 +194,7 @@ possible_solver_combinations = {
         "python_options" : {
             #TODO
             "StrangSplitting" : {
-                "timeSteppWidth" : 1e-1,
+                "timeStepWidth" : 1e-1,
                 "Term1" : {
                     ### CHILD ###
                 },
@@ -406,7 +407,7 @@ possible_solver_combinations = {
                 "prefactor" : 1.0, # this is the prefactor
                 "rightHandSide" : {},
                 "inputMeshIsGlobal" : True,
-                ### CHILDS ###
+                ### CHILD ###
             }
         }
     },
