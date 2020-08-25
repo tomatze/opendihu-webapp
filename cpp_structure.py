@@ -16,13 +16,20 @@ class Node:
 
         self.settings_dict = None
 
-        relevant_src = get_default_python_settings_src_for_classname(self.name)
-        own_dict = SettingsDict(relevant_src)
+    # sets self.settings_dict to default if dict=None or to dict
+    def set_python_settings_dict(self, dict=None):
+        if dict:
+            self.settings_dict = dict
+        else:
+            relevant_python_src = get_default_python_settings_src_for_classname(self.name)
+            self.settings_dict = SettingsDict(relevant_python_src)
+
+    # returns self.settings_dict with SettingsChildPlaceholders replaced with child dicts
+    def get_python_settings_dict(self):
+        own_dict = self.settings_dict
         for child in self.childs:
             # for every child replace the ### CHILD ### placeholder with the childs dict
-            child_dict = child.get_default_settings_dict()
-            own_dict.replaceChildPlaceholder(child_dict)
-        #return own_dict
+            own_dict.replaceChildPlaceholder(child.settings_dict)
 
     # this function converts the tree under this Node to a pretty string
     # you can print the string to visualize the tree
