@@ -255,6 +255,23 @@ class SettingsDict(list):
                 if dict_entry.value.replaceChildPlaceholder(child_dict):
                     return True
 
+    # TODO not finished
+    def compare_structure(self, settings_dict):
+        # for each entry check if there is an equal one in the other settings_dict
+        for i in range(len(self)):
+            # don't check comments etc
+            if isinstance(self[i], SettingsDictEntry):
+                found_equal_entry = False
+                for j in range(len(settings_dict)):
+                    if self[i].compare_structure(settings_dict[j]):
+                        found_equal_entry = True
+                        break
+                if not found_equal_entry:
+                    return False
+        return True
+
+
+
 
 # normal entry for a SettingsList
 class SettingsListEntry:
