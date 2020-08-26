@@ -12,9 +12,9 @@ def main():
     cpp_tree.parse_cpp_src(src)
     #print(example.root)
     #print(example.combinations)
-    print(cpp_tree.validate_cpp_src())
-    print('\n')
-    print(cpp_tree)
+    #print(cpp_tree.validate_cpp_src())
+    #print('\n')
+    #print(cpp_tree)
     #print(example.get_possible_childs('SpatialDiscretization::FiniteElementMethod'))
 
     settings = open(str(sys.argv[2]), "r").read()

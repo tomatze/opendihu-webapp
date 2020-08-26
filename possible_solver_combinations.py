@@ -153,7 +153,6 @@ possible_solver_combinations = {
         "python_options" : {
             "MultipleInstances": {
                 "nInstances": 1,
-                "instances": []
             }
         }
     },
@@ -340,11 +339,7 @@ possible_solver_combinations = {
             [ "SpatialDiscretization::FiniteElementMethod" ]
         ],
         "python_options" : {
-            # TODO
-            "test" : 1,
-            ### CHILD ###
-            ### CHILD ###
-            ### CHILD ###
+            "MultidomainSolver" : "test",
         }
     },
     "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio" : {
