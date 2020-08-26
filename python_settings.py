@@ -70,8 +70,13 @@ class SettingsDict(list):
         for t in tokens:
             token_value = t.string
             token_type = t.exact_type
+            #print()
+            #try:
+            #    print(stack[0])
+            #except: pass
+            #print(type(stack[-1]))
+            #print(mode_stack)
             #print(token.tok_name[token_type] + token_value)
-            #print(stack)
             if token_type == token.NL or token_type == token.NEWLINE:
                 # don't append comments to SettingsDictEntry or SettingsListEntry after newline
                 append_comment = False
@@ -157,6 +162,9 @@ class SettingsDict(list):
                     mode_stack.pop()
                     stack.pop()
                     append_comment = True
+                    if isinstance(stack[-1], SettingsConditional):
+                        # also pop the SettingsConditional, we are done with that
+                        stack.pop()
 
             # handle dictionary keys
             elif mode_stack[-1] == "dict_key":
