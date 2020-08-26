@@ -54,7 +54,7 @@ class Node:
                 #        break
                 #if not found_equal_entry:
                 #    settings_dict_gotten.append(settings_dict_default[i])
-                #TODO uncomment
+                #TODO uncomment to append default entries for all entries we dont have
                 pass
             elif isinstance(settings_dict_default[i], SettingsChildPlaceholder):
                 settings_dict_gotten.append(SettingsChildPlaceholder())
