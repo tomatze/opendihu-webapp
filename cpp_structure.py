@@ -1,6 +1,7 @@
 import re
 import traceback
 import inspect
+import copy
 
 from helpers import printe, indent
 import possible_solver_combinations
@@ -27,9 +28,8 @@ class Node:
 
     ## returns self.settings_dict with SettingsChildPlaceholders replaced with child dicts
     def get_python_settings_dict_recursive(self):
-        #TODO don't changes self.settings_dict inplace
-        # copy self.settings_dict so we don't replace the SettingsChildPlaceholders in it
-        own_dict = self.settings_dict
+        # deepcopy self.settings_dict so we don't replace the SettingsChildPlaceholders in it
+        own_dict = copy.deepcopy(self.settings_dict)
         for child in self.childs:
             #print('child: ' + child.name)
             # for every child replace the ### CHILD ### placeholder with the childs dict
@@ -409,8 +409,8 @@ class CPPTree:
 
     def get_python_settings_dict(self):
         config_dict = self.root.get_python_settings_dict_recursive()
+        self.python_settings.config_dict = config_dict
         return config_dict
-        #self.python_settings.config_dict = config_dict
 
 
 # returns the python-src of the python_options for a given classname from possible_solver_combinations
