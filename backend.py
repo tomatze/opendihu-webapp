@@ -19,7 +19,9 @@ def main():
 
     settings = open(str(sys.argv[2]), "r").read()
     cpp_tree.parse_python_settings(settings)
-    print(cpp_tree.get_python_settings_dict())
+    #print(cpp_tree.get_python_settings_dict())
+    print(cpp_tree.root.settings_dict)
+    print(cpp_tree.root.childs[0].settings_dict)
 
     #python_settings = PythonSettings(settings)
     #print(python_settings)

@@ -27,6 +27,7 @@ class Node:
 
     ## returns self.settings_dict with SettingsChildPlaceholders replaced with child dicts
     def get_python_settings_dict_recursive(self):
+        #TODO don't changes self.settings_dict inplace
         # copy self.settings_dict so we don't replace the SettingsChildPlaceholders in it
         own_dict = self.settings_dict
         for child in self.childs:
@@ -43,7 +44,7 @@ class Node:
 
     # parse a settings_dict recursively
     # returning the rest, it could not match
-    def parse_python_settings_recursive(self, settings_dict_gotten, settings_dict_default, sub=False):
+    def parse_python_settings_recursive(self, settings_dict_gotten, settings_dict_default):
         # loop through all options in defaults and add them if not there
         for i in range(len(settings_dict_default)):
             if isinstance(settings_dict_default[i], SettingsDictEntry):
@@ -111,7 +112,7 @@ class Node:
                         # found the corresponding entry in settings_dict_default
                         if isinstance(settings_dict_gotten[j].value, SettingsDict):
                             # the entry is also a SettingsDict
-                            self.parse_python_settings_recursive(settings_dict_gotten[j].value, settings_dict_default[i].value, sub=True)
+                            self.parse_python_settings_recursive(settings_dict_gotten[j].value, settings_dict_default[i].value)
                         break
 
 
@@ -404,8 +405,7 @@ class CPPTree:
     def parse_python_settings(self, settings):
         # save PythonSettings so we also have the prefix and postfix
         self.python_settings = PythonSettings(settings)
-        rest = self.root.parse_python_settings(self.python_settings.config_dict)
-        #print('rest:\n' + str(rest))
+        self.root.parse_python_settings(self.python_settings.config_dict)
 
     def get_python_settings_dict(self):
         config_dict = self.root.get_python_settings_dict_recursive()
@@ -426,8 +426,3 @@ def get_default_python_settings_src_for_classname(name):
                 return
             return get_default_python_settings_src_for_classname(name[:-2].rsplit('::', 1, )[0] + '::')
         return
-
-# returns the python-src of the global python_options from possible_solver_combinations
-#def get_default_python_settings_src_global():
-#        possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
-#        return possible_solver_combinations_src.split('\n    "global" : {\n        "python_options" : {')[1].split('\n        }\n    },')[0]
