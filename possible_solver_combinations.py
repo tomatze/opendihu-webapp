@@ -153,6 +153,7 @@ possible_solver_combinations = {
         "python_options" : {
             "MultipleInstances": {
                 "nInstances": 1,
+                "instances": [],
             }
         }
     },

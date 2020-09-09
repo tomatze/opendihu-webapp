@@ -42,19 +42,11 @@ class Node:
                 #printe('failed to replace SettingsChildPlaceholder ' + child.name)
         return own_dict
 
-    ## parse a settings_dict recursively
-    ## returning the rest, it could not match
-    #def parse_python_settings(self, settings_dict_gotten):
-    #    #print('parse_python_settings: ' + self.name)
-    #    if self.settings_dict == None:
-    #        self.settings_dict = settings_dict_gotten
-    #    else:
-    #        self.settings_dict = self.settings_dict + settings_dict_gotten
-    #    settings_dict_default = self.get_default_python_settings_dict()
-    #    rest = self.parse_python_settings_recursive(self.settings_dict, settings_dict_default)
-    #    return rest
-
-    def parse_python_settings_recursive(self, settings_dict, self_settings_dict=None, settings_dict_default=None, current_child_index=0, return_entries_that_have_no_default=False):
+    # parse a python_settings_dict and add it to this Node and its childs
+    def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=False, self_settings_dict=None, settings_dict_default=None, current_child_index=0, is_called_on_child=False):
+        # TODO SettingsList
+        # TODO SettingsConditional? 
+        # TODO Meshes and Solvers e.g. with ### SOLVER ###?
         # these should be given as parameters when recursion happens on the same object again
         # self_settings_dict is the 'pointer' to the sub-SettingsDict in self.settings_dict we are currently handling
         # settings_dict_default is the 'pointer' to the sub-SettingsDict in settings_dict_default we are currently handling
@@ -88,7 +80,7 @@ class Node:
                         new_entry.key = entry.key
                         new_entry.value = SettingsDict()
                         self_settings_dict.append(new_entry)
-                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dict_default=settings_dict_default.get_value(entry.key), current_child_index = self.current_child_index, return_entries_that_have_no_default=False)
+                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dict_default=settings_dict_default.get_value(entry.key), current_child_index = self.current_child_index, keep_entries_that_have_no_default=keep_entries_that_have_no_default)
                     else:
                         # if the entry.value is not special -> just append the entry
                         self_settings_dict.append(entry)
@@ -107,104 +99,27 @@ class Node:
                             if placeholders_inserted < j + 1:
                                 self_settings_dict.append(SettingsChildPlaceholder())
                                 placeholders_inserted = placeholders_inserted + 1
-                            new_dict = child.parse_python_settings_recursive(new_dict, return_entries_that_have_no_default=True)
+                            new_dict = child.parse_python_settings_recursive(new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, is_called_on_child=True)
                             if len(new_dict) == 0:
                                 break
                         if len(new_dict) > 0:
                             print('the childs did not take this entry')
-                            if return_entries_that_have_no_default:
-                                rest.append(entry)
-                            else:
+                            if keep_entries_that_have_no_default:
                                 self_settings_dict.append(entry)
                     else:
                         # this entry is not in defaults and there is no child at this place
-                        if return_entries_that_have_no_default:
+                        if is_called_on_child:
                             rest.append(entry)
-                        else:
+                        elif keep_entries_that_have_no_default:
                             self_settings_dict.append(entry)
 
-            elif isinstance(entry, SettingsComment):
+            #elif isinstance(entry, SettingsComment):
+            else:
+                # TODO?
                 self_settings_dict.append(entry)
         # the child_placeholders are done now -> move the objects current_child_index
         self.current_child_index = self.current_child_index + count_child_placeholders
         return rest
-
-    # parse a settings_dict recursively
-    # returning the rest, it could not match
-    def parse_python_settings_recursive_old(self, settings_dict_gotten, settings_dict_default):
-        # loop through all options in defaults and add them if not there
-        for i in range(len(settings_dict_default)):
-            if isinstance(settings_dict_default[i], SettingsDictEntry):
-                #found_equal_entry = False
-                #for j in range(len(settings_dict_gotten)):
-                #    if isinstance(settings_dict_gotten[j], SettingsDictEntry) and settings_dict_default[i].key == settings_dict_gotten[j].key:
-                #        found_equal_entry = True
-                #        break
-                #if not found_equal_entry:
-                #    settings_dict_gotten.append(settings_dict_default[i])
-                #TODO uncomment to append default entries for all entries we dont have
-                pass
-            elif isinstance(settings_dict_default[i], SettingsChildPlaceholder):
-                settings_dict_gotten.append(SettingsChildPlaceholder())
-
-        # loop through settings_dict_gotten and move stuff we don't have in defaults to children
-        # don't do this if the default_dict is an empty dict
-        # this if_block is for things like meta, which we don't want to define in python_options
-        child_settings_dict = SettingsDict()
-        if len(settings_dict_default) > 0:
-            i = 0
-            while i < len(settings_dict_gotten):
-                #if isinstance(settings_dict_gotten[i], SettingsComment):
-                #    print(settings_dict_gotten[i].comment)
-                if isinstance(settings_dict_gotten[i], SettingsDictEntry):
-                    found_equal_entry = False
-                    for j in range(len(settings_dict_default)):
-                        if isinstance(settings_dict_default[j], SettingsDictEntry) and settings_dict_gotten[i].key == settings_dict_default[j].key:
-                            found_equal_entry = True
-                            break
-                    if not found_equal_entry:
-                        child_settings_dict.append(settings_dict_gotten.pop(i))
-                        continue
-                i = i + 1
-            # give the entries in child_settings_dict to the childs
-            if len(child_settings_dict) > 0 and len(self.childs) > 0:
-                #print()
-                #print('child_settings_dict:\n' + str(child_settings_dict))
-                #print('parent: ' + self.name)
-                #s_children = 'childs:'
-                #for c in self.childs:
-                #    s_children = s_children + ' ' + c.name
-                #print(s_children)
-                for child in self.childs:
-                    for entry in child_settings_dict:
-                        child_dict = child.get_default_python_settings_dict()
-                        for child_dict_entry in child_dict:
-                            # TODO maybe the entry.key sometimes is not in the child dict but in one of its childs... 
-                            # could be fixed by searching in the childs recursive default_dict instead of the non recursive one
-                            if isinstance(child_dict_entry, SettingsDictEntry)and entry.key == child_dict_entry.key:
-                                #print('given the following entry to ' + child.name + ':\n' + str(entry))
-                                dict = SettingsDict()
-                                dict.append(entry)
-                                child_settings_dict = child.parse_python_settings(dict)
-
-        # find all sub-dicts and go one level deeper with them
-        for i in range(len(settings_dict_default)):
-            if isinstance(settings_dict_default[i], SettingsDictEntry) and isinstance(settings_dict_default[i].value, SettingsDict):
-                # don't go deeper into Solvers and Meshes
-                if settings_dict_default[i].key == '"Solvers"' or settings_dict_default[i].key == '"Meshes"':
-                    continue
-                # find the corresponding one in settings_dict_gotten
-                for j in range(len(settings_dict_gotten)):
-                    if isinstance(settings_dict_gotten[j], SettingsDictEntry) and settings_dict_gotten[j].key == settings_dict_default[i].key:
-                        # found the corresponding entry in settings_dict_default
-                        if isinstance(settings_dict_gotten[j].value, SettingsDict):
-                            # the entry is also a SettingsDict
-                            self.parse_python_settings_recursive(settings_dict_gotten[j].value, settings_dict_default[i].value)
-                        break
-
-
-        # the entries not used by us or our childs get returned and may get used by siblings
-        return child_settings_dict
 
     # this function converts the tree under this Node to a pretty string
     # you can print the string to visualize the tree
