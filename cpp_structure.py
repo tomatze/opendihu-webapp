@@ -46,8 +46,9 @@ class Node:
     def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=False, add_missing_default_entries=True, self_settings_dict=None, settings_dict_default=None, current_child_index=0, is_called_on_child=False):
         # TODO SettingsConditional? 
         # TODO Meshes and Solvers e.g. with ### SOLVER ###?
-        # TODO take extra comments and newlines from settings_dict_default
-        # TODO add all missing defaults from settings_dict_default
+        # TODO if a SettingsDictEntry has no comment, add the default-comment
+        # TODO remove add_missing_default_entries and move it to a new function (this also needs to add missing SettingsChildPlaceholders)
+        # TODO add a new function to load default settings (if user wants to reset)
         # these should be given as parameters when recursion happens on the same object again
         # self_settings_dict is the 'pointer' to the sub-SettingsDict in self.settings_dict we are currently handling
         # settings_dict_default is the 'pointer' to the sub-SettingsDict in settings_dict_default we are currently handling
