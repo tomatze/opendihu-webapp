@@ -43,9 +43,11 @@ class Node:
         return own_dict
 
     # parse a python_settings_dict and add it to this Node and its childs
-    def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=False, self_settings_dict=None, settings_dict_default=None, current_child_index=0, is_called_on_child=False):
+    def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=False, add_missing_default_entries=True, self_settings_dict=None, settings_dict_default=None, current_child_index=0, is_called_on_child=False):
         # TODO SettingsConditional? 
         # TODO Meshes and Solvers e.g. with ### SOLVER ###?
+        # TODO take extra comments and newlines from settings_dict_default
+        # TODO add all missing defaults from settings_dict_default
         # these should be given as parameters when recursion happens on the same object again
         # self_settings_dict is the 'pointer' to the sub-SettingsDict in self.settings_dict we are currently handling
         # settings_dict_default is the 'pointer' to the sub-SettingsDict in settings_dict_default we are currently handling
@@ -70,10 +72,10 @@ class Node:
         for i in range(len(settings_dict)):
             entry = settings_dict[i]
             if isinstance(entry, SettingsDictEntry) or isinstance(entry, SettingsListEntry):
-                try:
-                    print(entry.key)
-                except:
-                    print('listEntry')
+                #try:
+                #    print(entry.key)
+                #except:
+                #    print('listEntry')
                 # check if the entry is a SettingsListEntry or if it is a SettingsDictEntry and its key is in defaults
                 if isinstance(entry, SettingsListEntry) or settings_dict_default.has_key(entry.key):
                     # key exists in defaults
@@ -100,7 +102,7 @@ class Node:
                         self_settings_dict.append(new_entry)
 
                         # recurse the new entry
-                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dict_default=settings_dict_default_recurse, current_child_index = self.current_child_index, keep_entries_that_have_no_default=keep_entries_that_have_no_default)
+                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dict_default=settings_dict_default_recurse, current_child_index = self.current_child_index, keep_entries_that_have_no_default=keep_entries_that_have_no_default, add_missing_default_entries=add_missing_default_entries)
                     else:
                         # if the entry.value is not special -> just append the entry
                         self_settings_dict.append(entry)
@@ -109,21 +111,21 @@ class Node:
                     # and the key does not exist in defaults
                     # this entry possibly belongs to a child
                     if count_child_placeholders > 0:
-                        print('there are ' + str(count_child_placeholders) + ' childs at this position in defaults')
+                        #print('there are ' + str(count_child_placeholders) + ' childs at this position in defaults')
                         new_dict = SettingsDict()
                         new_dict.append(entry)
                         # try giving the entry to the childs
                         for j in range(count_child_placeholders):
-                            print('trying to give entry to child ' + str(current_child_index + j))
+                            #print('trying to give entry to child ' + str(current_child_index + j))
                             child = self.childs[current_child_index + j]
                             if placeholders_inserted < j + 1:
                                 self_settings_dict.append(SettingsChildPlaceholder())
                                 placeholders_inserted = placeholders_inserted + 1
-                            new_dict = child.parse_python_settings_recursive(new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, is_called_on_child=True)
+                            new_dict = child.parse_python_settings_recursive(new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, add_missing_default_entries=add_missing_default_entries, is_called_on_child=True)
                             if len(new_dict) == 0:
                                 break
                         if len(new_dict) > 0:
-                            print('the childs did not take this entry')
+                            #print('the childs did not take this entry')
                             if keep_entries_that_have_no_default:
                                 self_settings_dict.append(entry)
                     else:
@@ -136,6 +138,16 @@ class Node:
             #elif isinstance(entry, SettingsComment):
             else:
                 self_settings_dict.append(entry)
+
+        # add missing default entries
+        if add_missing_default_entries:
+            if isinstance(settings_dict, SettingsList):
+                pass
+            else:
+                for entry in settings_dict_default:
+                    if isinstance(entry, SettingsDictEntry) and not self_settings_dict.has_key(entry.key):
+                        self_settings_dict.append(entry)
+
         # the child_placeholders are done now -> move the objects current_child_index
         self.current_child_index = self.current_child_index + count_child_placeholders
         return rest
