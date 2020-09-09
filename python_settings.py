@@ -10,6 +10,7 @@ class SettingsComment:
     def __init__(self):
         self.comment = None
 
+
 # a placeholder in a SettingsDict, which can be replaced with some SettingsDictEntrys
 # this gets created when parsing python_options from possible_solver_combinations
 # it is marked with the floating comment '### CHILD ###'
@@ -18,9 +19,11 @@ class SettingsChildPlaceholder(SettingsComment):
         super().__init__()
         self.comment = '### CHILD ###'
 
+
 # an empty line within a SettingsDict or SettingsList
 # this is used to restore simple formatting
 class SettingsEmptyLine: pass
+
 
 # if-else block inside a SettingsDictEntry.value or a SettingsListEntry.value
 class SettingsConditional():
@@ -41,6 +44,30 @@ class SettingsConditional():
         return value1 + ' if ' + self.condition + ' else ' + value2
 
 
+# this class is the parent of SettingsDict and SettingsList
+class SettingsContainer(list):
+    # replaces the first found SettingsChildPlaceholder with the entries of child_dict
+    def replaceChildPlaceholder(self, child_dict):
+        for i in range(len(self)):
+            entry = self[i]
+            if isinstance(entry, SettingsChildPlaceholder):
+                self.pop(i)
+                while len(child_dict) > 0:
+                    self.insert(i, child_dict.pop())
+                return True
+            elif (isinstance(entry, SettingsListEntry) or isinstance(entry, SettingsDictEntry)) and isinstance(entry.value, SettingsContainer):
+                if entry.value.replaceChildPlaceholder(child_dict):
+                    return True
+
+    # counts the SettingsChildPlaceholder that are direct childs of this SettingsContainer
+    def count_child_placeholders(self):
+        count = 0
+        for entry in self:
+            if isinstance(entry, SettingsChildPlaceholder):
+                count = count + 1
+        return count
+
+
 # normal entry in a SettingsDict
 class SettingsDictEntry:
     def __init__(self):
@@ -48,8 +75,16 @@ class SettingsDictEntry:
         self.value = None
         self.comments = []
 
+
+# normal entry for a SettingsList
+class SettingsListEntry:
+    def __init__(self):
+        self.value = None
+        self.comments = []
+
+
 # represents a python-settings-dict
-class SettingsDict(list):
+class SettingsDict(SettingsContainer):
     # init an empty SettingsDict or parse a settings-string to a SettingsDict
     def __init__(self, settings = None):
         if settings == None:
@@ -253,19 +288,6 @@ class SettingsDict(list):
             r = r + '\n' + entrie_r
         return '{' + r + '\n' + indentation * depth + '}'
 
-    # replaces the first found SettingsChildPlaceholder with the entries of child_dict
-    def replaceChildPlaceholder(self, child_dict):
-        for i in range(len(self)):
-            dict_entry = self[i]
-            if isinstance(dict_entry, SettingsChildPlaceholder):
-                self.pop(i)
-                while len(child_dict) > 0:
-                    self.insert(i, child_dict.pop())
-                return True
-            elif isinstance(dict_entry, SettingsDictEntry) and isinstance(dict_entry.value, SettingsDict):# or isinstance(dict_entry.value, SettingsList):
-                if dict_entry.value.replaceChildPlaceholder(child_dict):
-                    return True
-
     def has_key(self, key):
         return any(isinstance(entry, SettingsDictEntry) and key == entry.key for entry in self)
     def get_value(self, key):
@@ -273,24 +295,10 @@ class SettingsDict(list):
             if isinstance(entry, SettingsDictEntry) and entry.key == key:
                 return entry.value
         return
-    def count_child_placeholders(self):
-        count = 0
-        for entry in self:
-            if isinstance(entry, SettingsChildPlaceholder):
-                count = count + 1
-        return count
 
-
-
-
-# normal entry for a SettingsList
-class SettingsListEntry:
-    def __init__(self):
-        self.value = None
-        self.comments = []
 
 # represents a list stored in a SettingsDictEntry.value or a SettingsListEntry.value
-class SettingsList(list):
+class SettingsList(SettingsContainer):
     def __init__(self):
         self.list_comprehension = None
     def __repr__(self):
@@ -323,6 +331,12 @@ class SettingsList(list):
                 entrie_r = ''
             r = r + '\n' + entrie_r
         return '[' + r + '\n' + indentation * depth + ']'
+
+    def get_first_SettingsListEntry(self):
+        for entry in self:
+            if isinstance(entry, SettingsListEntry):
+                return entry
+        return
 
 
 # this holds a complete settings.py by parsing its config-dict and storing the rest of the file in prefix and postfix

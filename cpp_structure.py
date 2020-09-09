@@ -5,7 +5,7 @@ import copy
 
 from helpers import printe, indent
 import possible_solver_combinations
-from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder
+from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer
 
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
@@ -44,7 +44,6 @@ class Node:
 
     # parse a python_settings_dict and add it to this Node and its childs
     def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=False, self_settings_dict=None, settings_dict_default=None, current_child_index=0, is_called_on_child=False):
-        # TODO SettingsList
         # TODO SettingsConditional? 
         # TODO Meshes and Solvers e.g. with ### SOLVER ###?
         # these should be given as parameters when recursion happens on the same object again
@@ -63,30 +62,51 @@ class Node:
         if current_child_index == 0:
             self.current_child_index = 0
 
-        rest = SettingsDict()
+        if isinstance(settings_dict, SettingsList):
+            rest = SettingsList()
+        else:
+            rest = SettingsDict()
+
         for i in range(len(settings_dict)):
             entry = settings_dict[i]
-            if isinstance(entry, SettingsDictEntry):
-                print(entry.key)
-                # check if the entrie is in defaults
-                if settings_dict_default.has_key(entry.key):
+            if isinstance(entry, SettingsDictEntry) or isinstance(entry, SettingsListEntry):
+                try:
+                    print(entry.key)
+                except:
+                    print('listEntry')
+                # check if the entry is a SettingsListEntry or if it is a SettingsDictEntry and its key is in defaults
+                if isinstance(entry, SettingsListEntry) or settings_dict_default.has_key(entry.key):
                     # key exists in defaults
-                    print('key found in defaults')
-                    # if the value is a SettingsDict -> recurse
-                    if isinstance(entry.value, SettingsDict):
-                        # create a new entry with an empty dict
-                        new_entry = SettingsDictEntry()
+                    # if the value is a SettingsContainer -> recurse
+                    if isinstance(entry.value, SettingsContainer):
+                        # create a new entry
+                        if isinstance(entry, SettingsDictEntry):
+                            new_entry = SettingsDictEntry()
+                            new_entry.key = entry.key
+                            settings_dict_default_recurse = settings_dict_default.get_value(entry.key)
+                        else:
+                            new_entry = SettingsListEntry()
+                            # TODO here we assume that there is only one SettingsListEntry in python_options we just use the first one
+                            settings_dict_default_recurse = settings_dict_default.get_first_SettingsListEntry().value
                         new_entry.comments = entry.comments
-                        new_entry.key = entry.key
-                        new_entry.value = SettingsDict()
+
+                        # add an empty list or dict to the new entry
+                        if isinstance(entry.value, SettingsDict):
+                            new_entry.value = SettingsDict()
+                        else:
+                            new_entry.value = SettingsList()
+                            new_entry.value.list_comprehension = entry.value.list_comprehension
+                        # add the new entry
                         self_settings_dict.append(new_entry)
-                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dict_default=settings_dict_default.get_value(entry.key), current_child_index = self.current_child_index, keep_entries_that_have_no_default=keep_entries_that_have_no_default)
+
+                        # recurse the new entry
+                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dict_default=settings_dict_default_recurse, current_child_index = self.current_child_index, keep_entries_that_have_no_default=keep_entries_that_have_no_default)
                     else:
                         # if the entry.value is not special -> just append the entry
                         self_settings_dict.append(entry)
-                    # TODO if the value is a SettingsList -> recurse?
                 else:
-                    # key does not exist in defaults
+                    # entry is a SettingsDictEntry
+                    # and the key does not exist in defaults
                     # this entry possibly belongs to a child
                     if count_child_placeholders > 0:
                         print('there are ' + str(count_child_placeholders) + ' childs at this position in defaults')
@@ -115,7 +135,6 @@ class Node:
 
             #elif isinstance(entry, SettingsComment):
             else:
-                # TODO?
                 self_settings_dict.append(entry)
         # the child_placeholders are done now -> move the objects current_child_index
         self.current_child_index = self.current_child_index + count_child_placeholders

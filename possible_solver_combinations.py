@@ -153,7 +153,12 @@ possible_solver_combinations = {
         "python_options" : {
             "MultipleInstances": {
                 "nInstances": 1,
-                "instances": [],
+                "instances": [
+                    {
+                        "ranks" : list(range(4)),
+                        ### CHILD ###
+                    }
+                ],
             }
         }
     },
@@ -274,7 +279,14 @@ possible_solver_combinations = {
         "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "discretizableInTime" ]
-        ]
+        ],
+        "python_options" : {
+            "Heun" : {
+                "endTime" : 1,
+                "timeStepWidth" : 0.001,
+                "numberTimeSteps": 10
+            }
+        }
     },
     "TimeSteppingScheme::HeunAdaptive" : {
         "runnable" : True,
