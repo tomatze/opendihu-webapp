@@ -266,6 +266,19 @@ class SettingsDict(list):
                 if dict_entry.value.replaceChildPlaceholder(child_dict):
                     return True
 
+    def has_key(self, key):
+        return any(isinstance(entry, SettingsDictEntry) and key == entry.key for entry in self)
+    def get_value(self, key):
+        for entry in self:
+            if isinstance(entry, SettingsDictEntry) and entry.key == key:
+                return entry.value
+        return
+    def count_child_placeholders(self):
+        count = 0
+        for entry in self:
+            if isinstance(entry, SettingsChildPlaceholder):
+                count = count + 1
+        return count
 
 
 

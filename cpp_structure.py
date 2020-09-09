@@ -42,9 +42,96 @@ class Node:
                 #printe('failed to replace SettingsChildPlaceholder ' + child.name)
         return own_dict
 
+    ## parse a settings_dict recursively
+    ## returning the rest, it could not match
+    #def parse_python_settings(self, settings_dict_gotten):
+    #    #print('parse_python_settings: ' + self.name)
+    #    if self.settings_dict == None:
+    #        self.settings_dict = settings_dict_gotten
+    #    else:
+    #        self.settings_dict = self.settings_dict + settings_dict_gotten
+    #    settings_dict_default = self.get_default_python_settings_dict()
+    #    rest = self.parse_python_settings_recursive(self.settings_dict, settings_dict_default)
+    #    return rest
+
+    def parse_python_settings_recursive(self, settings_dict, self_settings_dict=None, settings_dict_default=None, current_child_index=0, return_entries_that_have_no_default=False):
+        # these should be given as parameters when recursion happens on the same object again
+        # self_settings_dict is the 'pointer' to the sub-SettingsDict in self.settings_dict we are currently handling
+        # settings_dict_default is the 'pointer' to the sub-SettingsDict in settings_dict_default we are currently handling
+        if self_settings_dict == None:
+            if self.settings_dict == None:
+                self.settings_dict = SettingsDict()
+            self_settings_dict = self.settings_dict
+        if settings_dict_default == None:
+            settings_dict_default = self.get_default_python_settings_dict()
+
+        count_child_placeholders = settings_dict_default.count_child_placeholders()
+        placeholders_inserted = 0
+
+        if current_child_index == 0:
+            self.current_child_index = 0
+
+        rest = SettingsDict()
+        for i in range(len(settings_dict)):
+            entry = settings_dict[i]
+            if isinstance(entry, SettingsDictEntry):
+                print(entry.key)
+                # check if the entrie is in defaults
+                if settings_dict_default.has_key(entry.key):
+                    # key exists in defaults
+                    print('key found in defaults')
+                    # if the value is a SettingsDict -> recurse
+                    if isinstance(entry.value, SettingsDict):
+                        # create a new entry with an empty dict
+                        new_entry = SettingsDictEntry()
+                        new_entry.comments = entry.comments
+                        new_entry.key = entry.key
+                        new_entry.value = SettingsDict()
+                        self_settings_dict.append(new_entry)
+                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dict_default=settings_dict_default.get_value(entry.key), current_child_index = self.current_child_index, return_entries_that_have_no_default=False)
+                    else:
+                        # if the entry.value is not special -> just append the entry
+                        self_settings_dict.append(entry)
+                    # TODO if the value is a SettingsList -> recurse?
+                else:
+                    # key does not exist in defaults
+                    # this entry possibly belongs to a child
+                    if count_child_placeholders > 0:
+                        print('there are ' + str(count_child_placeholders) + ' childs at this position in defaults')
+                        new_dict = SettingsDict()
+                        new_dict.append(entry)
+                        # try giving the entry to the childs
+                        for j in range(count_child_placeholders):
+                            print('trying to give entry to child ' + str(current_child_index + j))
+                            child = self.childs[current_child_index + j]
+                            if placeholders_inserted < j + 1:
+                                self_settings_dict.append(SettingsChildPlaceholder())
+                                placeholders_inserted = placeholders_inserted + 1
+                            new_dict = child.parse_python_settings_recursive(new_dict, return_entries_that_have_no_default=True)
+                            if len(new_dict) == 0:
+                                break
+                        if len(new_dict) > 0:
+                            print('the childs did not take this entry')
+                            if return_entries_that_have_no_default:
+                                rest.append(entry)
+                            else:
+                                self_settings_dict.append(entry)
+                    else:
+                        # this entry is not in defaults and there is no child at this place
+                        if return_entries_that_have_no_default:
+                            rest.append(entry)
+                        else:
+                            self_settings_dict.append(entry)
+
+            elif isinstance(entry, SettingsComment):
+                self_settings_dict.append(entry)
+        # the child_placeholders are done now -> move the objects current_child_index
+        self.current_child_index = self.current_child_index + count_child_placeholders
+        return rest
+
     # parse a settings_dict recursively
     # returning the rest, it could not match
-    def parse_python_settings_recursive(self, settings_dict_gotten, settings_dict_default):
+    def parse_python_settings_recursive_old(self, settings_dict_gotten, settings_dict_default):
         # loop through all options in defaults and add them if not there
         for i in range(len(settings_dict_default)):
             if isinstance(settings_dict_default[i], SettingsDictEntry):
@@ -118,18 +205,6 @@ class Node:
 
         # the entries not used by us or our childs get returned and may get used by siblings
         return child_settings_dict
-
-    # parse a settings_dict recursively
-    # returning the rest, it could not match
-    def parse_python_settings(self, settings_dict_gotten):
-        #print('parse_python_settings: ' + self.name)
-        if self.settings_dict == None:
-            self.settings_dict = settings_dict_gotten
-        else:
-            self.settings_dict = self.settings_dict + settings_dict_gotten
-        settings_dict_default = self.get_default_python_settings_dict()
-        rest = self.parse_python_settings_recursive(self.settings_dict, settings_dict_default)
-        return rest
 
     # this function converts the tree under this Node to a pretty string
     # you can print the string to visualize the tree
@@ -405,7 +480,7 @@ class CPPTree:
     def parse_python_settings(self, settings):
         # save PythonSettings so we also have the prefix and postfix
         self.python_settings = PythonSettings(settings)
-        self.root.parse_python_settings(self.python_settings.config_dict)
+        self.root.parse_python_settings_recursive(self.python_settings.config_dict)
 
     def get_python_settings_dict(self):
         config_dict = self.root.get_python_settings_dict_recursive()

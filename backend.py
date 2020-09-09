@@ -21,11 +21,11 @@ def main():
     cpp_tree.parse_python_settings(settings)
 
     print(cpp_tree.get_python_settings_dict())
-    print()
-    print(cpp_tree.python_settings)
+    #print()
+    #print(cpp_tree.python_settings)
 
-    print('rootNode: ' + cpp_tree.root.name + '\n' + str(cpp_tree.root.settings_dict))
-    print('\nchild0Node: ' + cpp_tree.root.childs[0].name + '\n' + str(cpp_tree.root.childs[0].settings_dict))
+    #print('rootNode: ' + cpp_tree.root.name + '\n' + str(cpp_tree.root.settings_dict))
+    #print('\nchild0Node: ' + cpp_tree.root.childs[0].name + '\n' + str(cpp_tree.root.childs[0].settings_dict))
 
     #python_settings = PythonSettings(settings)
     #print(python_settings)
