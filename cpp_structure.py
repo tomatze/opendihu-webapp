@@ -43,7 +43,7 @@ class Node:
         return own_dict
 
     # parse a python_settings_dict and add it to this Node and its childs
-    def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=False, add_missing_default_entries=True, self_settings_dict=None, settings_dict_default=None, current_child_index=0, is_called_on_child=False):
+    def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=True, add_missing_default_entries=True, self_settings_dict=None, settings_dict_default=None, current_child_index=0, is_called_on_child=False):
         # TODO SettingsConditional? 
         # TODO Meshes and Solvers e.g. with ### SOLVER ###?
         # TODO if a SettingsDictEntry has no comment, add the default-comment

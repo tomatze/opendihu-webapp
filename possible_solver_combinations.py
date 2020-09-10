@@ -397,7 +397,16 @@ possible_solver_combinations = {
         "timeSteppingScheme" : True,
         "template_arguments" : [
             [ "timeSteppingScheme", "SpatialDiscretization::FiniteElementMethod" ]
-        ]
+        ],
+        "python_options" : {
+            "OutputSurface": {
+                "OutputWriter": [
+                    # TODO
+                ],
+                "face": ["1-"],
+                ### CHILD ###
+            }
+        }
     },
 
 

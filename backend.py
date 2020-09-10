@@ -20,6 +20,7 @@ def main():
     settings = open(str(sys.argv[2]), "r").read()
     cpp_tree.parse_python_settings(settings)
 
+    #cpp_tree.root.childs[0].childs = []
     print(cpp_tree.get_python_settings_dict())
     #print()
     #print(cpp_tree.python_settings)
