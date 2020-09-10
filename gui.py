@@ -18,10 +18,39 @@ class Window(Gtk.Window):
     def init_backend(self):
         self.cpp_tree = CPPTree()
 
+    def on_button_load_cpp_code(self, _):
+        text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
+        text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+        self.cpp_tree.parse_cpp_src(text)
+
+        self.redraw_treeview_cpp()
+
+    def redraw_treeview_cpp(self):
+        root = self.cpp_tree.root
+
+        self.redraw_treeview_cpp_recursive(root, None)
+        #row1 = self.store_treeview_cpp.append(None, ['JAVA'])
+        #self.store_treeview_cpp.append(row1,['AWT'])
+        #self.store_treeview_cpp.append(row1,['Swing'])
+        #self.store_treeview_cpp.append(row1,['JSF'])
+
+        #row2 = self.store_treeview_cpp.append(None, ['Python'])
+        #self.store_treeview_cpp.append(row2,['PyQt'])
+        #self.store_treeview_cpp.append(row2,['WxPython'])
+        #self.store_treeview_cpp.append(row2,['PyGTK'])
+
+        self.treeview_cpp.expand_all()
+
+    def redraw_treeview_cpp_recursive(self, node, parent_row):
+        row = self.store_treeview_cpp.append(parent_row, [node.name])
+        for child in node.childs:
+            self.redraw_treeview_cpp_recursive(child, row)
+
     def init_ui(self):
         self.set_title("opendihu - webapp")
         self.connect("destroy", Gtk.main_quit)
 
+        # header_bar
         self.header_bar = Gtk.HeaderBar()
         self.set_titlebar(self.header_bar)
 
@@ -37,12 +66,14 @@ class Window(Gtk.Window):
         self.button_redo.add(image)
         self.header_bar.pack_start(self.button_redo)
 
+
+        # main grid
         self.grid_main = Gtk.Grid(column_homogeneous=True)
         self.add(self.grid_main)
 
+        # cpp side
         self.tabs_cpp = Gtk.Notebook()
         self.grid_main.add(self.tabs_cpp)
-
 
         self.grid_cpp_code = Gtk.Grid()
 
@@ -54,41 +85,27 @@ class Window(Gtk.Window):
         self.grid_cpp_code.add(self.scroll_cpp_code)
 
         self.button_load_cpp_code = Gtk.Button(label='load code')
+        self.button_load_cpp_code.connect("clicked", self.on_button_load_cpp_code)
         self.grid_cpp_code.attach_next_to(self.button_load_cpp_code, self.scroll_cpp_code, Gtk.PositionType.BOTTOM, 1, 1)
 
         self.tabs_cpp.append_page(self.grid_cpp_code, Gtk.Label('cpp-src'))
 
-        # create a TreeStore with one string column to use as the model
-        store = Gtk.TreeStore(str)
-
-        # add row
-        row1 = store.append(None, ['JAVA'])
-
-        #add child rows
-        store.append(row1,['AWT'])
-        store.append(row1,['Swing'])
-        store.append(row1,['JSF'])
-
-        # add another row
-        row2 = store.append(None, ['Python'])
-        store.append(row2,['PyQt'])
-        store.append(row2,['WxPython'])
-        store.append(row2,['PyGTK'])
-
-        # create the TreeView using treestore
-        self.treeview_cpp = Gtk.TreeView(store)
+        self.store_treeview_cpp = Gtk.TreeStore(str)
+        self.treeview_cpp = Gtk.TreeView(self.store_treeview_cpp)
         self.treeview_cpp.set_vexpand(True)
         self.treeview_cpp.set_hexpand(True)
         tvcolumn = Gtk.TreeViewColumn('cpp-structure')
         self.treeview_cpp.append_column(tvcolumn)
 
-        self.treeview_cpp.expand_all()
-
         cell = Gtk.CellRendererText()
         tvcolumn.pack_start(cell, True)
         tvcolumn.add_attribute(cell, 'text', 0)
-        self.tabs_cpp.append_page(self.treeview_cpp, Gtk.Label('cpp-tree'))
+        self.scroll_cpp_tree = Gtk.ScrolledWindow()
+        self.scroll_cpp_tree.add(self.treeview_cpp)
+        self.tabs_cpp.append_page(self.scroll_cpp_tree, Gtk.Label('cpp-tree'))
 
+
+        # python side
         self.text_view_python_code = Gtk.TextView()
         self.scroll_python_code = Gtk.ScrolledWindow()
         self.scroll_python_code.add(self.text_view_python_code)
