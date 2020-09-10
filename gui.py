@@ -2,7 +2,8 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio
+gi.require_version('GtkSource', '4')
+from gi.repository import Gtk, Gio, GtkSource
 
 from cpp_structure import CPPTree
 from python_settings import PythonSettings
@@ -26,19 +27,7 @@ class Window(Gtk.Window):
         self.redraw_treeview_cpp()
 
     def redraw_treeview_cpp(self):
-        root = self.cpp_tree.root
-
-        self.redraw_treeview_cpp_recursive(root, None)
-        #row1 = self.store_treeview_cpp.append(None, ['JAVA'])
-        #self.store_treeview_cpp.append(row1,['AWT'])
-        #self.store_treeview_cpp.append(row1,['Swing'])
-        #self.store_treeview_cpp.append(row1,['JSF'])
-
-        #row2 = self.store_treeview_cpp.append(None, ['Python'])
-        #self.store_treeview_cpp.append(row2,['PyQt'])
-        #self.store_treeview_cpp.append(row2,['WxPython'])
-        #self.store_treeview_cpp.append(row2,['PyGTK'])
-
+        self.redraw_treeview_cpp_recursive(self.cpp_tree.root, None)
         self.treeview_cpp.expand_all()
 
     def redraw_treeview_cpp_recursive(self, node, parent_row):
@@ -77,7 +66,10 @@ class Window(Gtk.Window):
 
         self.grid_cpp_code = Gtk.Grid()
 
-        self.text_view_cpp_code = Gtk.TextView()
+        #self.text_view_cpp_code = Gtk.TextView()
+        self.text_view_cpp_code = GtkSource.View()
+        language_manager = GtkSource.LanguageManager()
+        self.text_view_cpp_code.get_buffer().set_language(language_manager.get_language('cpp'))
         self.text_view_cpp_code.set_vexpand(True)
         self.text_view_cpp_code.set_hexpand(True)
         self.scroll_cpp_code = Gtk.ScrolledWindow()
@@ -88,13 +80,13 @@ class Window(Gtk.Window):
         self.button_load_cpp_code.connect("clicked", self.on_button_load_cpp_code)
         self.grid_cpp_code.attach_next_to(self.button_load_cpp_code, self.scroll_cpp_code, Gtk.PositionType.BOTTOM, 1, 1)
 
-        self.tabs_cpp.append_page(self.grid_cpp_code, Gtk.Label('cpp-src'))
+        self.tabs_cpp.append_page(self.grid_cpp_code, Gtk.Label(label='cpp-src'))
 
         self.store_treeview_cpp = Gtk.TreeStore(str)
-        self.treeview_cpp = Gtk.TreeView(self.store_treeview_cpp)
+        self.treeview_cpp = Gtk.TreeView(model=self.store_treeview_cpp)
         self.treeview_cpp.set_vexpand(True)
         self.treeview_cpp.set_hexpand(True)
-        tvcolumn = Gtk.TreeViewColumn('cpp-structure')
+        tvcolumn = Gtk.TreeViewColumn()
         self.treeview_cpp.append_column(tvcolumn)
 
         cell = Gtk.CellRendererText()
@@ -102,11 +94,13 @@ class Window(Gtk.Window):
         tvcolumn.add_attribute(cell, 'text', 0)
         self.scroll_cpp_tree = Gtk.ScrolledWindow()
         self.scroll_cpp_tree.add(self.treeview_cpp)
-        self.tabs_cpp.append_page(self.scroll_cpp_tree, Gtk.Label('cpp-tree'))
+        self.tabs_cpp.append_page(self.scroll_cpp_tree, Gtk.Label(label='cpp-tree'))
 
 
         # python side
-        self.text_view_python_code = Gtk.TextView()
+        #self.text_view_python_code = Gtk.TextView()
+        self.text_view_python_code = GtkSource.View()
+        self.text_view_python_code.get_buffer().set_language(language_manager.get_language('python3'))
         self.scroll_python_code = Gtk.ScrolledWindow()
         self.scroll_python_code.add(self.text_view_python_code)
         self.grid_main.attach_next_to(self.scroll_python_code, self.tabs_cpp, Gtk.PositionType.RIGHT, 1, 1)
