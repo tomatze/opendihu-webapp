@@ -49,6 +49,8 @@ class Node:
         # TODO if a SettingsDictEntry has no comment, add the default-comment
         # TODO remove add_missing_default_entries and move it to a new function (this also needs to add missing SettingsChildPlaceholders)
         # TODO add a new function to load default settings (if user wants to reset)
+        # TODO if parsing Solvers or Meshes - just add everything
+        # TODO when adding new solver/mesh - always add it globally and look for the last solver-number and increase it by one
         # these should be given as parameters when recursion happens on the same object again
         # self_settings_dict is the 'pointer' to the sub-SettingsDict in self.settings_dict we are currently handling
         # settings_dict_default is the 'pointer' to the sub-SettingsDict in settings_dict_default we are currently handling
