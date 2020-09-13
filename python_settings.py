@@ -15,9 +15,17 @@ class SettingsComment:
 # this gets created when parsing python_options from possible_solver_combinations
 # it is marked with the floating comment '### CHILD ###'
 class SettingsChildPlaceholder(SettingsComment):
-    def __init__(self):
+    def __init__(self, childnumber):
         super().__init__()
-        self.comment = '### CHILD ###'
+        self.comment = '### CHILD ' + childnumber + ' ###'
+        self.childnumber = int(childnumber)
+
+
+class SettingsLinkPlaceholder(SettingsComment):
+    def __init__(self, linkname):
+        super().__init__()
+        self.comment = '### ' + linkname + ' ###'
+        self.linkname = linkname
 
 
 # an empty line within a SettingsDict or SettingsList
@@ -124,10 +132,16 @@ class SettingsDict(SettingsContainer):
                     # append the comment to the last list entry
                     stack[-1][-1].comments.append(token_value)
                 else:
-                    # add floating comment to the current SettingsDict or SettingsList
-                    if token_value == '### CHILD ###':
-                        c = SettingsChildPlaceholder()
+                    reg_child_placeholder = re.compile('### CHILD [0-9] ###')
+                    match_child_placeholder = reg_child_placeholder.match(token_value)
+                    reg_link_placeholder = re.compile('### [A-Z]+ ###')
+                    match_link_placeholder = reg_link_placeholder.match(token_value)
+                    if match_child_placeholder:
+                        c = SettingsChildPlaceholder(token_value[10:-4])
+                    elif match_link_placeholder:
+                        c = SettingsLinkPlaceholder(token_value[4:-4])
                     else:
+                        # add floating comment to the current SettingsDict or SettingsList
                         c = SettingsComment()
                         c.comment = token_value
                     stack[-1].append(c)

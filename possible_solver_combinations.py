@@ -63,13 +63,13 @@ possible_solver_combinations = {
             "scenarioName" : "test-scenario",
             "logFormat" : "csv", # csv or json
             "solverStructureDiagramFile" : "solver_structure.txt",
-            "Meshes" : {},
             "mappingsBetweenMeshesLogFile" : "mappings_between_meshes.txt",
             "MappingsBetweenMeshes" : {},
+            "Meshes" : {},
             "Solvers" : {},
             #TODO add meta
             "meta" : {}
-            ### CHILD ###
+            ### CHILD 0 ###
         }
     },
 
@@ -156,7 +156,7 @@ possible_solver_combinations = {
                 "instances": [
                     {
                         "ranks" : list(range(4)),
-                        ### CHILD ###
+                        ### CHILD 0 ###
                     }
                 ],
             }
@@ -201,10 +201,10 @@ possible_solver_combinations = {
             "StrangSplitting" : {
                 "timeStepWidth" : 1e-1,
                 "Term1" : {
-                    ### CHILD ###
+                    ### CHILD 0 ###
                 },
                 "Term2" : {
-                    ### CHILD ###
+                    ### CHILD 1 ###
                 }
             },
         }
@@ -404,7 +404,7 @@ possible_solver_combinations = {
                     # TODO
                 ],
                 "face": ["1-"],
-                ### CHILD ###
+                ### CHILD 0 ###
             }
         }
     },
@@ -421,14 +421,25 @@ possible_solver_combinations = {
         ],
         "python_options" : {
             "FiniteElementMethod" : {
-                "prefactor" : 1.0, # this is the prefactor
-                "rightHandSide" : {},
-                "inputMeshIsGlobal" : True,
-                ### CHILD ###
+                ### CHILD 0 ###
+                ### OUTPUTWRITER ###
+                ### SOLVER ###
             }
         }
     },
 
+    "OUTPUTWRITER" : {
+        "python_options" : {
+            "OutputWriter" : [
+                {"format": "PythonFile", "filename": "out/filename", "outputInterval": 1, "binary": False, "onlyNodalValues": True}
+            ]
+        }
+    },
+
+    "SOLVER" : {
+        "python_options" : {
+        }
+    },
 
     "Mesh::StructuredRegularFixedOfDimension" : {
         "template_arguments" : [
