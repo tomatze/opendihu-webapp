@@ -18,8 +18,7 @@
 # lists of the form [ "Mesh::" ] get auto expanded to [ "Mesh::StructuredRegularFixedOfDimension", "Mesh::Str..", ... ]
 
 # templates added so far:
-# TODO add postprocessing
-# Postprocessing::ParallelFiberEstimation
+# TODO add postprocessing Postprocessing::ParallelFiberEstimation
 # Postprocessing::StreamlineTracer
 # PreciceAdapter::ContractionDirichletBoundaryConditions
 # PreciceAdapter::ContractionNeumannBoundaryConditions
@@ -59,18 +58,20 @@
 # Equation::
 possible_solver_combinations = {
     "GLOBAL" : {
-        "python_options" : {
-            "scenarioName" : "test-scenario",
-            "logFormat" : "csv", # csv or json
-            "solverStructureDiagramFile" : "solver_structure.txt",
-            "mappingsBetweenMeshesLogFile" : "mappings_between_meshes.txt",
-            "MappingsBetweenMeshes" : {},
-            "Meshes" : {},
-            "Solvers" : {},
-            #TODO add meta
-            "meta" : {}
-            ### CHILD 0 ###
-        }
+        "python_options" : [
+            {
+                "scenarioName" : "test-scenario",
+                "logFormat" : "csv", # csv or json
+                "solverStructureDiagramFile" : "solver_structure.txt",
+                "mappingsBetweenMeshesLogFile" : "mappings_between_meshes.txt",
+                "MappingsBetweenMeshes" : {},
+                "Meshes" : {},
+                "Solvers" : {},
+                #TODO add meta
+                "meta" : {}
+                ### CHILD 0 ###
+            }
+        ]
     },
 
 
@@ -150,17 +151,19 @@ possible_solver_combinations = {
         "template_arguments" : [
             [ "timeSteppingScheme" ]
         ],
-        "python_options" : {
-            "MultipleInstances": {
-                "nInstances": 1,
-                "instances": [
-                    {
-                        "ranks" : list(range(4)),
-                        ### CHILD 0 ###
-                    }
-                ],
+        "python_options" : [
+            {
+                "MultipleInstances": {
+                    "nInstances": 1,
+                    "instances": [
+                        {
+                            "ranks" : list(range(4)),
+                            ### CHILD 0 ###
+                        }
+                    ],
+                }
             }
-        }
+        ]
     },
     "Control::Coupling" : {
         "runnable" : True,
@@ -196,18 +199,20 @@ possible_solver_combinations = {
             [ "timeSteppingScheme" ],
             [ "timeSteppingScheme" ]
         ],
-        "python_options" : {
-            #TODO
-            "StrangSplitting" : {
-                "timeStepWidth" : 1e-1,
-                "Term1" : {
-                    ### CHILD 0 ###
+        "python_options" : [
+            {
+                #TODO
+                "StrangSplitting" : {
+                    "timeStepWidth" : 1e-1,
+                    "Term1" : {
+                        ### CHILD 0 ###
+                    },
+                    "Term2" : {
+                        ### CHILD 1 ###
+                    }
                 },
-                "Term2" : {
-                    ### CHILD 1 ###
-                }
-            },
-        }
+            }
+        ]
     },
     "OperatorSplitting::Godunov" : {
         "runnable" : True,
@@ -280,13 +285,15 @@ possible_solver_combinations = {
         "template_arguments" : [
             [ "discretizableInTime" ]
         ],
-        "python_options" : {
-            "Heun" : {
-                "endTime" : 1,
-                "timeStepWidth" : 0.001,
-                "numberTimeSteps": 10
+        "python_options" : [
+            {
+                "Heun" : {
+                    "endTime" : 1,
+                    "timeStepWidth" : 0.001,
+                    "numberTimeSteps": 10
+                }
             }
-        }
+        ]
     },
     "TimeSteppingScheme::HeunAdaptive" : {
         "runnable" : True,
@@ -351,9 +358,11 @@ possible_solver_combinations = {
             [ "SpatialDiscretization::FiniteElementMethod" ],
             [ "SpatialDiscretization::FiniteElementMethod" ]
         ],
-        "python_options" : {
-            "MultidomainSolver" : "test",
-        }
+        "python_options" : [
+            {
+                "MultidomainSolver" : "test",
+            }
+        ]
     },
     "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio" : {
         "runnable" : True,
@@ -398,15 +407,17 @@ possible_solver_combinations = {
         "template_arguments" : [
             [ "timeSteppingScheme", "SpatialDiscretization::FiniteElementMethod" ]
         ],
-        "python_options" : {
-            "OutputSurface": {
-                "OutputWriter": [
-                    # TODO
-                ],
-                "face": ["1-"],
-                ### CHILD 0 ###
+        "python_options" : [
+            {
+                "OutputSurface": {
+                    "OutputWriter": [
+                        # TODO
+                    ],
+                    "face": ["1-"],
+                    ### CHILD 0 ###
+                }
             }
-        }
+        ]
     },
 
 
@@ -419,36 +430,54 @@ possible_solver_combinations = {
             [ "Quadrature::" ],
             [ "Equation::" ]
         ],
-        "python_options" : {
-            "FiniteElementMethod" : {
-                ### CHILD 0 ###
-                ### OUTPUTWRITER ###
-                ### SOLVER ###
+        "python_options" : [
+            {
+                "FiniteElementMethod" : {
+                    ### CHILD 0 ###
+
+                    "OutputWriter" : [
+                        {"format": "PythonFile", "filename": "out/filename", "outputInterval": 1, "binary": False, "onlyNodalValues": True}
+                    ],
+
+                    "solverType": "gmres",
+                    "preconditionerType": "none",
+                    "relativeTolerance": 1e-5,
+                    "maxIterations": 1e4,
+                    "dumpFilename": "", # no filename means dump is disabled
+                    "dumpFormat": "default"
+                }
             }
-        }
-    },
-
-    "OUTPUTWRITER" : {
-        "python_options" : {
-            "OutputWriter" : [
-                {"format": "PythonFile", "filename": "out/filename", "outputInterval": 1, "binary": False, "onlyNodalValues": True}
-            ]
-        }
-    },
-
-    "SOLVER" : {
-        "python_options" : {
-        }
+        ]
     },
 
     "Mesh::StructuredRegularFixedOfDimension" : {
         "template_arguments" : [
             [ "1", "2", "3" ]
+        ],
+        "python_options" : [
+            {
+                "nElements": [0, 1], # example for a 2D mesh
+                "physicalExtent": [1.0, 1.0],
+                "inputMeshIsGlobal": True,
+            }
         ]
     },
     "Mesh::StructuredDeformableOfDimension" : {
         "template_arguments" : [
             [ "1", "2", "3" ]
+        ],
+        "python_options" : [
+            {
+                "nElements": [0, 1], # example for a 2D mesh
+                "physicalExtent": [2.5, 5.0],
+                "physicalOffset": [0.5, 0.0],
+                "inputMeshIsGlobal": True,
+            },
+            {
+                "nElements": [0, 1], # example for a 2D mesh
+                "nodePositions": [[0,0,0], [0,0,0]],
+                "inputMeshIsGlobal": True,
+            }
         ]
     },
     "Mesh::UnstructuredDeformableOfDimension" : {
