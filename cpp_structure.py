@@ -48,7 +48,6 @@ class Node:
         # TODO if a SettingsDictEntry has no comment, add the default-comment
         # TODO remove add_missing_default_entries and move it to a new function (this also needs to add missing SettingsChildPlaceholders)
         # TODO add a new function to load default settings (if user wants to reset)
-        # TODO if parsing Solvers or Meshes - just add everything
         # TODO when adding new solver/mesh - always add it globally and look for the last solver-number and increase it by one
         # these should be given as parameters when recursion happens on the same object again
         # self_settings_dict is the 'pointer' to the sub-SettingsDict in self.settings_dict we are currently handling
@@ -91,6 +90,12 @@ class Node:
                 #    print(entry.key)
                 #except:
                 #    print('listEntry')
+
+                # always keep Solvers and Meshes
+                keep_entries_that_have_no_default_overwrite = keep_entries_that_have_no_default
+                if isinstance(entry, SettingsDictEntry) and (entry.key == '"Solvers"' or entry.key == '"Meshes"'):
+                    keep_entries_that_have_no_default_overwrite = True
+
                 # check if the entry is a SettingsListEntry or if it is a SettingsDictEntry and its key is in any of the defaults
                 if isinstance(entry, SettingsListEntry) or any(s.has_key(entry.key) for s in settings_dicts_default):
                     # key exists in defaults
@@ -121,7 +126,7 @@ class Node:
                         self_settings_dict.append(new_entry)
 
                         # recurse the new entry
-                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dicts_default=settings_dicts_default_recurse, keep_entries_that_have_no_default=keep_entries_that_have_no_default, add_missing_default_entries=add_missing_default_entries)
+                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dicts_default=settings_dicts_default_recurse, keep_entries_that_have_no_default=keep_entries_that_have_no_default_overwrite, add_missing_default_entries=add_missing_default_entries)
                     else:
                         # if the entry.value is not special -> just append the entry
                         self_settings_dict.append(entry)
@@ -147,7 +152,7 @@ class Node:
                         # this entry is not in defaults and there is no child at this place
                         if is_called_on_child:
                             rest.append(entry)
-                        elif keep_entries_that_have_no_default:
+                        elif keep_entries_that_have_no_default_overwrite:
                             self_settings_dict.append(entry)
 
             #elif isinstance(entry, SettingsComment):

@@ -68,7 +68,9 @@ possible_solver_combinations = {
                 "Meshes" : {},
                 "Solvers" : {},
                 #TODO add meta
-                "meta" : {}
+                "meta" : {
+                    "partitioning" : ""
+                }
                 ### CHILD 0 ###
             }
         ]
@@ -431,6 +433,17 @@ possible_solver_combinations = {
             [ "Equation::" ]
         ],
         "python_options" : [
+            {
+                "FiniteElementMethod" : {
+                    ### CHILD 0 ###
+
+                    "OutputWriter" : [
+                        {"format": "PythonFile", "filename": "out/filename", "outputInterval": 1, "binary": False, "onlyNodalValues": True}
+                    ],
+
+                    "solverName": "",
+                }
+            },
             {
                 "FiniteElementMethod" : {
                     ### CHILD 0 ###
