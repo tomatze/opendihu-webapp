@@ -18,22 +18,41 @@ class Window(Gtk.Window):
 
     def init_backend(self):
         self.cpp_tree = CPPTree()
+        self.redraw_textview_cpp_code()
         self.redraw_treeview_cpp()
 
-    def on_button_load_cpp_code(self, _):
+    def on_button_verify_cpp_code(self, _):
+        self.cpp_tree.validate_cpp_src()
+
+        self.redraw_textview_cpp_code()
+        self.redraw_treeview_cpp()
+
+    def on_button_apply_cpp_code(self, _):
         text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
         text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
         self.cpp_tree.parse_cpp_src(text)
 
+        self.redraw_textview_cpp_code()
         self.redraw_treeview_cpp()
 
     def on_button_undo(self, _):
         self.cpp_tree.undo_stack.undo()
         self.redraw_treeview_cpp()
+        self.redraw_textview_cpp_code()
 
     def on_button_redo(self, _):
         self.cpp_tree.undo_stack.redo()
         self.redraw_treeview_cpp()
+        self.redraw_textview_cpp_code()
+
+    def on_button_reset(self, _):
+        self.cpp_tree.reset()
+        self.redraw_treeview_cpp()
+        self.redraw_textview_cpp_code()
+
+    def redraw_textview_cpp_code(self):
+        text = str(self.cpp_tree)
+        self.text_view_cpp_code.get_buffer().set_text(text)
 
     def redraw_treeview_cpp(self):
         self.store_treeview_cpp.clear()
@@ -67,6 +86,10 @@ class Window(Gtk.Window):
         self.button_redo.connect("clicked", self.on_button_redo)
         self.header_bar.pack_start(self.button_redo)
 
+        self.button_reset = Gtk.Button(label='reset')
+        self.button_reset.connect("clicked", self.on_button_reset)
+        self.header_bar.pack_start(self.button_reset)
+
 
         # main grid
         self.grid_main = Gtk.Grid(column_homogeneous=True)
@@ -88,9 +111,14 @@ class Window(Gtk.Window):
         self.scroll_cpp_code.add(self.text_view_cpp_code)
         self.grid_cpp_code.add(self.scroll_cpp_code)
 
-        self.button_load_cpp_code = Gtk.Button(label='load code')
-        self.button_load_cpp_code.connect("clicked", self.on_button_load_cpp_code)
-        self.grid_cpp_code.attach_next_to(self.button_load_cpp_code, self.scroll_cpp_code, Gtk.PositionType.BOTTOM, 1, 1)
+        self.grid_cpp_code_buttons = Gtk.Grid()
+        self.button_apply_cpp_code = Gtk.Button(label='apply changes')
+        self.button_apply_cpp_code.connect("clicked", self.on_button_apply_cpp_code)
+        self.button_verify_cpp_code = Gtk.Button(label='validate')
+        self.button_verify_cpp_code.connect("clicked", self.on_button_verify_cpp_code)
+        self.grid_cpp_code_buttons.add(self.button_apply_cpp_code)
+        self.grid_cpp_code_buttons.attach_next_to(self.button_verify_cpp_code, self.button_apply_cpp_code, Gtk.PositionType.RIGHT, 1, 1)
+        self.grid_cpp_code.attach_next_to(self.grid_cpp_code_buttons, self.scroll_cpp_code, Gtk.PositionType.BOTTOM, 1, 1)
 
         self.tabs_cpp.append_page(self.grid_cpp_code, Gtk.Label(label='cpp-src'))
 

@@ -213,9 +213,9 @@ class Node:
         else:
             return self.name + '<' + childs_string + '\n' + indentation + '>'
 
-    # this function can compare this Node to another Node
+    # this function can compare the cpp of this Node to another Node
     # returning True if equal, False otherwise
-    def compare(self, node):
+    def compare_cpp(self, node):
         if self.name != node.name:
             return False
         if self.comment != node.comment:
@@ -226,7 +226,7 @@ class Node:
         if len(self.childs) != len(node.childs):
             return False
         for i in range(len(self.childs)):
-            if self.childs[i].compare(node.childs[i]) == False:
+            if self.childs[i].compare_cpp(node.childs[i]) == False:
                 return False
         return True
 
@@ -260,10 +260,10 @@ class UndoStack:
 
     def duplicate_current_state(self):
         # deepcopy current root
-        self.__add(copy.deepcopy(self.stack[self.current_index]))
+        self.add(copy.deepcopy(self.stack[self.current_index]))
 
     def add_new_root_node(self):
-        self.__add(RootNode())
+        self.add(RootNode())
 
     def undo(self):
         if self.current_index > 0:
@@ -282,7 +282,7 @@ class UndoStack:
     def __update_cpp_tree(self):
         self.cpp_tree.root = self.stack[self.current_index]
 
-    def __add(self, node):
+    def add(self, node):
         self.__remove_future()
         self.stack.append(node)
         self.current_index = self.current_index + 1
@@ -361,10 +361,12 @@ class CPPTree:
                         for key_sub in self.timeSteppingScheme:
                             template_argument.append(key_sub)
 
+    def reset(self):
+        self.undo_stack.add_new_root_node()
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
     def parse_cpp_src(self, problem):
-        self.undo_stack.duplicate_current_state()
+        new_root = RootNode()
         try:
             # remove single-line-comments from problem
             #problem = re.sub(r'(?m)^(.*)//.*\n?', r'\1\n', problem)
@@ -442,16 +444,22 @@ class CPPTree:
                         stack[-1].name = stack[-1].name + char
 
             child = stack[0].childs[0]
-            self.root.childs.append(child)
-            #self.root = stack[0].childs[0]
+            new_root.childs.append(child)
+
+            if not self.root.compare_cpp(new_root):
+                self.undo_stack.add(new_root)
+            else:
+                printe('no changes found')
         except:
-            printe('failed to parse src')
-            #traceback.print_exc()
+            printe('failed to parse cpp-src (syntax-error)')
 
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
     def __repr__(self):
-        index = self.cpp_template.find(' problem(settings)')
-        return self.cpp_template[:index] + indent(str(self.root.childs[0]), '  ') + self.cpp_template[index:]
+        if len(self.root.childs) > 0:
+            index = self.cpp_template.find(' problem(settings)')
+            return self.cpp_template[:index] + indent(str(self.root.childs[0]), '  ') + self.cpp_template[index:]
+        else:
+            return self.cpp_template
 
     def add_new_child_to_node(self, node, childname):
         self.undo_stack.duplicate_current_state()
@@ -464,6 +472,7 @@ class CPPTree:
 
 
     # this checks if the tree is a valid combination of templates
+    # returns True or False
     def validate_cpp_src(self):
         # not valid, if the root.childs[0] is not a runnable
         try:
