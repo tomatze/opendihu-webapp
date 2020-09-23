@@ -27,7 +27,16 @@ class Window(Gtk.Window):
 
         self.redraw_treeview_cpp()
 
+    def on_button_undo(self, _):
+        self.cpp_tree.undo_stack.undo()
+        self.redraw_treeview_cpp()
+
+    def on_button_redo(self, _):
+        self.cpp_tree.undo_stack.redo()
+        self.redraw_treeview_cpp()
+
     def redraw_treeview_cpp(self):
+        self.store_treeview_cpp.clear()
         self.redraw_treeview_cpp_recursive(self.cpp_tree.root, None)
         self.treeview_cpp.expand_all()
 
@@ -48,12 +57,14 @@ class Window(Gtk.Window):
         icon = Gio.ThemedIcon(name="edit-undo-symbolic")
         image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
         self.button_undo.add(image)
+        self.button_undo.connect("clicked", self.on_button_undo)
         self.header_bar.pack_start(self.button_undo)
 
         self.button_redo = Gtk.Button()
         icon = Gio.ThemedIcon(name="edit-redo-symbolic")
         image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
         self.button_redo.add(image)
+        self.button_redo.connect("clicked", self.on_button_redo)
         self.header_bar.pack_start(self.button_redo)
 
 

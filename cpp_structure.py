@@ -236,6 +236,8 @@ class RootNode(Node):
     def __init__(self):
         super().__init__()
 
+        self.name = 'GLOBAL'
+
         self.settings_dict_prefix = None
         self.settings_dict_postfix = None
 
@@ -248,6 +250,49 @@ class RootNode(Node):
         return python_settings
 
 
+class UndoStack:
+    def __init__(self, cpp_tree):
+       self.stack = []
+       self.current_index = -1
+       self.cpp_tree = cpp_tree
+
+       self.add_new_root_node()
+
+    def duplicate_current_state(self):
+        # deepcopy current root
+        self.__add(copy.deepcopy(self.stack[self.current_index]))
+
+    def add_new_root_node(self):
+        self.__add(RootNode())
+
+    def undo(self):
+        if self.current_index > 0:
+            self.current_index = self.current_index - 1
+            self.__update_cpp_tree()
+        else:
+            printe('cannot undo')
+
+    def redo(self):
+        if len(self.stack) - 1 > self.current_index:
+            self.current_index = self.current_index + 1
+            self.__update_cpp_tree()
+        else:
+            printe('cannot redo')
+
+    def __update_cpp_tree(self):
+        self.cpp_tree.root = self.stack[self.current_index]
+
+    def __add(self, node):
+        self.__remove_future()
+        self.stack.append(node)
+        self.current_index = self.current_index + 1
+        self.__update_cpp_tree()
+
+    def __remove_future(self):
+        # pop everything newer than the current root
+        self.stack = self.stack[:self.current_index + 1]
+
+
 # this class holds a tree of Node objects
 # the tree represents the structure of a example.cpp
 class CPPTree:
@@ -257,10 +302,8 @@ class CPPTree:
         self.cpp_template = file_cpp_template.read()
         file_cpp_template.close()
 
-        #self.root = None
-
-        self.root = RootNode()
-        self.root.name = 'GLOBAL'
+        self.root = None
+        self.undo_stack = UndoStack(self)
 
         self.combinations = possible_solver_combinations.possible_solver_combinations
 
@@ -321,6 +364,7 @@ class CPPTree:
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
     def parse_cpp_src(self, problem):
+        self.undo_stack.duplicate_current_state()
         try:
             # remove single-line-comments from problem
             #problem = re.sub(r'(?m)^(.*)//.*\n?', r'\1\n', problem)
@@ -410,6 +454,7 @@ class CPPTree:
         return self.cpp_template[:index] + indent(str(self.root.childs[0]), '  ') + self.cpp_template[index:]
 
     def add_new_child_to_node(self, node, childname):
+        self.undo_stack.duplicate_current_state()
         child = Node()
         child.name = childname
         if "template_arguments" in self.combinations[childname]:
@@ -465,6 +510,7 @@ class CPPTree:
 
     ## after parsing the cpp_src, we can parse the python settings and map them to the nodes
     def parse_python_settings(self, settings):
+        self.undo_stack.duplicate_current_state()
         # save PythonSettings so we also have the prefix and postfix
         self.root.parse_python_settings(PythonSettings(settings))
 
