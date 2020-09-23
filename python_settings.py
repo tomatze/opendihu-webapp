@@ -359,20 +359,21 @@ class PythonSettings():
     config_dict = None
     postfix = None
     # takes a string of a settings.py and parses it
-    def __init__(self, settings):
-        try:
-            # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
-            split1 = settings.split('config = {\n')
-            self.prefix = split1[0]
-            settings = split1[1]
-            split2 = re.compile(r'(?m)^}').split(settings, 1)
-            settings = split2[0]
-            self.postfix = split2[1]
+    def __init__(self, settings=None):
+        if settings:
+            try:
+                # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
+                split1 = settings.split('config = {\n')
+                self.prefix = split1[0]
+                settings = split1[1]
+                split2 = re.compile(r'(?m)^}').split(settings, 1)
+                settings = split2[0]
+                self.postfix = split2[1]
 
-            # iterate over tokens to create SettingsDict
-            self.config_dict = SettingsDict(settings)
-        except:
-            printe('failed to parse python-settings')
+                # iterate over tokens to create SettingsDict
+                self.config_dict = SettingsDict(settings)
+            except:
+                printe('failed to parse python-settings')
 
     def __repr__(self):
         return self.prefix + 'config = ' + str(self.config_dict) + self.postfix

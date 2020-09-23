@@ -13,11 +13,12 @@ class Window(Gtk.Window):
     def __init__(self):
         super(Window, self).__init__()
 
-        self.init_backend()
         self.init_ui()
+        self.init_backend()
 
     def init_backend(self):
         self.cpp_tree = CPPTree()
+        self.redraw_treeview_cpp()
 
     def on_button_load_cpp_code(self, _):
         text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()

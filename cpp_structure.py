@@ -18,12 +18,16 @@ class Node:
         self.settings_dict = None
         self.settings_dicts_default = None
 
+
     # sets self.settings_dict_default to the values gotten from possible_solver_combinations
     # this is not in __init__(), because self.name (used here) gets defined later
     def get_default_python_settings_dicts(self):
         if self.settings_dicts_default == None:
             self.settings_dicts_default = get_python_options_dicts_for_classname(self.name)
         return self.settings_dicts_default
+
+    def set_python_settings_dict_to_default(self):
+        self.settings_dict = self.get_default_python_settings_dicts()[0]
 
     ## returns self.settings_dict with SettingsChildPlaceholders replaced with child dicts
     def get_python_settings_dict_recursive(self):
@@ -40,6 +44,12 @@ class Node:
                 pass
                 #printe('failed to replace SettingsChildPlaceholder ' + child.name)
         return own_dict
+
+    # parse PythonSettings and keep prefix and postfix
+    def parse_python_settings(self, python_settings):
+        self.settings_dict_prefix = python_settings.prefix
+        self.settings_dict_postfix = python_settings.postfix
+        self.parse_python_settings_recursive(python_settings.config_dict)
 
     # parse a python_settings_dict and add it to this Node and its childs
     def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=False, add_missing_default_entries=False, self_settings_dict=None, settings_dicts_default=None, is_called_on_child=False):
@@ -221,6 +231,23 @@ class Node:
         return True
 
 
+# specialized Node with some extra stuff
+class RootNode(Node):
+    def __init__(self):
+        super().__init__()
+
+        self.settings_dict_prefix = None
+        self.settings_dict_postfix = None
+
+    def get_python_settings(self):
+        settings_dict = self.get_python_settings_dict_recursive()
+        python_settings = PythonSettings()
+        python_settings.config_dict = settings_dict
+        python_settings.prefix = self.settings_dict_prefix
+        python_settings.postfix = self.settings_dict_postfix
+        return python_settings
+
+
 # this class holds a tree of Node objects
 # the tree represents the structure of a example.cpp
 class CPPTree:
@@ -232,7 +259,7 @@ class CPPTree:
 
         #self.root = None
 
-        self.root = Node()
+        self.root = RootNode()
         self.root.name = 'GLOBAL'
 
         self.combinations = possible_solver_combinations.possible_solver_combinations
@@ -290,9 +317,6 @@ class CPPTree:
                         template_argument.remove(item)
                         for key_sub in self.timeSteppingScheme:
                             template_argument.append(key_sub)
-
-        self.settings_prefix = ''
-        self.settings_postfix = ''
 
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
@@ -385,6 +409,15 @@ class CPPTree:
         index = self.cpp_template.find(' problem(settings)')
         return self.cpp_template[:index] + indent(str(self.root.childs[0]), '  ') + self.cpp_template[index:]
 
+    def add_new_child_to_node(self, node, childname):
+        child = Node()
+        child.name = childname
+        if "template_arguments" in self.combinations[childname]:
+            child.can_have_childs = True
+        child.set_python_settings_dict_to_default()
+        node.childs.append(child)
+
+
     # this checks if the tree is a valid combination of templates
     def validate_cpp_src(self):
         # not valid, if the root.childs[0] is not a runnable
@@ -433,13 +466,10 @@ class CPPTree:
     ## after parsing the cpp_src, we can parse the python settings and map them to the nodes
     def parse_python_settings(self, settings):
         # save PythonSettings so we also have the prefix and postfix
-        self.python_settings = PythonSettings(settings)
-        self.root.parse_python_settings_recursive(self.python_settings.config_dict)
+        self.root.parse_python_settings(PythonSettings(settings))
 
-    def get_python_settings_dict(self):
-        config_dict = self.root.get_python_settings_dict_recursive()
-        self.python_settings.config_dict = config_dict
-        return config_dict
+    def get_python_settings(self):
+        return self.root.get_python_settings()
 
 
 # returns the python-src of the python_options for a given classname from possible_solver_combinations
