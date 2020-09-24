@@ -46,19 +46,25 @@ class Node:
         return own_dict
 
     # this function recursively adds missing python-settings to self.settings_dict
+    # returns number of added settings
+    # TODO add support for Meshes and Solvers
     def add_missing_default_python_settings(self, self_settings_dict=None, settings_dict_default=None):
         # recurse childs
+        changes = 0
         for child in self.childs:
-            child.add_missing_default_python_settings()
-
+            changes_child = child.add_missing_default_python_settings()
+            changes = changes + changes_child
         try:
             if settings_dict_default == None:
-                print(self.name)
-                settings_dict_default = self.get_default_python_settings_dicts()[0]
+                try:
+                    settings_dict_default = self.get_default_python_settings_dicts()[0]
+                except:
+                    # if self.get_default_python_settings_dicts() returns None
+                    return changes
             if self.settings_dict == None:
                 # if self.settings_dict is None, just add everthing
                 self.settings_dict = copy.deepcopy(settings_dict_default)
-                print('copy')
+                changes = changes + len(settings_dict_default)
             else:
                 if self_settings_dict == None:
                     self_settings_dict = self.settings_dict
@@ -68,10 +74,10 @@ class Node:
                     if isinstance(self_settings_dict, SettingsDict) and isinstance(entry, SettingsDictEntry):
                         if any(s.has_key(entry.key) for s in settings_dict_default):
                             settings_dict_default_recurse = settings_dict_default.get_value(entry.key)
-                            self.add_missing_default_python_settings(self_settings_dict=entry.value, settings_dict_default=settings_dict_default_recurse)
+                            changes = changes + self.add_missing_default_python_settings(self_settings_dict=entry.value, settings_dict_default=settings_dict_default_recurse)
                     elif isinstance(self_settings_dict, SettingsList) and isinstance(entry, SettingsListEntry):
                         # TODO here we assume that we can just use settings_dict_default[0] as default for all listEntries
-                        self.add_missing_default_python_settings(self_settings_dict=entry.value, settings_dict_default=settings_dict_default[0])
+                        changes = changes + self.add_missing_default_python_settings(self_settings_dict=entry.value, settings_dict_default=settings_dict_default[0])
 
                 # add defaults to this level
                 # we assume that we don't have to add any placeholders, as they should be already added by parse_python_settings()
@@ -80,13 +86,14 @@ class Node:
                         # add default-entry if we don't have the key already
                         if not any(s.has_key(entry.key) for s in self_settings_dict):
                             self_settings_dict.append(entry)
+                            changes = changes + 1
                     elif isinstance(entry, SettingsListEntry):
                         # TODO do we have to add anything here?
                         pass
         except:
-            pass
+            printe('something went wrong while adding missing python-settings')
 
-        return Info('added all missing default python-settings')
+        return changes
 
     # parse PythonSettings and keep prefix and postfix
     def parse_python_settings(self, python_settings):
@@ -567,8 +574,8 @@ class CPPTree:
         return self.root.get_python_settings()
 
     def add_missing_default_python_settings(self):
-        return self.root.add_missing_default_python_settings()
-
+        changes = self.root.add_missing_default_python_settings()
+        return Info('added ' + str(changes) + ' missing default python-settings')
 
 # returns the python-src of the python_options for a given classname from possible_solver_combinations
 def get_python_options_dicts_for_classname(name):
