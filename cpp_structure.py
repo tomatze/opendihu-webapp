@@ -95,8 +95,16 @@ class Node:
 
         return changes
 
+    # delete self.settings_dict recursively
+    def delete_python_settings(self):
+        self.settings_dict = None
+        for child in self.childs:
+            child.delete_python_settings()
+
     # parse PythonSettings and keep prefix and postfix
     def parse_python_settings(self, python_settings):
+        # remove all old python-settings
+        self.delete_python_settings()
         self.settings_dict_prefix = python_settings.prefix
         self.settings_dict_postfix = python_settings.postfix
         return self.parse_python_settings_recursive(python_settings.config_dict)
@@ -284,6 +292,8 @@ class RootNode(Node):
 
     def get_python_settings(self):
         settings_dict = self.get_python_settings_dict_recursive()
+        if not settings_dict:
+            settings_dict = SettingsDict()
         python_settings = PythonSettings()
         python_settings.config_dict = settings_dict
         python_settings.prefix = self.settings_dict_prefix
@@ -339,7 +349,8 @@ class UndoStack:
 
     def duplicate_current_state(self):
         # deepcopy current root
-        self.add(copy.deepcopy(self.stack[self.current_index]))
+        #self.add(copy.deepcopy(self.stack[self.current_index]))
+        self.add(copy.deepcopy(self.cpp_tree.root))
 
     def add_new_root_node(self):
         self.add(RootNode())
@@ -575,6 +586,8 @@ class CPPTree:
 
     def add_missing_default_python_settings(self):
         changes = self.root.add_missing_default_python_settings()
+        if changes > 0:
+            self.undo_stack.duplicate_current_state()
         return Info('added ' + str(changes) + ' missing default python-settings')
 
 # returns the python-src of the python_options for a given classname from possible_solver_combinations

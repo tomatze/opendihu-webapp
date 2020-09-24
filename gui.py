@@ -21,6 +21,7 @@ class Window(Gtk.Window):
         self.cpp_tree = CPPTree()
         self.redraw_textview_cpp_code()
         self.redraw_treeview_cpp()
+        self.redraw_textview_python_code()
 
     #def on_button_verify_cpp_code(self, _):
     #    ret = self.cpp_tree.validate_cpp_src(self.cpp_tree)
@@ -50,6 +51,7 @@ class Window(Gtk.Window):
         if not isinstance(ret, Error):
             self.redraw_textview_cpp_code()
             self.redraw_treeview_cpp()
+            self.redraw_textview_python_code()
 
     def on_button_undo(self, _):
         ret = self.cpp_tree.undo_stack.undo()
@@ -57,6 +59,7 @@ class Window(Gtk.Window):
         if not isinstance(ret, Error):
             self.redraw_treeview_cpp()
             self.redraw_textview_cpp_code()
+            self.redraw_textview_python_code()
 
     def on_button_redo(self, _):
         ret = self.cpp_tree.undo_stack.redo()
@@ -64,12 +67,14 @@ class Window(Gtk.Window):
         if not isinstance(ret, Error):
             self.redraw_treeview_cpp()
             self.redraw_textview_cpp_code()
+            self.redraw_textview_python_code()
 
     def on_button_reset(self, _):
         ret = self.cpp_tree.reset()
         self.log_append_message(ret)
         self.redraw_treeview_cpp()
         self.redraw_textview_cpp_code()
+        self.redraw_textview_python_code()
 
     def redraw_textview_python_code(self):
         text = str(self.cpp_tree.get_python_settings())
