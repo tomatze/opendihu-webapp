@@ -22,21 +22,20 @@ class Window(Gtk.Window):
         self.redraw_textview_cpp_code()
         self.redraw_treeview_cpp()
 
-    def on_button_verify_cpp_code(self, _):
-        ret = self.cpp_tree.validate_cpp_src()
-        if isinstance(ret, Message):
-            self.log_append_message(ret)
-        else:
-            self.redraw_textview_cpp_code()
-            self.redraw_treeview_cpp()
+    #def on_button_verify_cpp_code(self, _):
+    #    ret = self.cpp_tree.validate_cpp_src(self.cpp_tree)
+    #    if isinstance(ret, Message):
+    #        self.log_append_message(ret)
+    #    else:
+    #        self.redraw_textview_cpp_code()
+    #        self.redraw_treeview_cpp()
 
     def on_button_apply_cpp_code(self, _):
         text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
         text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
-        ret = self.cpp_tree.parse_cpp_src(text)
-        if isinstance(ret, Message):
-            self.log_append_message(ret)
-        else:
+        ret = self.cpp_tree.parse_cpp_src(text, validate_semantics=self.checkbox_validate_semantics.get_active())
+        self.log_append_message(ret)
+        if not isinstance(ret, Error):
             self.redraw_textview_cpp_code()
             self.redraw_treeview_cpp()
 
@@ -79,19 +78,18 @@ class Window(Gtk.Window):
     def log_append_line(self, text, color=None):
         buffer = self.text_view_log.get_buffer()
         iter = buffer.get_end_iter()
-        if buffer.get_char_count() == 0:
-            nl = ''
-        else:
-            nl = '\n'
-            #buffer.insert(iter, '\n' + str(text))
         col = ''
         if color:
             col = ' color="' + color + '"'
-        buffer.insert_markup(iter, nl + '<span' + col + '>' + str(text) + '</span>', -1)
+        for line in str(text).splitlines():
+            if buffer.get_char_count() > 0:
+                buffer.insert(iter, '\n')
+            # move mark
+            buffer.move_mark(self.log_text_mark_end, iter)
+            buffer.insert_markup(iter, '<span' + col + '>' + line + '</span>', -1)
 
         # scroll to end
-        text_mark_end = buffer.create_mark("", iter, False)
-        self.text_view_log.scroll_to_mark(text_mark_end, 0, False, 0, 0)
+        self.text_view_log.scroll_to_mark(self.log_text_mark_end, 0, False, 0, 0)
 
     def init_ui(self):
         self.set_title("opendihu - webapp")
@@ -127,6 +125,9 @@ class Window(Gtk.Window):
         # log (lower)
         self.text_view_log = Gtk.TextView()
         self.text_view_log.set_editable(False)
+        buffer = self.text_view_log.get_buffer()
+        iter = buffer.get_end_iter()
+        self.log_text_mark_end = buffer.create_mark('the-end', iter, True)
         self.scroll_log = Gtk.ScrolledWindow()
         self.scroll_log.add(self.text_view_log)
         self.grid_main.add(self.scroll_log)
@@ -154,10 +155,13 @@ class Window(Gtk.Window):
         self.grid_cpp_code_buttons = Gtk.Grid()
         self.button_apply_cpp_code = Gtk.Button(label='apply changes')
         self.button_apply_cpp_code.connect("clicked", self.on_button_apply_cpp_code)
-        self.button_verify_cpp_code = Gtk.Button(label='validate')
-        self.button_verify_cpp_code.connect("clicked", self.on_button_verify_cpp_code)
+        #self.button_verify_cpp_code = Gtk.Button(label='validate')
+        #self.button_verify_cpp_code.connect("clicked", self.on_button_verify_cpp_code)
+        self.checkbox_validate_semantics = Gtk.CheckButton()
+        self.checkbox_validate_semantics.set_label("check code for semantic errors")
+        self.checkbox_validate_semantics.set_active(True)
         self.grid_cpp_code_buttons.add(self.button_apply_cpp_code)
-        self.grid_cpp_code_buttons.attach_next_to(self.button_verify_cpp_code, self.button_apply_cpp_code, Gtk.PositionType.RIGHT, 1, 1)
+        self.grid_cpp_code_buttons.attach_next_to(self.checkbox_validate_semantics, self.button_apply_cpp_code, Gtk.PositionType.RIGHT, 1, 1)
         self.grid_cpp_code.attach_next_to(self.grid_cpp_code_buttons, self.scroll_cpp_code, Gtk.PositionType.BOTTOM, 1, 1)
 
         self.tabs_cpp.append_page(self.grid_cpp_code, Gtk.Label(label='cpp-src'))

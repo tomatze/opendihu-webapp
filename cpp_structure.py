@@ -249,6 +249,44 @@ class RootNode(Node):
         python_settings.postfix = self.settings_dict_postfix
         return python_settings
 
+    # this checks if the tree is a valid combination of templates
+    # returns True or False
+    def validate_cpp_src(self, cpp_tree):
+        # not valid, if the root.childs[0] is not a runnable
+        try:
+            if self.childs[0].name not in cpp_tree.runnables:
+                return Error(self.childs[0].name + ' does not exist or is not runnable')
+            return self.validate_cpp_src_recursive(self.childs[0], cpp_tree)
+        except:
+            # return false if self.childs[0].name is None
+            return Error(self.name + ' needs exactly 1 child (0 given)')
+
+    # helper function to make validate_src() recursive
+    def validate_cpp_src_recursive(self, node, cpp_tree):
+        try:
+            wanted_childs = cpp_tree.combinations[node.name].get("template_arguments", [])
+            argument_count_max = len(wanted_childs)
+            argument_count_min = cpp_tree.combinations[node.name].get("template_arguments_needed", argument_count_max)
+        except:
+            # if the key node.name does not exist, we are at the bottom
+            return Info('cpp-src is valid')
+        if "template_arguments" not in cpp_tree.combinations[node.name] and node.can_have_childs:
+            return Error(node.name + ' can not have any template_arguments (not even <>)')
+        if argument_count_min > len(node.childs) or len(node.childs) > argument_count_max:
+            return Error(node.name + ' has the wrong number of template_arguments')
+        for i in range(len(node.childs)):
+            if wanted_childs[i] == ["Integer"]:
+                try:
+                    int(node.childs[i].name)
+                except:
+                    return Error(node.childs[i].name + ' is not an Integer')
+            elif node.childs[i].name not in wanted_childs[i]:
+                return Error(node.childs[i].name + ' is not in the list of possible template_arguments for ' + node.name + ':\n' + str(wanted_childs[i]))
+            res = self.validate_cpp_src_recursive(node.childs[i], cpp_tree)
+            if isinstance(res, Error):
+                return res
+        return Info('cpp-src is valid')
+
 
 class UndoStack:
     def __init__(self, cpp_tree):
@@ -367,7 +405,7 @@ class CPPTree:
         self.undo_stack.add_new_root_node()
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
-    def parse_cpp_src(self, problem):
+    def parse_cpp_src(self, problem, validate_semantics=False):
         new_root = RootNode()
         try:
             # remove single-line-comments from problem
@@ -448,6 +486,10 @@ class CPPTree:
             child = stack[0].childs[0]
             new_root.childs.append(child)
 
+            if validate_semantics:
+                 ret = new_root.validate_cpp_src(self)
+                 if isinstance(ret, Error):
+                     return ret
             if not self.root.compare_cpp(new_root):
                 self.undo_stack.add(new_root)
                 return Info('cpp-src parsed successfully')
@@ -474,43 +516,6 @@ class CPPTree:
         node.childs.append(child)
 
 
-    # this checks if the tree is a valid combination of templates
-    # returns True or False
-    def validate_cpp_src(self):
-        # not valid, if the root.childs[0] is not a runnable
-        try:
-            if self.root.childs[0].name not in self.runnables:
-                return Error(self.root.childs[0].name + ' does not exist or is not runnable')
-            return self.validate_cpp_src_recursive(self.root.childs[0])
-        except:
-            # return false if self.root.childs[0].name is None
-            return Error(self.root.name + ' needs exactly 1 child (0 given)')
-
-    # helper function to make validate_src() recursive
-    def validate_cpp_src_recursive(self, node):
-        try:
-            wanted_childs = self.combinations[node.name].get("template_arguments", [])
-            argument_count_max = len(wanted_childs)
-            argument_count_min = self.combinations[node.name].get("template_arguments_needed", argument_count_max)
-        except:
-            # if the key node.name does not exist, we are at the bottom
-            return Info('cpp-code is valid')
-        if "template_arguments" not in self.combinations[node.name] and node.can_have_childs:
-            return Error(node.name + ' can not have any template_arguments (not even <>)')
-        if argument_count_min > len(node.childs) or len(node.childs) > argument_count_max:
-            return Error(node.name + ' has the wrong number of template_arguments')
-        for i in range(len(node.childs)):
-            if wanted_childs[i] == ["Integer"]:
-                try:
-                    int(node.childs[i].name)
-                except:
-                    return Error(node.childs[i].name + ' is not an Integer')
-            elif node.childs[i].name not in wanted_childs[i]:
-                return Error(node.childs[i].name + ' is not in the list of possible template_arguments for ' + node.name + ':\n' + str(wanted_childs[i]))
-            res = self.validate_cpp_src_recursive(node.childs[i])
-            if isinstance(res, Error):
-                return res
-        return Info('cpp-code is valid')
 
     # this function returns a list of all possible childs of a given class
     def get_possible_childs(self, name):

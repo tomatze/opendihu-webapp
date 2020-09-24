@@ -159,7 +159,7 @@ class TestParser(unittest.TestCase):
             src = file.read()
             file.close()
             example.parse_cpp_src(src)
-            self.assertEqual(isinstance(example.validate_cpp_src(), Error), False, msg=path)
+            self.assertEqual(isinstance(example.root.validate_cpp_src(example), Error), False, msg=path)
 
     # this test parses all examples (src1) and creates their src (src2)
     # it then parses src2 and compares the trees of both examples
