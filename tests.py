@@ -3,6 +3,7 @@
 import unittest
 
 import cpp_structure
+from helpers import Error
 
 class TestParser(unittest.TestCase):
 
@@ -158,7 +159,7 @@ class TestParser(unittest.TestCase):
             src = file.read()
             file.close()
             example.parse_cpp_src(src)
-            self.assertEqual(example.validate_cpp_src(), True, msg=path)
+            self.assertEqual(isinstance(example.validate_cpp_src(), Error), False, msg=path)
 
     # this test parses all examples (src1) and creates their src (src2)
     # it then parses src2 and compares the trees of both examples
@@ -173,7 +174,7 @@ class TestParser(unittest.TestCase):
             example1.parse_cpp_src(src1)
             src2 = str(example1)
             example2.parse_cpp_src(src2)
-            self.assertEqual(example1.root.childs[0].compare(example2.root.childs[0]), True, msg=path)
+            self.assertEqual(example1.root.childs[0].compare_cpp(example2.root.childs[0]), True, msg=path)
 
 if __name__ == '__main__':
     unittest.main()

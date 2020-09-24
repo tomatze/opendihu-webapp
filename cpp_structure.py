@@ -3,7 +3,7 @@ import traceback
 import inspect
 import copy
 
-from helpers import printe, indent
+from helpers import printe, indent, Error, Info
 import possible_solver_combinations
 from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsLinkPlaceholder
 
@@ -42,7 +42,7 @@ class Node:
                 own_dict.replaceChildPlaceholder(child_dict)
             except:
                 pass
-                #printe('failed to replace SettingsChildPlaceholder ' + child.name)
+                #print('failed to replace SettingsChildPlaceholder ' + child.name)
         return own_dict
 
     # parse PythonSettings and keep prefix and postfix
@@ -269,15 +269,17 @@ class UndoStack:
         if self.current_index > 0:
             self.current_index = self.current_index - 1
             self.__update_cpp_tree()
+            return Info('undo successful')
         else:
-            printe('cannot undo')
+            return Error('cannot undo')
 
     def redo(self):
         if len(self.stack) - 1 > self.current_index:
             self.current_index = self.current_index + 1
             self.__update_cpp_tree()
+            return Info('redo successful')
         else:
-            printe('cannot redo')
+            return Error('cannot redo')
 
     def __update_cpp_tree(self):
         self.cpp_tree.root = self.stack[self.current_index]
@@ -448,10 +450,11 @@ class CPPTree:
 
             if not self.root.compare_cpp(new_root):
                 self.undo_stack.add(new_root)
+                return Info('cpp-src parsed successfully')
             else:
-                printe('no changes found')
+                return Info('no changes found in cpp-src')
         except:
-            printe('failed to parse cpp-src (syntax-error)')
+            return Error('failed to parse cpp-src (syntax-error)')
 
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
     def __repr__(self):
@@ -477,12 +480,11 @@ class CPPTree:
         # not valid, if the root.childs[0] is not a runnable
         try:
             if self.root.childs[0].name not in self.runnables:
-                printe(self.root.childs[0].name + ' does not exist or is not runnable')
-                return False
+                return Error(self.root.childs[0].name + ' does not exist or is not runnable')
             return self.validate_cpp_src_recursive(self.root.childs[0])
         except:
-            # return false if self.root.name is None
-            return False
+            # return false if self.root.childs[0].name is None
+            return Error(self.root.name + ' needs exactly 1 child (0 given)')
 
     # helper function to make validate_src() recursive
     def validate_cpp_src_recursive(self, node):
@@ -492,26 +494,23 @@ class CPPTree:
             argument_count_min = self.combinations[node.name].get("template_arguments_needed", argument_count_max)
         except:
             # if the key node.name does not exist, we are at the bottom
-            return True
+            return Info('cpp-code is valid')
         if "template_arguments" not in self.combinations[node.name] and node.can_have_childs:
-            printe(node.name + ' can not have any template_arguments (not even <>)')
-            return False
+            return Error(node.name + ' can not have any template_arguments (not even <>)')
         if argument_count_min > len(node.childs) or len(node.childs) > argument_count_max:
-            printe(node.name + ' has the wrong number of template_arguments')
-            return False
+            return Error(node.name + ' has the wrong number of template_arguments')
         for i in range(len(node.childs)):
             if wanted_childs[i] == ["Integer"]:
                 try:
                     int(node.childs[i].name)
                 except:
-                    printe(node.childs[i].name + ' is not an Integer')
-                    return False
+                    return Error(node.childs[i].name + ' is not an Integer')
             elif node.childs[i].name not in wanted_childs[i]:
-                printe(node.childs[i].name + ' is not in the list of possible template_arguments:\n' + str(wanted_childs[i]))
-                return False
-            if self.validate_cpp_src_recursive(node.childs[i]) == False:
-                return False
-        return True
+                return Error(node.childs[i].name + ' is not in the list of possible template_arguments for ' + node.name + ':\n' + str(wanted_childs[i]))
+            res = self.validate_cpp_src_recursive(node.childs[i])
+            if isinstance(res, Error):
+                return res
+        return Info('cpp-code is valid')
 
     # this function returns a list of all possible childs of a given class
     def get_possible_childs(self, name):

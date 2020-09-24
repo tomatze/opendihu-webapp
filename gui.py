@@ -7,6 +7,7 @@ from gi.repository import Gtk, Gio, GtkSource
 
 from cpp_structure import CPPTree
 from python_settings import PythonSettings
+from helpers import Message, Error, Info
 import possible_solver_combinations
 
 class Window(Gtk.Window):
@@ -22,28 +23,36 @@ class Window(Gtk.Window):
         self.redraw_treeview_cpp()
 
     def on_button_verify_cpp_code(self, _):
-        self.cpp_tree.validate_cpp_src()
-
-        self.redraw_textview_cpp_code()
-        self.redraw_treeview_cpp()
+        ret = self.cpp_tree.validate_cpp_src()
+        if isinstance(ret, Message):
+            self.log_append_message(ret)
+        else:
+            self.redraw_textview_cpp_code()
+            self.redraw_treeview_cpp()
 
     def on_button_apply_cpp_code(self, _):
         text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
         text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
-        self.cpp_tree.parse_cpp_src(text)
-
-        self.redraw_textview_cpp_code()
-        self.redraw_treeview_cpp()
+        ret = self.cpp_tree.parse_cpp_src(text)
+        if isinstance(ret, Message):
+            self.log_append_message(ret)
+        else:
+            self.redraw_textview_cpp_code()
+            self.redraw_treeview_cpp()
 
     def on_button_undo(self, _):
-        self.cpp_tree.undo_stack.undo()
-        self.redraw_treeview_cpp()
-        self.redraw_textview_cpp_code()
+        ret = self.cpp_tree.undo_stack.undo()
+        self.log_append_message(ret)
+        if not isinstance(ret, Error):
+            self.redraw_treeview_cpp()
+            self.redraw_textview_cpp_code()
 
     def on_button_redo(self, _):
-        self.cpp_tree.undo_stack.redo()
-        self.redraw_treeview_cpp()
-        self.redraw_textview_cpp_code()
+        ret = self.cpp_tree.undo_stack.redo()
+        self.log_append_message(ret)
+        if not isinstance(ret, Error):
+            self.redraw_treeview_cpp()
+            self.redraw_textview_cpp_code()
 
     def on_button_reset(self, _):
         self.cpp_tree.reset()
@@ -63,6 +72,26 @@ class Window(Gtk.Window):
         row = self.store_treeview_cpp.append(parent_row, [node.name])
         for child in node.childs:
             self.redraw_treeview_cpp_recursive(child, row)
+
+    def log_append_message(self, message):
+        self.log_append_line(str(message), message.color)
+
+    def log_append_line(self, text, color=None):
+        buffer = self.text_view_log.get_buffer()
+        iter = buffer.get_end_iter()
+        if buffer.get_char_count() == 0:
+            nl = ''
+        else:
+            nl = '\n'
+            #buffer.insert(iter, '\n' + str(text))
+        col = ''
+        if color:
+            col = ' color="' + color + '"'
+        buffer.insert_markup(iter, nl + '<span' + col + '>' + str(text) + '</span>', -1)
+
+        # scroll to end
+        text_mark_end = buffer.create_mark("", iter, False)
+        self.text_view_log.scroll_to_mark(text_mark_end, 0, False, 0, 0)
 
     def init_ui(self):
         self.set_title("opendihu - webapp")
@@ -95,9 +124,20 @@ class Window(Gtk.Window):
         self.grid_main = Gtk.Grid(column_homogeneous=True)
         self.add(self.grid_main)
 
+        # log (lower)
+        self.text_view_log = Gtk.TextView()
+        self.text_view_log.set_editable(False)
+        self.scroll_log = Gtk.ScrolledWindow()
+        self.scroll_log.add(self.text_view_log)
+        self.grid_main.add(self.scroll_log)
+
+        # upper grid
+        self.grid_upper = Gtk.Grid(column_homogeneous=True)
+        self.grid_main.attach_next_to(self.grid_upper, self.scroll_log, Gtk.PositionType.TOP, 1, 1)
+
         # cpp side
         self.tabs_cpp = Gtk.Notebook()
-        self.grid_main.add(self.tabs_cpp)
+        self.grid_upper.add(self.tabs_cpp)
 
         self.grid_cpp_code = Gtk.Grid()
 
@@ -143,7 +183,7 @@ class Window(Gtk.Window):
         self.text_view_python_code.get_buffer().set_language(language_manager.get_language('python3'))
         self.scroll_python_code = Gtk.ScrolledWindow()
         self.scroll_python_code.add(self.text_view_python_code)
-        self.grid_main.attach_next_to(self.scroll_python_code, self.tabs_cpp, Gtk.PositionType.RIGHT, 1, 1)
+        self.grid_upper.attach_next_to(self.scroll_python_code, self.tabs_cpp, Gtk.PositionType.RIGHT, 1, 1)
 
 win = Window()
 win.show_all()
