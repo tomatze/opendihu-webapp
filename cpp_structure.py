@@ -45,14 +45,57 @@ class Node:
                 #print('failed to replace SettingsChildPlaceholder ' + child.name)
         return own_dict
 
+    # this function recursively adds missing python-settings to self.settings_dict
+    def add_missing_default_python_settings(self, self_settings_dict=None, settings_dict_default=None):
+        # recurse childs
+        for child in self.childs:
+            child.add_missing_default_python_settings()
+
+        try:
+            if settings_dict_default == None:
+                print(self.name)
+                settings_dict_default = self.get_default_python_settings_dicts()[0]
+            if self.settings_dict == None:
+                # if self.settings_dict is None, just add everthing
+                self.settings_dict = copy.deepcopy(settings_dict_default)
+                print('copy')
+            else:
+                if self_settings_dict == None:
+                    self_settings_dict = self.settings_dict
+                # self.settings_dict already has some entries
+                # recurse levels
+                for entry in self_settings_dict:
+                    if isinstance(self_settings_dict, SettingsDict) and isinstance(entry, SettingsDictEntry):
+                        if any(s.has_key(entry.key) for s in settings_dict_default):
+                            settings_dict_default_recurse = settings_dict_default.get_value(entry.key)
+                            self.add_missing_default_python_settings(self_settings_dict=entry.value, settings_dict_default=settings_dict_default_recurse)
+                    elif isinstance(self_settings_dict, SettingsList) and isinstance(entry, SettingsListEntry):
+                        # TODO here we assume that we can just use settings_dict_default[0] as default for all listEntries
+                        self.add_missing_default_python_settings(self_settings_dict=entry.value, settings_dict_default=settings_dict_default[0])
+
+                # add defaults to this level
+                # we assume that we don't have to add any placeholders, as they should be already added by parse_python_settings()
+                for entry in settings_dict_default:
+                    if isinstance(entry, SettingsDictEntry):
+                        # add default-entry if we don't have the key already
+                        if not any(s.has_key(entry.key) for s in self_settings_dict):
+                            self_settings_dict.append(entry)
+                    elif isinstance(entry, SettingsListEntry):
+                        # TODO do we have to add anything here?
+                        pass
+        except:
+            pass
+
+        return Info('added all missing default python-settings')
+
     # parse PythonSettings and keep prefix and postfix
     def parse_python_settings(self, python_settings):
         self.settings_dict_prefix = python_settings.prefix
         self.settings_dict_postfix = python_settings.postfix
-        self.parse_python_settings_recursive(python_settings.config_dict)
+        return self.parse_python_settings_recursive(python_settings.config_dict)
 
     # parse a python_settings_dict and add it to this Node and its childs
-    def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=False, add_missing_default_entries=False, self_settings_dict=None, settings_dicts_default=None, is_called_on_child=False):
+    def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=True, self_settings_dict=None, settings_dicts_default=None, is_called_on_child=False):
         # TODO SettingsConditional? 
         # TODO Meshes and Solvers e.g. with ### SOLVER ###?
         # TODO if a SettingsDictEntry has no comment, add the default-comment
@@ -136,7 +179,7 @@ class Node:
                         self_settings_dict.append(new_entry)
 
                         # recurse the new entry
-                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dicts_default=settings_dicts_default_recurse, keep_entries_that_have_no_default=keep_entries_that_have_no_default_overwrite, add_missing_default_entries=add_missing_default_entries)
+                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dicts_default=settings_dicts_default_recurse, keep_entries_that_have_no_default=keep_entries_that_have_no_default_overwrite)
                     else:
                         # if the entry.value is not special -> just append the entry
                         self_settings_dict.append(entry)
@@ -151,7 +194,7 @@ class Node:
                         for j in range(len(child_placeholders)):
                             #print('trying to give entry to child ' + str(child_placeholders[j].childnumber))
                             child = self.childs[child_placeholders[j].childnumber]
-                            new_dict = child.parse_python_settings_recursive(new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, add_missing_default_entries=add_missing_default_entries, is_called_on_child=True)
+                            new_dict = child.parse_python_settings_recursive(new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, is_called_on_child=True)
                             if len(new_dict) == 0:
                                 break
                         if len(new_dict) > 0:
@@ -168,15 +211,6 @@ class Node:
             #elif isinstance(entry, SettingsComment):
             else:
                 self_settings_dict.append(entry)
-
-        # add missing default entries
-        if add_missing_default_entries:
-            if isinstance(settings_dict, SettingsList):
-                pass
-            else:
-                for entry in settings_dict_default:
-                    if isinstance(entry, SettingsDictEntry) and not self_settings_dict.has_key(entry.key):
-                        self_settings_dict.append(entry)
 
         return rest
 
@@ -238,8 +272,8 @@ class RootNode(Node):
 
         self.name = 'GLOBAL'
 
-        self.settings_dict_prefix = None
-        self.settings_dict_postfix = None
+        self.settings_dict_prefix = ''
+        self.settings_dict_postfix = ''
 
     def get_python_settings(self):
         settings_dict = self.get_python_settings_dict_recursive()
@@ -527,9 +561,13 @@ class CPPTree:
         self.undo_stack.duplicate_current_state()
         # save PythonSettings so we also have the prefix and postfix
         self.root.parse_python_settings(PythonSettings(settings))
+        return Info('tried our best, to fit the given settings to the c++ tree')
 
     def get_python_settings(self):
         return self.root.get_python_settings()
+
+    def add_missing_default_python_settings(self):
+        return self.root.add_missing_default_python_settings()
 
 
 # returns the python-src of the python_options for a given classname from possible_solver_combinations

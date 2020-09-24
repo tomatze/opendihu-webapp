@@ -355,9 +355,9 @@ class SettingsList(SettingsContainer):
 
 # this holds a complete settings.py by parsing its config-dict and storing the rest of the file in prefix and postfix
 class PythonSettings():
-    prefix = None
+    prefix = ''
     config_dict = None
-    postfix = None
+    postfix = ''
     # takes a string of a settings.py and parses it
     def __init__(self, settings=None):
         if settings:

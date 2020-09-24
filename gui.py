@@ -30,6 +30,18 @@ class Window(Gtk.Window):
     #        self.redraw_textview_cpp_code()
     #        self.redraw_treeview_cpp()
 
+    def on_button_add_defaults_python_code(self, _):
+        ret = self.cpp_tree.add_missing_default_python_settings()
+        self.log_append_message(ret)
+        self.redraw_textview_python_code()
+
+    def on_button_apply_python_code(self, _):
+        text_bounds = self.text_view_python_code.get_buffer().get_bounds()
+        text = self.text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+        ret = self.cpp_tree.parse_python_settings(text)
+        self.log_append_message(ret)
+        self.redraw_textview_python_code()
+
     def on_button_apply_cpp_code(self, _):
         text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
         text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
@@ -58,6 +70,10 @@ class Window(Gtk.Window):
         self.log_append_message(ret)
         self.redraw_treeview_cpp()
         self.redraw_textview_cpp_code()
+
+    def redraw_textview_python_code(self):
+        text = str(self.cpp_tree.get_python_settings())
+        self.text_view_python_code.get_buffer().set_text(text)
 
     def redraw_textview_cpp_code(self):
         text = str(self.cpp_tree)
@@ -133,11 +149,13 @@ class Window(Gtk.Window):
         self.scroll_log.set_min_content_height(100)
         self.scroll_log.set_max_content_height(100)
         self.scroll_log.add(self.text_view_log)
-        self.grid_main.add(self.scroll_log)
+        self.tabs_log = Gtk.Notebook()
+        self.tabs_log.append_page(self.scroll_log, Gtk.Label(label='log'))
+        self.grid_main.add(self.tabs_log)
 
         # upper grid
         self.grid_upper = Gtk.Grid(column_homogeneous=True)
-        self.grid_main.attach_next_to(self.grid_upper, self.scroll_log, Gtk.PositionType.TOP, 1, 1)
+        self.grid_main.attach_next_to(self.grid_upper, self.tabs_log, Gtk.PositionType.TOP, 1, 1)
 
         # cpp side
         self.tabs_cpp = Gtk.Notebook()
@@ -167,7 +185,7 @@ class Window(Gtk.Window):
         self.grid_cpp_code_buttons.attach_next_to(self.checkbox_validate_semantics, self.button_apply_cpp_code, Gtk.PositionType.RIGHT, 1, 1)
         self.grid_cpp_code.attach_next_to(self.grid_cpp_code_buttons, self.scroll_cpp_code, Gtk.PositionType.BOTTOM, 1, 1)
 
-        self.tabs_cpp.append_page(self.grid_cpp_code, Gtk.Label(label='cpp-src'))
+        self.tabs_cpp.append_page(self.grid_cpp_code, Gtk.Label(label='c++ code'))
 
         self.store_treeview_cpp = Gtk.TreeStore(str)
         self.treeview_cpp = Gtk.TreeView(model=self.store_treeview_cpp)
@@ -181,16 +199,36 @@ class Window(Gtk.Window):
         tvcolumn.add_attribute(cell, 'text', 0)
         self.scroll_cpp_tree = Gtk.ScrolledWindow()
         self.scroll_cpp_tree.add(self.treeview_cpp)
-        self.tabs_cpp.append_page(self.scroll_cpp_tree, Gtk.Label(label='cpp-tree'))
+        self.tabs_cpp.append_page(self.scroll_cpp_tree, Gtk.Label(label='c++ tree'))
 
 
         # python side
         #self.text_view_python_code = Gtk.TextView()
+        self.tabs_python = Gtk.Notebook()
+        self.grid_upper.attach_next_to(self.tabs_python, self.tabs_cpp, Gtk.PositionType.RIGHT, 1, 1)
+
+        self.grid_python_code = Gtk.Grid()
+        self.tabs_python.append_page(self.grid_python_code, Gtk.Label(label='python-settings code'))
+
         self.text_view_python_code = GtkSource.View()
         self.text_view_python_code.get_buffer().set_language(language_manager.get_language('python3'))
+        self.text_view_python_code.set_vexpand(True)
+        self.text_view_python_code.set_hexpand(True)
         self.scroll_python_code = Gtk.ScrolledWindow()
         self.scroll_python_code.add(self.text_view_python_code)
-        self.grid_upper.attach_next_to(self.scroll_python_code, self.tabs_cpp, Gtk.PositionType.RIGHT, 1, 1)
+        self.grid_python_code.add(self.scroll_python_code)
+
+        self.grid_python_code_buttons = Gtk.Grid()
+        self.grid_python_code.attach_next_to(self.grid_python_code_buttons, self.scroll_python_code, Gtk.PositionType.BOTTOM, 1, 1)
+
+        self.button_apply_python_code = Gtk.Button(label='apply changes')
+        self.button_apply_python_code.connect("clicked", self.on_button_apply_python_code)
+        self.grid_python_code_buttons.add(self.button_apply_python_code)
+
+        self.button_add_defaults_python_code = Gtk.Button(label='add default settings')
+        self.button_add_defaults_python_code.connect("clicked", self.on_button_add_defaults_python_code)
+        self.grid_python_code_buttons.attach_next_to(self.button_add_defaults_python_code, self.button_apply_python_code, Gtk.PositionType.RIGHT, 1, 1)
+
 
 win = Window()
 win.show_all()
