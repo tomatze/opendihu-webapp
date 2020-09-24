@@ -54,7 +54,8 @@ class Window(Gtk.Window):
             self.redraw_textview_cpp_code()
 
     def on_button_reset(self, _):
-        self.cpp_tree.reset()
+        ret = self.cpp_tree.reset()
+        self.log_append_message(ret)
         self.redraw_treeview_cpp()
         self.redraw_textview_cpp_code()
 
@@ -113,7 +114,7 @@ class Window(Gtk.Window):
         self.button_redo.connect("clicked", self.on_button_redo)
         self.header_bar.pack_start(self.button_redo)
 
-        self.button_reset = Gtk.Button(label='reset')
+        self.button_reset = Gtk.Button(label='load empty simulation')
         self.button_reset.connect("clicked", self.on_button_reset)
         self.header_bar.pack_start(self.button_reset)
 
@@ -129,6 +130,8 @@ class Window(Gtk.Window):
         iter = buffer.get_end_iter()
         self.log_text_mark_end = buffer.create_mark('the-end', iter, True)
         self.scroll_log = Gtk.ScrolledWindow()
+        self.scroll_log.set_min_content_height(100)
+        self.scroll_log.set_max_content_height(100)
         self.scroll_log.add(self.text_view_log)
         self.grid_main.add(self.scroll_log)
 

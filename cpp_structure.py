@@ -281,7 +281,7 @@ class RootNode(Node):
                 except:
                     return Error(node.childs[i].name + ' is not an Integer')
             elif node.childs[i].name not in wanted_childs[i]:
-                return Error(node.childs[i].name + ' is not in the list of possible template_arguments for ' + node.name + ':\n' + str(wanted_childs[i]))
+                return Error(node.childs[i].name + ' is not in the list of possible template_arguments for ' + node.name + '\n' + 'possible template_arguments are: ' + str(wanted_childs[i]))
             res = self.validate_cpp_src_recursive(node.childs[i], cpp_tree)
             if isinstance(res, Error):
                 return res
@@ -403,6 +403,7 @@ class CPPTree:
 
     def reset(self):
         self.undo_stack.add_new_root_node()
+        return Info('loaded empty simulation')
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
     def parse_cpp_src(self, problem, validate_semantics=False):
