@@ -437,20 +437,22 @@ possible_solver_combinations = {
                 "FiniteElementMethod" : {
                     ### CHILD 0 ###
 
-                    "OutputWriter" : [
-                        {"format": "PythonFile", "filename": "out/filename", "outputInterval": 1, "binary": False, "onlyNodalValues": True}
-                    ],
+                    "prefactor" : 1,
+                    "rightHandSide" : {},
+                    "dirichletBoundaryConditions" : {},
+                    "dirichletOutputFilename" : None,
+                    "neumannBoundaryConditions" : [],
+                    "updatePrescribedValuesFromSolution" : False,
+                    "inputMeshIsGlobal" : True,
+
+                    "OutputWriter" : [],
 
                     "solverName": "",
                 }
             },
             {
                 "FiniteElementMethod" : {
-                    ### CHILD 0 ###
-
-                    "OutputWriter" : [
-                        {"format": "PythonFile", "filename": "out/filename", "outputInterval": 1, "binary": False, "onlyNodalValues": True}
-                    ],
+                    "diffusionTensor" : [],
 
                     "solverType": "gmres",
                     "preconditionerType": "none",
