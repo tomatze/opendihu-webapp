@@ -59,7 +59,7 @@ from python_settings import SettingsDict, SettingsList, SettingsChildPlaceholder
 # Equation::
 possible_solver_combinations = {
     "GLOBAL" : {
-        "python_options" : [
+        "python_options" : SettingsDict([
             SettingsDictEntry("scenarioName", '"test-scenario"'),
             SettingsDictEntry("logFormat", '"csv"', "csv or json"),
             SettingsDictEntry("solverStructureDiagramFile", '"solver_structure.txt"'),
@@ -72,7 +72,7 @@ possible_solver_combinations = {
                 SettingsDictEntry("partitioning", '""')
             ])),
             SettingsChildPlaceholder(1)
-        ]
+        ])
     },
 
 
@@ -152,7 +152,7 @@ possible_solver_combinations = {
         "template_arguments" : [
             [ "timeSteppingScheme" ]
         ],
-        "python_options" : [
+        "python_options" : SettingsDict([
             SettingsDictEntry("MultipleInstances", SettingsDict([
                 SettingsDictEntry("nInstances", '1'),
                 SettingsDictEntry("instances", SettingsList([
@@ -162,7 +162,7 @@ possible_solver_combinations = {
                     ]))
                 ]))
             ]))
-        ]
+        ])
     },
     "Control::Coupling" : {
         "runnable" : True,
@@ -198,7 +198,7 @@ possible_solver_combinations = {
             [ "timeSteppingScheme" ],
             [ "timeSteppingScheme" ]
         ],
-        "python_options" : [
+        "python_options" : SettingsDict([
             SettingsDictEntry("StrangSplitting", SettingsDict([
                 SettingsDictEntry("timeStepWidth", '1e-1'),
                 SettingsDictEntry("Term1", SettingsDict([
@@ -223,7 +223,7 @@ possible_solver_combinations = {
                     ])),
                 ])
             ]))
-        ]
+        ])
     },
     "OperatorSplitting::Godunov" : {
         "runnable" : True,
@@ -296,13 +296,13 @@ possible_solver_combinations = {
         "template_arguments" : [
             [ "discretizableInTime" ]
         ],
-        "python_options" : [
+        "python_options" : SettingsDict([
             SettingsDictEntry("Heun", SettingsDict([
                 SettingsDictEntry("endTime", '1'),
                 SettingsDictEntry("timeStepWidth", '0.001'),
                 SettingsDictEntry("numberTimeSteps", '10'),
             ]))
-        ]
+        ])
     },
     "TimeSteppingScheme::HeunAdaptive" : {
         "runnable" : True,
@@ -367,10 +367,10 @@ possible_solver_combinations = {
             [ "SpatialDiscretization::FiniteElementMethod" ],
             [ "SpatialDiscretization::FiniteElementMethod" ]
         ],
-        "python_options" : [
+        "python_options" : SettingsDict([
             # TODO
             SettingsDictEntry("MultidomainSolver", '"test"')
-        ]
+        ])
     },
     "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio" : {
         "runnable" : True,
@@ -415,7 +415,7 @@ possible_solver_combinations = {
         "template_arguments" : [
             [ "timeSteppingScheme", "SpatialDiscretization::FiniteElementMethod" ]
         ],
-        "python_options" : [
+        "python_options" : SettingsDict([
             SettingsDictEntry("OutputSurface", SettingsDict([
                 SettingsDictEntry("OutputWriter", SettingsList([
                     #TODO
@@ -423,7 +423,7 @@ possible_solver_combinations = {
                 SettingsDictEntry("face", '["1-"]'),
                 SettingsChildPlaceholder(0)
             ]))
-        ]
+        ])
     },
 
 
@@ -436,7 +436,7 @@ possible_solver_combinations = {
             [ "Quadrature::" ],
             [ "Equation::" ]
         ],
-        "python_options" : [
+        "python_options" : SettingsDict([
             SettingsDictEntry("FiniteElementMethod", SettingsDict([
                 SettingsChildPlaceholder(1),
                 SettingsDictEntry("prefactor", '1'),
@@ -458,26 +458,26 @@ possible_solver_combinations = {
                     SettingsDictEntry("diffusionTensor", '[]')
                 ])
             ]))
-        ]
+        ])
     },
 
     "Mesh::StructuredRegularFixedOfDimension" : {
         "template_arguments" : [
             [ "1", "2", "3" ]
         ],
-        "python_options" : [
+        "python_options" : SettingsDict([
             SettingsMesh([
                 SettingsDictEntry("nElements", '[0, 1]'),
                 SettingsDictEntry("physicalExtent", '[1.0, 1.0]'),
                 SettingsDictEntry("inputMeshIsGlobal", 'True')
             ])
-        ]
+        ])
     },
     "Mesh::StructuredDeformableOfDimension" : {
         "template_arguments" : [
             [ "1", "2", "3" ]
         ],
-        "python_options" : [
+        "python_options" : SettingsDict([
             SettingsMesh([
                 SettingsDictEntry("nElements", '[0, 1]'),
                 SettingsDictEntry("inputMeshIsGlobal", 'True'),
@@ -488,7 +488,7 @@ possible_solver_combinations = {
                     SettingsDictEntry("nodePositions", '[[0,0,0], [0,0,0]]')
                 ])
             ])
-        ]
+        ])
     },
     "Mesh::UnstructuredDeformableOfDimension" : {
         "template_arguments" : [

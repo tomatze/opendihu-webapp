@@ -5,7 +5,7 @@ import copy
 
 from helpers import printe, indent, Error, Info
 import possible_solver_combinations
-from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsLinkPlaceholder
+from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice
 
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
@@ -16,18 +16,19 @@ class Node:
         self.childs = []
 
         self.settings_dict = None
-        self.settings_dicts_default = None
+        self.settings_dict_default = None
 
 
     # sets self.settings_dict_default to the values gotten from possible_solver_combinations
     # this is not in __init__(), because self.name (used here) gets defined later
-    def get_default_python_settings_dicts(self):
-        if self.settings_dicts_default == None:
-            self.settings_dicts_default = get_python_options_dicts_for_classname(self.name)
-        return self.settings_dicts_default
-
-    def set_python_settings_dict_to_default(self):
-        self.settings_dict = self.get_default_python_settings_dicts()[0]
+    def get_default_python_settings_dict(self):
+        if self.settings_dict_default == None:
+            try:
+                self.settings_dict_default = possible_solver_combinations.possible_solver_combinations[self.name]["python_options"]
+            except:
+                # return an empty SettingsDict if nothing found
+                self.settings_dict_default = SettingsDict()
+            return self.settings_dict_default
 
     ## returns self.settings_dict with SettingsChildPlaceholders replaced with child dicts
     def get_python_settings_dict_recursive(self):
@@ -56,11 +57,23 @@ class Node:
             changes = changes + changes_child
         try:
             if settings_dict_default == None:
-                try:
-                    settings_dict_default = self.get_default_python_settings_dicts()[0]
-                except:
-                    # if self.get_default_python_settings_dicts() returns None
-                    return changes
+                #try:
+                settings_dict_default = self.get_default_python_settings_dict()
+                #except:
+                #    # if self.get_default_python_settings_dicts() returns None
+                #    return changes
+
+            # resolve all SettingsChoice to defaults
+            # TODO can settings_dict_default ever be a SettingsList?
+            settings_dict_default_resolved = SettingsDict()
+            for entry in settings_dict_default:
+                if isinstance(entry, SettingsChoice):
+                    for e in entry.defaults:
+                        settings_dict_default_resolved.append(e)
+                else:
+                    settings_dict_default_resolved.append(entry)
+
+            # TODO why is this needed???? it does not work without this if
             if self.settings_dict == None:
                 # if self.settings_dict is None, just add everthing
                 self.settings_dict = copy.deepcopy(settings_dict_default)
@@ -89,6 +102,12 @@ class Node:
                             changes = changes + 1
                     elif isinstance(entry, SettingsListEntry):
                         # TODO do we have to add anything here?
+                        pass
+                    elif isinstance(entry, SettingsMesh):
+                        #TODO
+                        pass
+                    elif isinstance(entry, SettingsSolver):
+                        #TODO
                         pass
         except:
             printe('something went wrong while adding missing python-settings')
@@ -125,15 +144,7 @@ class Node:
                 self.settings_dict = SettingsDict()
             self_settings_dict = self.settings_dict
         if settings_dicts_default == None:
-            settings_dicts_default = self.get_default_python_settings_dicts()
-
-        ## resolve SettingsLinkPlaceholders and insert their dict-entries
-        #for entry in settings_dict_default:
-        #    if isinstance(entry, SettingsLinkPlaceholder):
-        #        link_settings_dicts = get_python_options_dicts_for_classname(entry.linkname)
-        #        print(link_settings_dicts)
-        #        for e in link_settings_dicts:
-        #            self_settings_dict.append(e)
+            settings_dicts_default = self.get_default_python_settings_dict()
 
         # insert all child-placeholders that are in python_options on this level
         # TODO append them to self_settings_dict after first use
@@ -565,7 +576,7 @@ class CPPTree:
         child.name = childname
         if "template_arguments" in self.combinations[childname]:
             child.can_have_childs = True
-        child.set_python_settings_dict_to_default()
+        # TODO add_missing_default_python_settings
         node.childs.append(child)
 
 
@@ -589,25 +600,3 @@ class CPPTree:
         if changes > 0:
             self.undo_stack.duplicate_current_state()
         return Info('added ' + str(changes) + ' missing default python-settings')
-
-# returns the python-src of the python_options for a given classname from possible_solver_combinations
-def get_python_options_dicts_for_classname(name):
-    try:
-        # TODO save possible_solver_combinations_src in a global variable, so its only loaded once and not every time this function is called
-        possible_solver_combinations_src = inspect.getsource(possible_solver_combinations)
-        # wrap list into a dict, so we can parse it
-        src_list =  '[' + possible_solver_combinations_src.split('"' + name + '" : {')[1].split('\n    }')[0].split('"python_options" : [')[1].split('\n        ]')[0] + ']'
-        src_dict = '"a" : ' + src_list
-        dict = SettingsDict(src_dict)
-        # unwrap parsed list, create a list of SettingsDicts and return it
-        r = []
-        for entry in dict[0].value:
-            r.append(entry.value)
-        return r
-    except:
-        if '::' in name:
-            #print(name[:-2].rsplit('::', 1, )[0] + '::')
-            if name.split('::')[1] == '':
-                return
-            return get_python_options_dicts_for_classname(name[:-2].rsplit('::', 1, )[0] + '::')
-        return

@@ -22,20 +22,23 @@ class SettingsChildPlaceholder(SettingsComment):
         self.childnumber = int(childnumber)
 
 
-class SettingsLinkPlaceholder(SettingsComment):
-    def __init__(self, linkname):
-        super().__init__()
-        self.comment = '### ' + linkname + ' ###'
-        self.linkname = linkname
-
-
 # an empty line within a SettingsDict or SettingsList
 # this is used to restore simple formatting
 class SettingsEmptyLine: pass
 
-class SettingsChoice: pass
-class SettingsMesh: pass
-class SettingsSolver: pass
+# holds 2 lists, one with default SettingsDictEntrys and one with alternative SettingsDictEntrys
+class SettingsChoice:
+    def __init__(self, defaults, alternatives):
+        self.defaults = defaults
+        self.alternatives = alternatives
+
+class SettingsMesh:
+    def __init__(self, options):
+        self.options = options
+
+class SettingsSolver:
+    def __init__(self, options):
+        self.options = options
 
 
 # if-else block inside a SettingsDictEntry.value or a SettingsListEntry.value
