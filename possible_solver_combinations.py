@@ -1,3 +1,4 @@
+from python_settings import SettingsDict, SettingsList, SettingsChildPlaceholder, SettingsChoice, SettingsDictEntry, SettingsListEntry, SettingsSolver, SettingsMesh
 # each dict entry corresponds to a cpp-template
 # each template-dict can have a ordered list with template_arguments (assuming there are no template_arguments if omitted)
 
@@ -59,20 +60,18 @@
 possible_solver_combinations = {
     "GLOBAL" : {
         "python_options" : [
-            {
-                "scenarioName" : "test-scenario",
-                "logFormat" : "csv", # csv or json
-                "solverStructureDiagramFile" : "solver_structure.txt",
-                "mappingsBetweenMeshesLogFile" : "mappings_between_meshes.txt",
-                "MappingsBetweenMeshes" : {},
-                "Meshes" : {},
-                "Solvers" : {},
+            SettingsDictEntry("scenarioName", '"test-scenario"'),
+            SettingsDictEntry("logFormat", '"csv"', "csv or json"),
+            SettingsDictEntry("solverStructureDiagramFile", '"solver_structure.txt"'),
+            SettingsDictEntry("mappingsBetweenMeshesLogFile", '"mappings_between_meshes.txt"'),
+            SettingsDictEntry("mappingsBetweenMeshes", '{}'),
+            SettingsDictEntry("Meshes", '{}'),
+            SettingsDictEntry("Solvers", '{}'),
+            SettingsDictEntry("meta", SettingsDict([
                 #TODO add meta
-                "meta" : {
-                    "partitioning" : ""
-                }
-                ### CHILD 0 ###
-            }
+                SettingsDictEntry("partitioning", '""')
+            ])),
+            SettingsChildPlaceholder(1)
         ]
     },
 
@@ -154,17 +153,15 @@ possible_solver_combinations = {
             [ "timeSteppingScheme" ]
         ],
         "python_options" : [
-            {
-                "MultipleInstances": {
-                    "nInstances": 1,
-                    "instances": [
-                        {
-                            "ranks" : list(range(4)),
-                            ### CHILD 0 ###
-                        }
-                    ],
-                }
-            }
+            SettingsDictEntry("MultipleInstances", SettingsDict([
+                SettingsDictEntry("nInstances", '1'),
+                SettingsDictEntry("instances", SettingsList([
+                    SettingsListEntry(SettingsDict([
+                        SettingsDictEntry("ranks", 'list(range(4))'),
+                        SettingsChildPlaceholder(0)
+                    ]))
+                ]))
+            ]))
         ]
     },
     "Control::Coupling" : {
@@ -202,18 +199,30 @@ possible_solver_combinations = {
             [ "timeSteppingScheme" ]
         ],
         "python_options" : [
-            {
-                #TODO
-                "StrangSplitting" : {
-                    "timeStepWidth" : 1e-1,
-                    "Term1" : {
-                        ### CHILD 0 ###
-                    },
-                    "Term2" : {
-                        ### CHILD 1 ###
-                    }
-                },
-            }
+            SettingsDictEntry("StrangSplitting", SettingsDict([
+                SettingsDictEntry("timeStepWidth", '1e-1'),
+                SettingsDictEntry("Term1", SettingsDict([
+                    SettingsChildPlaceholder(0)
+                ])),
+                SettingsDictEntry("Term2", SettingsDict([
+                    SettingsChildPlaceholder(1)
+                ])),
+                SettingsChoice([], [
+                    SettingsDictEntry("Term3", SettingsDict([
+                        SettingsChildPlaceholder(2)
+                    ])),
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("Term4", SettingsDict([
+                        SettingsChildPlaceholder(3)
+                    ])),
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("Term5", SettingsDict([
+                        SettingsChildPlaceholder(4)
+                    ])),
+                ])
+            ]))
         ]
     },
     "OperatorSplitting::Godunov" : {
@@ -288,13 +297,11 @@ possible_solver_combinations = {
             [ "discretizableInTime" ]
         ],
         "python_options" : [
-            {
-                "Heun" : {
-                    "endTime" : 1,
-                    "timeStepWidth" : 0.001,
-                    "numberTimeSteps": 10
-                }
-            }
+            SettingsDictEntry("Heun", SettingsDict([
+                SettingsDictEntry("endTime", '1'),
+                SettingsDictEntry("timeStepWidth", '0.001'),
+                SettingsDictEntry("numberTimeSteps", '10'),
+            ]))
         ]
     },
     "TimeSteppingScheme::HeunAdaptive" : {
@@ -361,9 +368,8 @@ possible_solver_combinations = {
             [ "SpatialDiscretization::FiniteElementMethod" ]
         ],
         "python_options" : [
-            {
-                "MultidomainSolver" : "test",
-            }
+            # TODO
+            SettingsDictEntry("MultidomainSolver", '"test"')
         ]
     },
     "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio" : {
@@ -410,15 +416,13 @@ possible_solver_combinations = {
             [ "timeSteppingScheme", "SpatialDiscretization::FiniteElementMethod" ]
         ],
         "python_options" : [
-            {
-                "OutputSurface": {
-                    "OutputWriter": [
-                        # TODO
-                    ],
-                    "face": ["1-"],
-                    ### CHILD 0 ###
-                }
-            }
+            SettingsDictEntry("OutputSurface", SettingsDict([
+                SettingsDictEntry("OutputWriter", SettingsList([
+                    #TODO
+                ])),
+                SettingsDictEntry("face", '["1-"]'),
+                SettingsChildPlaceholder(0)
+            ]))
         ]
     },
 
@@ -433,35 +437,27 @@ possible_solver_combinations = {
             [ "Equation::" ]
         ],
         "python_options" : [
-            {
-                "FiniteElementMethod" : {
-                    ### CHILD 0 ###
-
-                    "prefactor" : 1,
-                    "rightHandSide" : {},
-                    "dirichletBoundaryConditions" : {},
-                    "dirichletOutputFilename" : None,
-                    "neumannBoundaryConditions" : [],
-                    "updatePrescribedValuesFromSolution" : False,
-                    "inputMeshIsGlobal" : True,
-
-                    "OutputWriter" : [],
-
-                    "solverName": "",
-                }
-            },
-            {
-                "FiniteElementMethod" : {
-                    "diffusionTensor" : [],
-
-                    "solverType": "gmres",
-                    "preconditionerType": "none",
-                    "relativeTolerance": 1e-5,
-                    "maxIterations": 1e4,
-                    "dumpFilename": "", # no filename means dump is disabled
-                    "dumpFormat": "default"
-                }
-            }
+            SettingsDictEntry("FiniteElementMethod", SettingsDict([
+                SettingsChildPlaceholder(1),
+                SettingsDictEntry("prefactor", '1'),
+                SettingsDictEntry("rightHandSide", '{}'),
+                SettingsDictEntry("dirichletBoundaryConditions", '{}'),
+                SettingsDictEntry("dirichletOutputFilename", 'None'),
+                SettingsDictEntry("neumannBoundaryConditions", '[]'),
+                SettingsDictEntry("updatePrescribedValuesFromSolution", 'False'),
+                SettingsDictEntry("inputMeshIsGlobal", 'True'),
+                SettingsSolver([
+                    SettingsDictEntry("solverType", '"gmres"'),
+                    SettingsDictEntry("preconditionerType", '"none"'),
+                    SettingsDictEntry("relativeTolerance", '1e-5'),
+                    SettingsDictEntry("maxIterations", '1e4'),
+                    SettingsDictEntry("dumpFilename", '""', "no filename means dump is disabled"),
+                    SettingsDictEntry("dumpFormat", '"default"')
+                ]),
+                SettingsChoice([],[
+                    SettingsDictEntry("diffusionTensor", '[]')
+                ])
+            ]))
         ]
     },
 
@@ -470,11 +466,11 @@ possible_solver_combinations = {
             [ "1", "2", "3" ]
         ],
         "python_options" : [
-            {
-                "nElements": [0, 1], # example for a 2D mesh
-                "physicalExtent": [1.0, 1.0],
-                "inputMeshIsGlobal": True,
-            }
+            SettingsMesh([
+                SettingsDictEntry("nElements", '[0, 1]'),
+                SettingsDictEntry("physicalExtent", '[1.0, 1.0]'),
+                SettingsDictEntry("inputMeshIsGlobal", 'True')
+            ])
         ]
     },
     "Mesh::StructuredDeformableOfDimension" : {
@@ -482,17 +478,16 @@ possible_solver_combinations = {
             [ "1", "2", "3" ]
         ],
         "python_options" : [
-            {
-                "nElements": [0, 1], # example for a 2D mesh
-                "physicalExtent": [2.5, 5.0],
-                "physicalOffset": [0.5, 0.0],
-                "inputMeshIsGlobal": True,
-            },
-            {
-                "nElements": [0, 1], # example for a 2D mesh
-                "nodePositions": [[0,0,0], [0,0,0]],
-                "inputMeshIsGlobal": True,
-            }
+            SettingsMesh([
+                SettingsDictEntry("nElements", '[0, 1]'),
+                SettingsDictEntry("inputMeshIsGlobal", 'True'),
+                SettingsChoice([
+                    SettingsDictEntry("physicalExtent", '[2.5, 5.0]'),
+                    SettingsDictEntry("physicalOffset", '[0.5, 0.0]')
+                ], [
+                    SettingsDictEntry("nodePositions", '[[0,0,0], [0,0,0]]')
+                ])
+            ])
         ]
     },
     "Mesh::UnstructuredDeformableOfDimension" : {

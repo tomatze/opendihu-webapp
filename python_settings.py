@@ -1,4 +1,5 @@
 import re
+import typing
 
 from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 from helpers import printe
@@ -17,7 +18,7 @@ class SettingsComment:
 class SettingsChildPlaceholder(SettingsComment):
     def __init__(self, childnumber):
         super().__init__()
-        self.comment = '### CHILD ' + childnumber + ' ###'
+        self.comment = '### CHILD ' + str(childnumber) + ' ###'
         self.childnumber = int(childnumber)
 
 
@@ -31,6 +32,10 @@ class SettingsLinkPlaceholder(SettingsComment):
 # an empty line within a SettingsDict or SettingsList
 # this is used to restore simple formatting
 class SettingsEmptyLine: pass
+
+class SettingsChoice: pass
+class SettingsMesh: pass
+class SettingsSolver: pass
 
 
 # if-else block inside a SettingsDictEntry.value or a SettingsListEntry.value
@@ -78,24 +83,33 @@ class SettingsContainer(list):
 
 # normal entry in a SettingsDict
 class SettingsDictEntry:
-    def __init__(self):
-        self.key = None
-        self.value = None
+    def __init__(self, key=None, value=None, comment=None):
+        self.key = key
+        self.value = value
         self.comments = []
+        if comment:
+            self.comments.append(comment)
 
 
 # normal entry for a SettingsList
 class SettingsListEntry:
-    def __init__(self):
-        self.value = None
+    def __init__(self, value=None, comment=None):
+        self.value = value
         self.comments = []
+        if comment:
+            self.comments.append(comment)
 
 
 # represents a python-settings-dict
 class SettingsDict(SettingsContainer):
     # init an empty SettingsDict or parse a settings-string to a SettingsDict
-    def __init__(self, settings = None):
+    # you can also give this a list with entries
+    def __init__(self, settings=None):
         if settings == None:
+            return
+        elif isinstance(settings, typing.List):
+            for entry in settings:
+                self.append(entry)
             return
 
         # split settings into tokens using tokenize from the stdlib
@@ -313,8 +327,11 @@ class SettingsDict(SettingsContainer):
 
 # represents a list stored in a SettingsDictEntry.value or a SettingsListEntry.value
 class SettingsList(SettingsContainer):
-    def __init__(self):
+    def __init__(self, entries=None):
         self.list_comprehension = None
+        if entries:
+            for entry in entries:
+                self.append(entry)
     def __repr__(self):
         return self.repr(0)
     def repr(self, depth):

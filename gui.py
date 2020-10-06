@@ -23,14 +23,6 @@ class Window(Gtk.Window):
         self.redraw_treeview_cpp()
         self.redraw_textview_python_code()
 
-    #def on_button_verify_cpp_code(self, _):
-    #    ret = self.cpp_tree.validate_cpp_src(self.cpp_tree)
-    #    if isinstance(ret, Message):
-    #        self.log_append_message(ret)
-    #    else:
-    #        self.redraw_textview_cpp_code()
-    #        self.redraw_treeview_cpp()
-
     def on_button_add_defaults_python_code(self, _):
         ret = self.cpp_tree.add_missing_default_python_settings()
         self.log_append_message(ret)
