@@ -2,7 +2,7 @@
 
 import unittest
 
-import cpp_structure
+from cpp_tree import CPPTree
 from helpers import Error
 
 class TestParser(unittest.TestCase):
@@ -153,7 +153,7 @@ class TestParser(unittest.TestCase):
 
     # this test parses all cpp examples and validates them
     def test_parse_and_validate_examples(self):
-        example = cpp_structure.CPPTree()
+        example = CPPTree()
         for path in self.example_paths:
             file = open(path, "r")
             src = file.read()
@@ -165,8 +165,8 @@ class TestParser(unittest.TestCase):
     # it then parses src2 and compares the trees of both examples
     # if this fails, there is probably something wrong in Node.create_src()
     def test_create_src(self):
-        example1 = cpp_structure.CPPTree()
-        example2 = cpp_structure.CPPTree()
+        example1 = CPPTree()
+        example2 = CPPTree()
         for path in self.example_paths:
             file = open(path, "r")
             src1 = file.read()
