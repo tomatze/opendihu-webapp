@@ -91,7 +91,7 @@ class SettingsDictEntry:
         self.value = value
         self.comments = []
         if comment:
-            self.comments.append(comment)
+            self.comments.append('#' + comment)
 
 
 # normal entry for a SettingsList
@@ -100,7 +100,7 @@ class SettingsListEntry:
         self.value = value
         self.comments = []
         if comment:
-            self.comments.append(comment)
+            self.comments.append('#' + comment)
 
 
 # represents a python-settings-dict
@@ -151,12 +151,12 @@ class SettingsDict(SettingsContainer):
                 else:
                     reg_child_placeholder = re.compile('### CHILD [0-9] ###')
                     match_child_placeholder = reg_child_placeholder.match(token_value)
-                    reg_link_placeholder = re.compile('### [A-Z]+ ###')
-                    match_link_placeholder = reg_link_placeholder.match(token_value)
+                    #reg_link_placeholder = re.compile('### [A-Z]+ ###')
+                    #match_link_placeholder = reg_link_placeholder.match(token_value)
                     if match_child_placeholder:
                         c = SettingsChildPlaceholder(token_value[10:-4])
-                    elif match_link_placeholder:
-                        c = SettingsLinkPlaceholder(token_value[4:-4])
+                    #elif match_link_placeholder:
+                    #    c = SettingsLinkPlaceholder(token_value[4:-4])
                     else:
                         # add floating comment to the current SettingsDict or SettingsList
                         c = SettingsComment()
