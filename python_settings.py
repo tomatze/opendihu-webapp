@@ -32,14 +32,6 @@ class SettingsChoice:
         self.defaults = defaults
         self.alternatives = alternatives
 
-class SettingsMesh:
-    def __init__(self, options):
-        self.options = options
-
-class SettingsSolver:
-    def __init__(self, options):
-        self.options = options
-
 
 # if-else block inside a SettingsDictEntry.value or a SettingsListEntry.value
 class SettingsConditional():
@@ -326,6 +318,23 @@ class SettingsDict(SettingsContainer):
             if isinstance(entry, SettingsDictEntry) and entry.key == key:
                 return entry.value
         return
+
+
+class SettingsMesh(SettingsDict):
+    def __init__(self, options):
+        for entry in options:
+            self.append(entry)
+        self.name_key = '"meshName"'
+        self.name_prefix = 'mesh'
+        self.global_key = '"Meshes"'
+
+class SettingsSolver(SettingsDict):
+    def __init__(self, options):
+        for entry in options:
+            self.append(entry)
+        self.name_key = '"solverName"'
+        self.name_prefix = 'solver'
+        self.global_key = '"Solvers"'
 
 
 # represents a list stored in a SettingsDictEntry.value or a SettingsListEntry.value

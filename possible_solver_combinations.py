@@ -65,8 +65,8 @@ possible_solver_combinations = {
             SettingsDictEntry("solverStructureDiagramFile", '"solver_structure.txt"'),
             SettingsDictEntry("mappingsBetweenMeshesLogFile", '"mappings_between_meshes.txt"'),
             SettingsDictEntry("mappingsBetweenMeshes", '{}'),
-            SettingsDictEntry("Meshes", '{}'),
-            SettingsDictEntry("Solvers", '{}'),
+            #SettingsDictEntry("Meshes", '{}'),
+            #SettingsDictEntry("Solvers", '{}'),
             SettingsDictEntry("meta", SettingsDict([
                 #TODO add meta
                 SettingsDictEntry("partitioning", '""')
@@ -369,7 +369,17 @@ possible_solver_combinations = {
         ],
         "python_options" : SettingsDict([
             # TODO
-            SettingsDictEntry("MultidomainSolver", '"test"')
+            SettingsDictEntry("MultidomainSolver", SettingsDict([
+                SettingsDictEntry("PotentialFlow", SettingsDict([
+                    SettingsChildPlaceholder(0)
+                ])),
+                SettingsDictEntry("Activation", SettingsDict([
+                    SettingsChildPlaceholder(1)
+                ])),
+                SettingsDictEntry("Fat", SettingsDict([
+                    SettingsChildPlaceholder(2)
+                ]))
+            ]))
         ])
     },
     "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio" : {

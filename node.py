@@ -44,14 +44,24 @@ class Node:
 
     # this function recursively adds missing python-settings to self.settings_dict
     # returns number of added settings
-    # TODO add support for Meshes and Solvers
     # TODO handle SettingsConditional (maybe with has_key?)
-    def add_missing_default_python_settings(self, self_settings_container=None, settings_container_default=None):
+    def add_missing_default_python_settings(self, self_settings_container=None, settings_container_default=None, self_settings_global_dict=None):
         # counter for added settings
         changes = 0
 
         # init stuff and recurse childs if we are on the outer level of a node
         if self_settings_container == None and settings_container_default == None:
+            # init settings_container_default
+            settings_container_default = self.get_default_python_settings_dict()
+
+            # init self_settings_container
+            self.settings_dict = SettingsDict()
+            self_settings_container = self.settings_dict
+
+            # init self_settings_global_dict if we are the root_node (e.g. if None)
+            if self_settings_global_dict == None:
+                self_settings_global_dict = self_settings_container
+
             # recurse childs
             childs_recurse= []
             # ignore childs that have an Integer as name
@@ -61,14 +71,7 @@ class Node:
                 except:
                     childs_recurse.append(child)
             for child in childs_recurse:
-                changes = changes + child.add_missing_default_python_settings()
-
-            # init settings_container_default
-            settings_container_default = self.get_default_python_settings_dict()
-
-            # init self_settings_container
-            self.settings_dict = SettingsDict()
-            self_settings_container = self.settings_dict
+                changes = changes + child.add_missing_default_python_settings(self_settings_global_dict=self_settings_global_dict)
 
         # handle SettingsList
         if isinstance(self_settings_container, SettingsList):
@@ -84,7 +87,7 @@ class Node:
                 if isinstance(entry, SettingsListEntry):
                     if not isinstance(entry.value, str):
                         settings_container_default_recurse = settings_container_default[0].value
-                        changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, settings_container_default=settings_container_default_recurse)
+                        changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, settings_container_default=settings_container_default_recurse, self_settings_global_dict=self_settings_global_dict)
         # handle SettingsDict
         elif isinstance(self_settings_container, SettingsDict):
             # resolve all SettingsChoice to defaults
@@ -128,12 +131,40 @@ class Node:
                             changes = changes + 1
                             print('added: ' + entry_copy.key + ':' + entry_copy.value)
                         self_settings_container.append(entry_copy)
-                elif isinstance(entry, SettingsMesh):
-                    #TODO
-                    pass
-                elif isinstance(entry, SettingsSolver):
-                    #TODO
-                    pass
+                elif isinstance(entry, SettingsMesh) or isinstance(entry, SettingsSolver):
+                    dict_to_append_to = None
+                    # assume mesh is defined locally, if the first key exists already (the first key should be unique (e.g. not inputMeshIsGlobal))
+                    if self_settings_container.has_key(entry[0].key):
+                        # local
+                        # add all missing keys
+                        dict_to_append_to = self_settings_container
+                    else:
+                        # global
+                        # add e.g. Meshes : {} if not there
+                        if not self_settings_global_dict.has_key(entry.global_key):
+                            self_settings_global_dict.append(SettingsDictEntry(entry.global_key, SettingsDict()))
+                        dict = self_settings_global_dict.get_value(entry.global_key)
+                        # get the name e.g. mesh0
+                        if self_settings_container.has_key(entry.name_key):
+                            name = self_settings_container.get_value(entry.name_key)
+                        else:
+                            i = 0
+                            name = ''
+                            while True:
+                                name = '"' + entry.name_prefix + str(i) + '"'
+                                if not dict.has_key(name):
+                                    break
+                                i = i+1
+                            self_settings_container.append(SettingsDictEntry(entry.name_key, name))
+                            #changes = changes + 1
+                        # add global dict entry if not there (e.g. Meshes : { mesh0 : {} })
+                        if not dict.has_key(name):
+                            dict.append(SettingsDictEntry(name, SettingsDict()))
+                            #changes = changes + 1
+                        dict_to_append_to = dict.get_value(name)
+
+                    # add all missing keys recursively
+                    changes = changes + self.add_missing_default_python_settings(self_settings_container=dict_to_append_to, settings_container_default=entry, self_settings_global_dict=self_settings_global_dict)
 
             # recurse levels
             for entry in self_settings_container:
@@ -141,11 +172,7 @@ class Node:
                     # recurse all keys that are no strings, those are SettingsDict and SettingsList
                     if not isinstance(entry.value, str) and settings_container_default.has_key(entry.key):
                         settings_container_default_recurse = settings_container_default.get_value(entry.key)
-                        changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, settings_container_default=settings_container_default_recurse)
-                #elif isinstance(self_settings_container, SettingsList) and isinstance(entry, SettingsListEntry):
-                #    # TODO here we assume that we can just use settings_container_default[0] as default for all listEntries
-                #    print('ulllsssss')
-                #    changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, settings_container_default=settings_container_default[0])
+                        changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, settings_container_default=settings_container_default_recurse, self_settings_global_dict=self_settings_global_dict)
         #except:
         #    printe('something went wrong while adding missing python-settings')
 
