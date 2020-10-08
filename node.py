@@ -55,7 +55,8 @@ class Node:
             settings_container_default = self.get_default_python_settings_dict()
 
             # init self_settings_container
-            self.settings_dict = SettingsDict()
+            if self.settings_dict == None:
+                self.settings_dict = SettingsDict()
             self_settings_container = self.settings_dict
 
             # init self_settings_global_dict if we are the root_node (e.g. if None)
