@@ -13,19 +13,18 @@ class Node:
         self.childs = []
 
         self.settings_dict = None
-        self.settings_dict_default = None
+        self.settings_container_default = None
 
-
-    # sets self.settings_dict_default to the values gotten from possible_solver_combinations
+    # sets self.settings_container_default to the values gotten from possible_solver_combinations
     # this is not in __init__(), because self.name (used here) gets defined later
     def get_default_python_settings_dict(self):
-        if self.settings_dict_default == None:
+        if self.settings_container_default == None:
             try:
-                self.settings_dict_default = possible_solver_combinations.possible_solver_combinations[self.name]["python_options"]
+                self.settings_container_default = possible_solver_combinations.possible_solver_combinations[self.name]["python_options"]
             except:
                 # return an empty SettingsDict if nothing found
-                self.settings_dict_default = SettingsDict()
-        return self.settings_dict_default
+                self.settings_container_default = SettingsDict()
+        return self.settings_container_default
 
     ## returns self.settings_dict with SettingsChildPlaceholders replaced with child dicts
     def get_python_settings_dict_recursive(self):
@@ -46,94 +45,107 @@ class Node:
     # this function recursively adds missing python-settings to self.settings_dict
     # returns number of added settings
     # TODO add support for Meshes and Solvers
-    def add_missing_default_python_settings(self, self_settings_dict=None, settings_dict_default=None):
+    # TODO handle SettingsConditional (maybe with has_key?)
+    def add_missing_default_python_settings(self, self_settings_container=None, settings_container_default=None):
+        # counter for added settings
         changes = 0
 
-        # recurse childs that are not Integers
-        childs_recurse= []
-        for child in self.childs:
-            try:
-                int(child.name)
-            except:
-                childs_recurse.append(child)
-        for child in childs_recurse:
-            changes = changes + child.add_missing_default_python_settings()
+        # init stuff and recurse childs if we are on the outer level of a node
+        if self_settings_container == None and settings_container_default == None:
+            # recurse childs
+            childs_recurse= []
+            # ignore childs that have an Integer as name
+            for child in self.childs:
+                try:
+                    int(child.name)
+                except:
+                    childs_recurse.append(child)
+            for child in childs_recurse:
+                changes = changes + child.add_missing_default_python_settings()
 
-        # init settings_dict_default if none given
-        # only occurs on outer level of each child
-        if settings_dict_default == None:
-            settings_dict_default = self.get_default_python_settings_dict()
+            # init settings_container_default
+            settings_container_default = self.get_default_python_settings_dict()
 
-        # resolve all SettingsChoice to defaults
-        # TODO can settings_dict_default ever be a SettingsList?
-        settings_dict_default_resolved = SettingsDict()
-        for entry in settings_dict_default:
-            if isinstance(entry, SettingsChoice):
-                add_alternatives = False
-                # look if some settings from alternatives already exist, in that case add alternatives instead of defaults
-                for e in entry.alternatives:
-                    if self_settings_dict.has_key(e.key):
-                        add_alternatives = True
-                        break
-                if add_alternatives:
-                    for e in entry.alternatives:
-                        settings_dict_default_resolved.append(e)
-                else:
-                    for e in entry.defaults:
-                        settings_dict_default_resolved.append(e)
-            else:
-                settings_dict_default_resolved.append(entry)
-        settings_dict_default = settings_dict_default_resolved
-
-        # init self_settings_dict if None given
-        # only occurs on outer level of each child
-        if self.settings_dict == None:
+            # init self_settings_container
             self.settings_dict = SettingsDict()
-        if self_settings_dict == None:
-            self_settings_dict = self.settings_dict
+            self_settings_container = self.settings_dict
 
-        # add missing defaults to this level (NOT recursive)
-        for entry in settings_dict_default:
-            if isinstance(entry, SettingsChildPlaceholder):
-                placeholder_already_added = False
-                for e in self_settings_dict:
-                    if isinstance(e, SettingsChildPlaceholder) and e.childnumber == entry.childnumber:
-                        placeholder_already_added = True
-                        break
-                if not placeholder_already_added: self_settings_dict.append(entry)
-            elif isinstance(entry, SettingsDictEntry):
-                # add default-entry if we don't have the key already
-                if not self_settings_dict.has_key(entry.key):
-                    entry_copy = copy.deepcopy(entry)
-                    if not isinstance(entry_copy.value, str):
-                        # if entry_copy.value is not a string (then it is SettingsDict or SettingsList) -> replace it with empty one
-                        entry_copy.value = type(entry_copy.value)()
+        # handle SettingsList
+        if isinstance(self_settings_container, SettingsList):
+            # add default_entry if missing
+            if len(self_settings_container) == 0:
+                default_entry = copy.deepcopy(settings_container_default[0])
+                if not isinstance(default_entry.value, str):
+                    default_entry.value = type(default_entry.value)()
+                self_settings_container.append(default_entry)
+            # recurse
+            # if we have multiple entries just use settings_container_default[0] for all of them
+            for entry in self_settings_container:
+                if isinstance(entry, SettingsListEntry):
+                    if not isinstance(entry.value, str):
+                        settings_container_default_recurse = settings_container_default[0].value
+                        changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, settings_container_default=settings_container_default_recurse)
+        # handle SettingsDict
+        elif isinstance(self_settings_container, SettingsDict):
+            # resolve all SettingsChoice to defaults
+            if isinstance(settings_container_default, SettingsDict):
+                settings_container_default_resolved = SettingsDict()
+                for entry in settings_container_default:
+                    if isinstance(entry, SettingsChoice):
+                        add_alternatives = False
+                        # look if some settings from alternatives already exist, in that case add alternatives instead of defaults
+                        for e in entry.alternatives:
+                            if self_settings_container.has_key(e.key):
+                                add_alternatives = True
+                                break
+                        if add_alternatives:
+                            for e in entry.alternatives:
+                                settings_container_default_resolved.append(e)
+                        else:
+                            for e in entry.defaults:
+                                settings_container_default_resolved.append(e)
                     else:
-                        changes = changes + 1
-                        print('added: ' + entry_copy.key + ':' + entry_copy.value)
-                    self_settings_dict.append(entry_copy)
-            elif isinstance(entry, SettingsListEntry):
-                # TODO do we have to add anything here?
-                pass
-            elif isinstance(entry, SettingsMesh):
-                #TODO
-                pass
-            elif isinstance(entry, SettingsSolver):
-                #TODO
-                pass
+                        settings_container_default_resolved.append(entry)
+                settings_container_default = settings_container_default_resolved
 
-        # recurse levels
-        for entry in self_settings_dict:
-            if isinstance(entry, SettingsDictEntry):
-                # recurse all keys that are no strings, those are SettingsDict and SettingsList
-                if not isinstance(entry.value, str) and settings_dict_default.has_key(entry.key):
-                    settings_dict_default_recurse = settings_dict_default.get_value(entry.key)
-                    #print(settings_dict_default_recurse)
-                    changes = changes + self.add_missing_default_python_settings(self_settings_dict=entry.value, settings_dict_default=settings_dict_default_recurse)
-            #elif isinstance(self_settings_dict, SettingsList) and isinstance(entry, SettingsListEntry):
-            #    # TODO here we assume that we can just use settings_dict_default[0] as default for all listEntries
-            #    print('ulllsssss')
-            #    changes = changes + self.add_missing_default_python_settings(self_settings_dict=entry.value, settings_dict_default=settings_dict_default[0])
+            # add missing default settings to this level (NOT recursive)
+            for entry in settings_container_default:
+                if isinstance(entry, SettingsChildPlaceholder):
+                    placeholder_already_added = False
+                    for e in self_settings_container:
+                        if isinstance(e, SettingsChildPlaceholder) and e.childnumber == entry.childnumber:
+                            placeholder_already_added = True
+                            break
+                    if not placeholder_already_added: self_settings_container.append(entry)
+                elif isinstance(entry, SettingsDictEntry):
+                    # add default-entry if we don't have the key already
+                    if not self_settings_container.has_key(entry.key):
+                        entry_copy = copy.deepcopy(entry)
+                        if not isinstance(entry_copy.value, str):
+                            # if entry_copy.value is not a string (then it is SettingsDict or SettingsList) -> replace it with empty one
+                            entry_copy.value = type(entry_copy.value)()
+                        else:
+                            changes = changes + 1
+                            print('added: ' + entry_copy.key + ':' + entry_copy.value)
+                        self_settings_container.append(entry_copy)
+                elif isinstance(entry, SettingsMesh):
+                    #TODO
+                    pass
+                elif isinstance(entry, SettingsSolver):
+                    #TODO
+                    pass
+
+            # recurse levels
+            for entry in self_settings_container:
+                if isinstance(entry, SettingsDictEntry):
+                    # recurse all keys that are no strings, those are SettingsDict and SettingsList
+                    if not isinstance(entry.value, str) and settings_container_default.has_key(entry.key):
+                        settings_container_default_recurse = settings_container_default.get_value(entry.key)
+                        changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, settings_container_default=settings_container_default_recurse)
+                #elif isinstance(self_settings_container, SettingsList) and isinstance(entry, SettingsListEntry):
+                #    # TODO here we assume that we can just use settings_container_default[0] as default for all listEntries
+                #    print('ulllsssss')
+                #    changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, settings_container_default=settings_container_default[0])
         #except:
         #    printe('something went wrong while adding missing python-settings')
 
@@ -154,7 +166,7 @@ class Node:
         return self.parse_python_settings_recursive(python_settings.config_dict)
 
     # parse a python_settings_dict and add it to this Node and its childs
-    def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=True, self_settings_dict=None, settings_dicts_default=None, is_called_on_child=False):
+    def parse_python_settings_recursive(self, settings_dict, keep_entries_that_have_no_default=True, self_settings_container=None, settings_dicts_default=None, is_called_on_child=False):
         # TODO SettingsConditional? 
         # TODO Meshes and Solvers e.g. with ### SOLVER ###?
         # TODO if a SettingsDictEntry has no comment, add the default-comment
@@ -162,25 +174,25 @@ class Node:
         # TODO add a new function to load default settings (if user wants to reset)
         # TODO when adding new solver/mesh - always add it globally and look for the last solver-number and increase it by one
         # these should be given as parameters when recursion happens on the same object again
-        # self_settings_dict is the 'pointer' to the sub-SettingsDict in self.settings_dict we are currently handling
-        # settings_dict_default is the 'pointer' to the sub-SettingsDict in settings_dict_default we are currently handling
-        if self_settings_dict == None:
+        # self_settings_container is the 'pointer' to the sub-SettingsDict in self.settings_dict we are currently handling
+        # settings_container_default is the 'pointer' to the sub-SettingsDict in settings_container_default we are currently handling
+        if self_settings_container == None:
             if self.settings_dict == None:
                 self.settings_dict = SettingsDict()
-            self_settings_dict = self.settings_dict
+            self_settings_container = self.settings_dict
         if settings_dicts_default == None:
             settings_dicts_default = self.get_default_python_settings_dict()
 
         # insert all child-placeholders that are in python_options on this level
-        # TODO append them to self_settings_dict after first use
+        # TODO append them to self_settings_container after first use
         child_placeholders = []
         # TODO here we assume that the child_placeholders are the same in all settings_dicts_default
         for entry in settings_dicts_default[0]:
             if isinstance(entry, SettingsChildPlaceholder):
-                self_settings_dict.append(entry)
+                self_settings_container.append(entry)
                 child_placeholders.append(entry)
 
-        #print(self_settings_dict)
+        #print(self_settings_container)
 
         if isinstance(settings_dict, SettingsList):
             rest = SettingsList()
@@ -210,14 +222,14 @@ class Node:
                         if isinstance(entry, SettingsDictEntry):
                             new_entry = SettingsDictEntry()
                             new_entry.key = entry.key
-                            for settings_dict_default in settings_dicts_default:
-                                if settings_dict_default.has_key(entry.key):
-                                    settings_dicts_default_recurse.append(settings_dict_default.get_value(entry.key))
+                            for settings_container_default in settings_dicts_default:
+                                if settings_container_default.has_key(entry.key):
+                                    settings_dicts_default_recurse.append(settings_container_default.get_value(entry.key))
                         else:
                             new_entry = SettingsListEntry()
-                            for settings_dict_default in settings_dicts_default:
+                            for settings_container_default in settings_dicts_default:
                                 # TODO here we assume that there is only one SettingsListEntry in python_options we just use the first one
-                                settings_dicts_default_recurse.append(settings_dict_default.get_first_SettingsListEntry().value)
+                                settings_dicts_default_recurse.append(settings_container_default.get_first_SettingsListEntry().value)
                         new_entry.comments = entry.comments
 
                         # add an empty list or dict to the new entry
@@ -227,13 +239,13 @@ class Node:
                             new_entry.value = SettingsList()
                             new_entry.value.list_comprehension = entry.value.list_comprehension
                         # add the new entry
-                        self_settings_dict.append(new_entry)
+                        self_settings_container.append(new_entry)
 
                         # recurse the new entry
-                        self.parse_python_settings_recursive(entry.value, self_settings_dict=new_entry.value, settings_dicts_default=settings_dicts_default_recurse, keep_entries_that_have_no_default=keep_entries_that_have_no_default_overwrite)
+                        self.parse_python_settings_recursive(entry.value, self_settings_container=new_entry.value, settings_dicts_default=settings_dicts_default_recurse, keep_entries_that_have_no_default=keep_entries_that_have_no_default_overwrite)
                     else:
                         # if the entry.value is not special -> just append the entry
-                        self_settings_dict.append(entry)
+                        self_settings_container.append(entry)
                 else:
                     # entry is a SettingsDictEntry
                     # and the key does not exist in defaults
@@ -251,17 +263,17 @@ class Node:
                         if len(new_dict) > 0:
                             #print('the childs did not take this entry')
                             if keep_entries_that_have_no_default:
-                                self_settings_dict.append(entry)
+                                self_settings_container.append(entry)
                     else:
                         # this entry is not in defaults and there is no child at this place
                         if is_called_on_child:
                             rest.append(entry)
                         elif keep_entries_that_have_no_default_overwrite:
-                            self_settings_dict.append(entry)
+                            self_settings_container.append(entry)
 
             #elif isinstance(entry, SettingsComment):
             else:
-                self_settings_dict.append(entry)
+                self_settings_container.append(entry)
 
         return rest
 
