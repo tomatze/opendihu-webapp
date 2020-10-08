@@ -2,7 +2,7 @@
 
 import sys
 
-from cpp_structure import CPPTree
+from cpp_tree import CPPTree
 from python_settings import PythonSettings
 import possible_solver_combinations
 

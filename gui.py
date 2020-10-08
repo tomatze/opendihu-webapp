@@ -5,7 +5,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('GtkSource', '4')
 from gi.repository import Gtk, Gio, GtkSource
 
-from cpp_structure import CPPTree
+from cpp_tree import CPPTree
 from python_settings import PythonSettings
 from helpers import Message, Error, Info
 import possible_solver_combinations
