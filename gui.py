@@ -31,8 +31,8 @@ class Window(Gtk.Window):
     def on_button_apply_python_code(self, _):
         text_bounds = self.text_view_python_code.get_buffer().get_bounds()
         text = self.text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
-        ret = self.cpp_tree.parse_python_settings(text)
-        self.log_append_message(ret)
+        rets = self.cpp_tree.parse_python_settings(text)
+        self.log_append_message(rets)
         self.redraw_textview_python_code()
 
     def on_button_apply_cpp_code(self, _):
@@ -87,7 +87,11 @@ class Window(Gtk.Window):
             self.redraw_treeview_cpp_recursive(child, row)
 
     def log_append_message(self, message):
-        self.log_append_line(str(message), message.color)
+        if isinstance(message, list):
+            for m in message:
+                self.log_append_line(str(m), m.color)
+        else:
+            self.log_append_line(str(message), message.color)
 
     def log_append_line(self, text, color=None):
         buffer = self.text_view_log.get_buffer()

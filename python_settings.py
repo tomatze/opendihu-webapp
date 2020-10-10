@@ -2,7 +2,7 @@ import re
 import typing
 
 from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
-from helpers import printe
+from helpers import Error
 import token
 from io import BytesIO
 
@@ -391,7 +391,7 @@ class PythonSettings():
     config_dict = None
     postfix = ''
     # takes a string of a settings.py and parses it
-    def __init__(self, settings=None):
+    def parse(self, settings=None):
         if settings:
             try:
                 # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
@@ -404,8 +404,9 @@ class PythonSettings():
 
                 # iterate over tokens to create SettingsDict
                 self.config_dict = SettingsDict(settings)
+                return None
             except:
-                printe('failed to parse python-settings')
+                return Error('failed to parse python-settings')
 
     def __repr__(self):
         return self.prefix + 'config = ' + str(self.config_dict) + self.postfix

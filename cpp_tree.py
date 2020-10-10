@@ -204,8 +204,13 @@ class CPPTree:
     def parse_python_settings(self, settings):
         self.undo_stack.duplicate_current_state()
         # save PythonSettings so we also have the prefix and postfix
-        self.root.parse_python_settings(PythonSettings(settings))
-        return Info('tried our best, to fit the given settings to the c++ tree')
+        python_settings = PythonSettings()
+        ret = python_settings.parse(settings)
+        if isinstance(ret, Error):
+            return ret
+        else:
+            return self.root.parse_python_settings(python_settings, keep_entries_that_have_no_default=False)
+        #return Info('tried our best, to fit the given settings to the c++ tree')
 
     def get_python_settings(self):
         return self.root.get_python_settings()

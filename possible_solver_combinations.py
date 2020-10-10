@@ -201,6 +201,7 @@ possible_solver_combinations = {
         "python_options" : SettingsDict([
             SettingsDictEntry("StrangSplitting", SettingsDict([
                 SettingsDictEntry("timeStepWidth", '1e-1'),
+                SettingsDictEntry("endTime", '1000.0'),
                 SettingsDictEntry("Term1", SettingsDict([
                     SettingsChildPlaceholder(0)
                 ])),
