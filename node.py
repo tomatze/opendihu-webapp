@@ -189,6 +189,7 @@ class Node:
             child.delete_python_settings()
 
     # parse PythonSettings and keep prefix and postfix
+    # returns a list of Warnings
     def parse_python_settings(self, python_settings, keep_entries_that_have_no_default):
         # remove all old python-settings
         self.delete_python_settings()
@@ -199,6 +200,9 @@ class Node:
         return warnings
 
     # parse a python_settings_dict and add it to this Node and its childs
+    # returns (rest, warnings)
+    # rest is only not None in recursive calls on childs and can be ignored if called from outside
+    # warnings is a list of Warnings
     def parse_python_settings_recursive(self, settings_container, keep_entries_that_have_no_default=False, self_settings_container=None, settings_container_default=None, is_called_on_child=False, warnings=[]):
         # TODO SettingsConditional? 
         # TODO if a SettingsDictEntry has no comment, add the default-comment (extra function)
@@ -295,10 +299,10 @@ class Node:
                         if is_called_on_child:
                             rest.append(entry)
                         elif keep_entries_that_have_no_default:
-                            warnings.append(Warning(entry.key + ' not found in default-settings -> added it anyways'))
+                            warnings.append(Warning(entry.key + ' is an unknown setting -> added it anyways'))
                             self_settings_container.append(entry)
                         else:
-                            warnings.append(Warning(entry.key + ' not found in default-settings -> it was NOT added'))
+                            warnings.append(Warning(entry.key + ' is an unknown setting -> it was NOT added'))
 
             else:
                 # always add SettingsComments

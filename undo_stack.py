@@ -38,12 +38,12 @@ class UndoStack:
         self.cpp_tree.root = self.stack[self.current_index]
 
     def add(self, node):
-        self.__remove_future()
+        self.remove_future()
         self.stack.append(node)
         self.current_index = self.current_index + 1
         self.__update_cpp_tree()
 
-    def __remove_future(self):
+    def remove_future(self):
         # pop everything newer than the current root
         self.stack = self.stack[:self.current_index + 1]
 
