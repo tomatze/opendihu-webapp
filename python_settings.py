@@ -79,7 +79,10 @@ class SettingsContainer(list):
 # normal entry in a SettingsDict
 class SettingsDictEntry:
     def __init__(self, key=None, value=None, comment=None):
-        self.key = key
+        if isinstance(key, str) and not key[0] == '"':
+            self.key = '"' + key + '"'
+        else:
+            self.key = key
         self.value = value
         self.comments = []
         if comment:

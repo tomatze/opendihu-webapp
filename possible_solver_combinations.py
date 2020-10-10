@@ -64,14 +64,14 @@ possible_solver_combinations = {
             SettingsDictEntry("logFormat", '"csv"', "csv or json"),
             SettingsDictEntry("solverStructureDiagramFile", '"solver_structure.txt"'),
             SettingsDictEntry("mappingsBetweenMeshesLogFile", '"mappings_between_meshes.txt"'),
-            SettingsDictEntry("mappingsBetweenMeshes", '{}'),
+            SettingsDictEntry("MappingsBetweenMeshes", '{}'),
             #SettingsDictEntry("Meshes", '{}'),
             #SettingsDictEntry("Solvers", '{}'),
             SettingsDictEntry("meta", SettingsDict([
                 #TODO add meta
                 SettingsDictEntry("partitioning", '""')
             ])),
-            SettingsChildPlaceholder(1)
+            SettingsChildPlaceholder(0)
         ])
     },
 
@@ -448,7 +448,7 @@ possible_solver_combinations = {
         ],
         "python_options" : SettingsDict([
             SettingsDictEntry("FiniteElementMethod", SettingsDict([
-                SettingsChildPlaceholder(1),
+                SettingsChildPlaceholder(0),
                 SettingsDictEntry("prefactor", '1'),
                 SettingsDictEntry("rightHandSide", '{}'),
                 SettingsDictEntry("dirichletBoundaryConditions", '{}'),
