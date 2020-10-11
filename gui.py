@@ -3,7 +3,7 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('GtkSource', '4')
-from gi.repository import Gtk, Gio, GtkSource, GObject
+from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk
 
 from cpp_tree import CPPTree
 from python_settings import PythonSettings
@@ -110,6 +110,11 @@ class Window(Gtk.Window):
         for _ in range(depth):
             grid.add(Gtk.Label(label='  '))
         if isinstance(node, PlaceholderNode):
+            if node.needed:
+                color = Gdk.RGBA(1,0,0,.5)
+            else:
+                color = Gdk.RGBA(0,1,0,.5)
+            grid.override_background_color(Gtk.StateType.NORMAL, color)
             #label = Gtk.Label(label = 'NONE')
             #grid.add(label)
             def on_button_add_node(a):
