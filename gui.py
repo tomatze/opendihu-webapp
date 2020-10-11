@@ -110,8 +110,14 @@ class Window(Gtk.Window):
         for _ in range(depth):
             grid.add(Gtk.Label(label='  '))
         if isinstance(node, PlaceholderNode):
-            label = Gtk.Label(label = 'NONE')
-            grid.add(label)
+            #label = Gtk.Label(label = 'NONE')
+            #grid.add(label)
+            def on_button_add_node(a):
+                # TODO mapping between the button and the node
+                print('adding ' + str(self.cpp_treeview_listbox))
+            button_add_node = Gtk.Button(label='add')
+            grid.add(button_add_node)
+            button_add_node.connect("clicked", on_button_add_node)
         else:
             label = Gtk.Label(label=node.name)
             grid.add(label)

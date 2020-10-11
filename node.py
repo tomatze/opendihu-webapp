@@ -7,7 +7,7 @@ from python_settings import PythonSettings, SettingsDict, SettingsList, Settings
 class Childs():
     def __init__(self, node):
         self.node = node
-        # node.name is not populated yet
+        # node.name is not populated yet, so we can't populate self.__childs with placeholders
         self.populated = False
 
     def populate(self):
@@ -50,7 +50,7 @@ class Childs():
         self.__childs[i] = child
         child.parent = self.node
 
-    # gets called first
+    # normally gets called first
     def replace_next_placeholder(self, child):
         if not self.populated:
             self.populate()
@@ -58,6 +58,8 @@ class Childs():
             if isinstance(self.__childs[i], PlaceholderNode):
                 self.replace(i, child)
                 return
+        # force adding the child if no PlaceholderNodes are left in self.__childs (in case of unknown templates)
+        # TODO maybe message if this happens
         self.__childs.append(child)
 
     def clear(self):

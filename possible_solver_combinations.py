@@ -24,9 +24,7 @@ from python_settings import SettingsDict, SettingsList, SettingsChildPlaceholder
 # PreciceAdapter::ContractionDirichletBoundaryConditions
 # PreciceAdapter::ContractionNeumannBoundaryConditions
 # PreciceAdapter::PartitionedFibers
-# PreciceAdapter::MuscleContraction
-# MuscleContractionSolver
-# FastMonodomainSolver
+# PreciceAdapter::MuscleContraction MuscleContractionSolver FastMonodomainSolver
 # SpatialDiscretization::HyperelasticitySolver
 # Control::MultipleInstances
 # Control::Coupling
