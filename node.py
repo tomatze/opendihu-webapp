@@ -4,13 +4,76 @@ from helpers import printe, indent, Error, Info, Warning
 import possible_solver_combinations
 from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice
 
+class Childs():
+    def __init__(self, node):
+        self.node = node
+        # node.name is not populated yet
+        self.populated = False
+
+    def populate(self):
+        self.populated = True
+
+        self.__childs = []
+        self.combinations = self.node.combinations
+
+        if not isinstance(self.node, PlaceholderNode) and self.node.name in self.node.combinations and "template_arguments" in self.node.combinations[self.node.name]:
+            template_arguments = self.node.combinations[self.node.name]["template_arguments"]
+            childs_count = len(template_arguments)
+            if "template_arguments_needed" in self.node.combinations[self.node.name]:
+                childs_count_needed = self.node.combinations[self.node.name]["template_arguments_needed"]
+            else:
+                childs_count_needed = childs_count
+
+            for i in range(childs_count):
+                if i <= childs_count_needed:
+                    self.__childs.append(PlaceholderNode(self.combinations, needed=True))
+                else:
+                    self.__childs.append(PlaceholderNode(self.combinations, needed=False))
+
+    def get_childs(self):
+        if not self.populated:
+            self.populate()
+        return self.__childs
+
+    def get_real_childs(self):
+        if not self.populated:
+            self.populate()
+        ret = []
+        for child in self.__childs:
+            if not isinstance(child, PlaceholderNode):
+                ret.append(child)
+        return ret
+
+    def replace(self, i, child):
+        if not self.populated:
+            self.populate()
+        self.__childs[i] = child
+        child.parent = self.node
+
+    # gets called first
+    def replace_next_placeholder(self, child):
+        if not self.populated:
+            self.populate()
+        for i in range(len(self.__childs)):
+            if isinstance(self.__childs[i], PlaceholderNode):
+                self.replace(i, child)
+                return
+        self.__childs.append(child)
+
+    def clear(self):
+        self.populate()
+
+
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
-    def __init__(self):
+    def __init__(self, combinations):
+        self.combinations = combinations
         self.name = ''
         self.comment = ''
         self.can_have_childs = False
-        self.childs = []
+        self.childs = Childs(self)
+
+        self.parent = None
 
         self.settings_dict = None
         self.settings_container_default = None
@@ -23,6 +86,7 @@ class Node:
                 self.settings_container_default = possible_solver_combinations.possible_solver_combinations[self.name]["python_options"]
             except:
                 # return an empty SettingsDict if nothing found
+                print(self.name)
                 self.settings_container_default = SettingsDict()
         return self.settings_container_default
 
@@ -30,7 +94,7 @@ class Node:
     def get_python_settings_dict_recursive(self):
         # deepcopy self.settings_dict so we don't replace the SettingsChildPlaceholders in it
         own_dict = copy.deepcopy(self.settings_dict)
-        for child in self.childs:
+        for child in self.childs.get_real_childs():
             #print('child: ' + child.name)
             # for every child replace the ### CHILD ### placeholder with the childs dict
             try:
@@ -66,7 +130,7 @@ class Node:
             # recurse childs
             childs_recurse= []
             # ignore childs that have an Integer as name
-            for child in self.childs:
+            for child in self.childs.get_real_childs():
                 try:
                     int(child.name)
                 except:
@@ -147,7 +211,11 @@ class Node:
                         if not self_settings_global_dict.has_key(entry.global_key):
                             self_settings_global_dict.append(SettingsDictEntry(entry.global_key, SettingsDict()))
                         dict = self_settings_global_dict.get_value(entry.global_key)
-                        print(self_settings_global_dict[0].key)
+                        if not isinstance(dict, SettingsDict):
+                            printe('we have to add to global,but global is not a dict')
+                            # create a new dict it can add to so we don't have to break controlflow
+                            # TODO counter gets broken by this hack
+                            dict = SettingsDict()
                         # get the name e.g. mesh0
                         if self_settings_container.has_key(entry.name_key):
                             name = self_settings_container.get_value(entry.name_key)
@@ -185,7 +253,7 @@ class Node:
     # delete self.settings_dict recursively
     def delete_python_settings(self):
         self.settings_dict = None
-        for child in self.childs:
+        for child in self.childs.get_real_childs():
             child.delete_python_settings()
 
     # parse PythonSettings and keep prefix and postfix
@@ -289,7 +357,9 @@ class Node:
                     # try giving the entry to the childs
                     for j in range(len(child_placeholders)):
                         #print('trying to give ' + str(entry.key) + ' to child ' + str(child_placeholders[j].childnumber))
-                        child = self.childs[child_placeholders[j].childnumber]
+                        # TODO does this work with the new child implementation?
+                        child = self.childs.get_real_childs()[child_placeholders[j].childnumber]
+                        print(child.name)
                         (new_dict, warnings) = child.parse_python_settings_recursive(new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, is_called_on_child=True)
                         if len(new_dict) == 0:
                             break
@@ -328,14 +398,14 @@ class Node:
         indentation = '  ' * depth
         indentation_child = '  ' * (depth + 1)
         childs_string = ''
-        for i in range(len(self.childs)):
-            child = self.childs[i]
+        for i in range(len(self.childs.get_real_childs())):
+            child = self.childs.get_real_childs()[i]
             #print(child.name + ' : ' + child.comment)
             comment_string = ''
             if child.comment != '':
                 comment_string = ' //' + child.comment
             # add ',' if this is not the last child
-            if i < len(self.childs) - 1:
+            if i < len(self.childs.get_real_childs()) - 1:
                 comment_string = ',' + comment_string
             if childs_string == '':
                 childs_string = '\n' + indentation_child + child.repr_recursive(depth + 1) + comment_string
@@ -359,9 +429,14 @@ class Node:
             return False
         if self.can_have_childs != node.can_have_childs:
             return False
-        if len(self.childs) != len(node.childs):
+        if len(self.childs.get_real_childs()) != len(node.childs.get_real_childs()):
             return False
-        for i in range(len(self.childs)):
-            if self.childs[i].compare_cpp(node.childs[i]) == False:
+        for i in range(len(self.childs.get_real_childs())):
+            if self.childs.get_real_childs()[i].compare_cpp(node.childs.get_real_childs()[i]) == False:
                 return False
         return True
+
+class PlaceholderNode(Node):
+    def __init__(self, combinations, needed):
+        self.needed = needed
+        super().__init__(combinations)

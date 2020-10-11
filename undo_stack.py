@@ -16,7 +16,7 @@ class UndoStack:
         self.add(copy.deepcopy(self.cpp_tree.root))
 
     def add_new_root_node(self):
-        self.add(RootNode())
+        self.add(RootNode(self.cpp_tree.combinations))
 
     def undo(self):
         if self.current_index > 0:

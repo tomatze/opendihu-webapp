@@ -3,12 +3,20 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('GtkSource', '4')
-from gi.repository import Gtk, Gio, GtkSource
+from gi.repository import Gtk, Gio, GtkSource, GObject
 
 from cpp_tree import CPPTree
 from python_settings import PythonSettings
 from helpers import Message, Error, Info
 import possible_solver_combinations
+from node import PlaceholderNode
+
+# stores a node + its depth to view it in a ListBox
+class NodeLine(GObject.GObject):
+    def __init__(self, node, depth):
+        GObject.GObject.__init__(self)
+        self.node = node
+        self.depth = depth
 
 class Window(Gtk.Window):
     def __init__(self):
@@ -78,14 +86,37 @@ class Window(Gtk.Window):
         self.text_view_cpp_code.get_buffer().set_text(text)
 
     def redraw_treeview_cpp(self):
-        self.store_treeview_cpp.clear()
-        self.redraw_treeview_cpp_recursive(self.cpp_tree.root, None)
-        self.treeview_cpp.expand_all()
+        #self.store_treeview_cpp.clear()
+        #self.redraw_treeview_cpp_recursive(self.cpp_tree.root, None)
+        #self.treeview_cpp.expand_all()
 
-    def redraw_treeview_cpp_recursive(self, node, parent_row):
-        row = self.store_treeview_cpp.append(parent_row, [node.name])
-        for child in node.childs:
-            self.redraw_treeview_cpp_recursive(child, row)
+        self.cpp_treeview_store.remove_all()
+        self.redraw_treeview_cpp_recursive(self.cpp_tree.root, 0)
+
+    def redraw_treeview_cpp_recursive(self, node, depth):
+        self.cpp_treeview_store.append(NodeLine(node, depth))
+        for child in node.childs.get_childs():
+            self.redraw_treeview_cpp_recursive(child, depth + 1)
+        #self.cpp_treeview_store.append(NodeLine(None, depth + 1))
+        #possible_childs = self.cpp_tree.get_possible_childs(node)
+
+    # binded to self.cpp_treeview_listbox
+    # if we append item to self.cpp_treeview_store this function gets called and creates the widget
+    def cpp_treeview_listbox_create_widget(self, list_node):
+        node = list_node.node
+        depth = list_node.depth
+
+        grid = Gtk.Grid()
+        for _ in range(depth):
+            grid.add(Gtk.Label(label='  '))
+        if isinstance(node, PlaceholderNode):
+            label = Gtk.Label(label = 'NONE')
+            grid.add(label)
+        else:
+            label = Gtk.Label(label=node.name)
+            grid.add(label)
+        grid.show_all()
+        return grid
 
     def log_append_message(self, message):
         if isinstance(message, list):
@@ -228,25 +259,35 @@ class Window(Gtk.Window):
         self.tabs_cpp_treeview = Gtk.Notebook()
         self.grid_treeview.add(self.tabs_cpp_treeview)
 
-        self.store_treeview_cpp = Gtk.TreeStore(str)
-        self.treeview_cpp = Gtk.TreeView(model=self.store_treeview_cpp)
-        self.treeview_cpp.set_vexpand(True)
-        self.treeview_cpp.set_hexpand(True)
-        tvcolumn = Gtk.TreeViewColumn()
-        self.treeview_cpp.append_column(tvcolumn)
+        #self.store_treeview_cpp = Gtk.TreeStore(str)
+        #self.treeview_cpp = Gtk.TreeView(model=self.store_treeview_cpp)
+        #self.treeview_cpp.set_vexpand(True)
+        #self.treeview_cpp.set_hexpand(True)
+        #tvcolumn = Gtk.TreeViewColumn()
+        #self.treeview_cpp.append_column(tvcolumn)
 
-        cell = Gtk.CellRendererText()
-        tvcolumn.pack_start(cell, True)
-        tvcolumn.add_attribute(cell, 'text', 0)
+        #cell = Gtk.CellRendererText()
+        #tvcolumn.pack_start(cell, True)
+        #tvcolumn.add_attribute(cell, 'text', 0)
+        #self.scroll_cpp_treeview = Gtk.ScrolledWindow()
+        #self.scroll_cpp_treeview.add(self.treeview_cpp)
+        #self.tabs_cpp_treeview.append_page(self.scroll_cpp_treeview, Gtk.Label(label='C++'))
+
+        self.cpp_treeview_store = Gio.ListStore()
+        self.cpp_treeview_listbox = Gtk.ListBox()
+        self.cpp_treeview_listbox.set_vexpand(True)
+        self.cpp_treeview_listbox.set_hexpand(True)
+        self.cpp_treeview_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.cpp_treeview_listbox.bind_model(self.cpp_treeview_store, self.cpp_treeview_listbox_create_widget)
+
         self.scroll_cpp_treeview = Gtk.ScrolledWindow()
-        self.scroll_cpp_treeview.add(self.treeview_cpp)
+        self.scroll_cpp_treeview.add(self.cpp_treeview_listbox)
         self.tabs_cpp_treeview.append_page(self.scroll_cpp_treeview, Gtk.Label(label='C++'))
 
         # python tree view
         self.tabs_python_treeview = Gtk.Notebook()
         self.grid_treeview.attach_next_to(self.tabs_python_treeview, self.tabs_cpp_treeview, Gtk.PositionType.RIGHT, 1, 1)
         self.scroll_python_treeview = Gtk.ScrolledWindow()
-        #self.scroll_python_treeview.add(self.treeview_cpp)
         self.tabs_python_treeview.append_page(self.scroll_python_treeview, Gtk.Label(label='Python'))
 
 win = Window()

@@ -14,16 +14,17 @@ from undo_stack import UndoStack
 # this class holds a tree of Node objects
 # the tree represents the structure of a example.cpp
 class CPPTree:
+    #combinations = None
     def __init__(self):
         # read in the template.cpp, so we don't have to read it in multiple times
         file_cpp_template = open("template.cpp", "r")
         self.cpp_template = file_cpp_template.read()
         file_cpp_template.close()
 
+        self.combinations = possible_solver_combinations.possible_solver_combinations
+
         self.root = None
         self.undo_stack = UndoStack(self)
-
-        self.combinations = possible_solver_combinations.possible_solver_combinations
 
         # create a list of keys
         self.keys = list(self.combinations.keys())
@@ -79,14 +80,18 @@ class CPPTree:
                         for key_sub in self.timeSteppingScheme:
                             template_argument.append(key_sub)
 
+        # add template_arguments for GLOBAL (runnables)
+        self.combinations['GLOBAL']["template_arguments"] = [self.runnables]
+
     def reset(self):
         self.undo_stack.add_new_root_node()
         return Info('loaded empty simulation')
 
     # this function reads a string (normally the content of a example.cpp) and creates the tree from it
     def parse_cpp_src(self, problem, validate_semantics=False):
-        new_root = RootNode()
-        try:
+        new_root = RootNode(self.combinations)
+        #try:
+        if 1 == 1:
             # remove single-line-comments from problem
             #problem = re.sub(r'(?m)^(.*)//.*\n?', r'\1\n', problem)
             # mark comments with 'α commentβ' instead of '// comment' so they are easy to parse
@@ -128,7 +133,7 @@ class CPPTree:
             # create tree from problem with a simple parser
             problem = '<' + problem + '>'
             stack = []
-            stack.append(Node())
+            stack.append(Node(self.combinations))
             comment_mode = False
             comment_node = stack[0]
             for char in problem:
@@ -143,27 +148,28 @@ class CPPTree:
                     elif char == 'α':
                         comment_mode = True
                     elif char == '<':
-                        child = Node()
+                        child = Node(self.combinations)
                         stack[-1].can_have_childs = True
-                        stack[-1].childs.append(child)
+                        stack[-1].childs.replace_next_placeholder(child)
                         stack.append(child)
                         comment_node = child
                     elif char == ',':
                         comment_node = stack.pop()
-                        child = Node()
-                        stack[-1].childs.append(child)
+                        child = Node(self.combinations)
+                        stack[-1].childs.replace_next_placeholder(child)
                         stack.append(child)
                     elif char == '>':
                         stack.pop()
                         comment_node = stack[-1]
                         # remove empty child in case of <> we have can_have_childs for that
-                        if stack[-1].childs[0].name == "":
-                            stack[-1].childs = []
+                        # TODO can this really be removed?
+                        if stack[-1].childs.get_real_childs()[0].name == "":
+                            stack[-1].childs.clear()
                     else:
                         stack[-1].name = stack[-1].name + char
 
-            child = stack[0].childs[0]
-            new_root.childs.append(child)
+            child = stack[0].childs.get_real_childs()[0]
+            new_root.childs.replace_next_placeholder(child)
 
             if validate_semantics:
                  ret = new_root.validate_cpp_src(self)
@@ -174,25 +180,45 @@ class CPPTree:
                 return Info('cpp-src parsed successfully')
             else:
                 return Info('no changes found in cpp-src')
-        except:
-            return Error('failed to parse cpp-src (syntax-error)')
+        #except:
+        #    return Error('failed to parse cpp-src (syntax-error)')
 
     # this creates a string which contains the whole generated example.cpp source-code using the tree and the template.cpp
     def __repr__(self):
-        if len(self.root.childs) > 0:
+        if len(self.root.childs.get_real_childs()) > 0:
             index = self.cpp_template.find(' problem(settings)')
-            return self.cpp_template[:index] + indent(str(self.root.childs[0]), '  ') + self.cpp_template[index:]
+            return self.cpp_template[:index] + indent(str(self.root.childs.get_real_childs()[0]), '  ') + self.cpp_template[index:]
         else:
             return self.cpp_template
 
     def add_new_child_to_node(self, node, childname):
         self.undo_stack.duplicate_current_state()
-        child = Node()
+        child = Node(self.combinations)
         child.name = childname
         if "template_arguments" in self.combinations[childname]:
             child.can_have_childs = True
         # TODO add_missing_default_python_settings
-        node.childs.append(child)
+        node.childs.replace_next_placeholder(child)
+
+    def add_missing_placeholder_nodes(self):
+        self.root.childs
+
+    def get_possible_replacements_for_node(self, node):
+        if isinstance(node, RootNode):
+            return []
+        for i in range(len(node.parent.childs.get_real_childs())):
+            if node == node.parent.childs.get_real_childs()[i]:
+                child_index = i
+        possible_node_names = self.combinations[node.parent.name]["template_arguments"][child_index]
+        possible_replacements = []
+        for name in possible_node_names:
+            possible_replacement = Node(self.combinations)
+            possible_replacement.name = name
+            if "template_arguments" in self.combinations[name]:
+                possible_replacement.can_have_childs = True
+            possible_replacements.append(possible_replacement)
+        # TODO sort by occurence in examples
+        return possible_replacements
 
 
 
