@@ -18,10 +18,6 @@ class NodeLine(GObject.GObject):
         self.node = node
         self.depth = depth
 
-class ButtonWithNode(Gtk.Button):
-    def add_node(self, node):
-        self.node = node
-
 class Window(Gtk.Window):
     def __init__(self):
         super(Window, self).__init__()
@@ -121,24 +117,28 @@ class Window(Gtk.Window):
                 color = Gdk.RGBA(0,1,0,.5)
                 label = 'add optional template'
             grid.override_background_color(Gtk.StateType.NORMAL, color)
-            def on_button_add_node(button):
-                possible_replacements = button.node.get_possible_replacements()
-                #print(possible_replacements)
-                # TODO let the user select a choice from possible_replacements
-                ret = self.cpp_tree.replace_node(node, possible_replacements[0])
-                self.log_append_message(ret)
-                self.redraw_treeview_cpp()
-                self.redraw_textview_cpp_code()
-                self.redraw_textview_python_code()
-            button_add_node = ButtonWithNode(label=label)
-            button_add_node.add_node(node)
-            grid.add(button_add_node)
+
+            def on_button_add_node(_):
+                self.cpp_treeview_replace_node(node)
+
+            button_add_node = Gtk.Button(label=label)
             button_add_node.connect("clicked", on_button_add_node)
+            grid.add(button_add_node)
         else:
             label = Gtk.Label(label=node.name)
             grid.add(label)
         grid.show_all()
         return grid
+
+    def cpp_treeview_replace_node(self, node):
+        possible_replacements = node.get_possible_replacements()
+        #print(possible_replacements)
+        # TODO let the user select a choice from possible_replacements
+        ret = self.cpp_tree.replace_node(node, possible_replacements[0])
+        self.log_append_message(ret)
+        self.redraw_treeview_cpp()
+        self.redraw_textview_cpp_code()
+        self.redraw_textview_python_code()
 
     def log_append_message(self, message):
         if isinstance(message, list):

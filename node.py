@@ -52,8 +52,8 @@ class Childs():
         for i in range(len(self.__childs)):
             if self.__childs[i] == child_old:
                 self.__childs[i] = child_new
-                break
-        print('replaced ' + child_old.name + ' with ' + child_new.name)
+                return
+        printe('failed to replace node')
 
     # normally gets called first
     def replace_next_placeholder(self, child):
