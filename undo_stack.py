@@ -12,8 +12,13 @@ class UndoStack:
 
     def duplicate_current_state(self):
         # deepcopy current root
-        #self.add(copy.deepcopy(self.stack[self.current_index]))
-        self.add(copy.deepcopy(self.cpp_tree.root))
+        #self.add(copy.deepcopy(self.cpp_tree.root))
+        self.remove_future()
+        self.stack.append(copy.deepcopy(self.cpp_tree.root))
+        # swap the new copy with the current root (so current root is at the end of the stack)
+        self.stack[self.current_index], self.stack[self.current_index + 1] = self.stack[self.current_index + 1], self.stack[self.current_index]
+        self.current_index = self.current_index + 1
+        self.__update_cpp_tree()
 
     def add_new_root_node(self):
         self.add(RootNode(self.cpp_tree.combinations))

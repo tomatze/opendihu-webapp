@@ -18,6 +18,10 @@ class NodeLine(GObject.GObject):
         self.node = node
         self.depth = depth
 
+class ButtonWithNode(Gtk.Button):
+    def add_node(self, node):
+        self.node = node
+
 class Window(Gtk.Window):
     def __init__(self):
         super(Window, self).__init__()
@@ -112,15 +116,22 @@ class Window(Gtk.Window):
         if isinstance(node, PlaceholderNode):
             if node.needed:
                 color = Gdk.RGBA(1,0,0,.5)
+                label = 'add necessary template'
             else:
                 color = Gdk.RGBA(0,1,0,.5)
+                label = 'add optional template'
             grid.override_background_color(Gtk.StateType.NORMAL, color)
-            #label = Gtk.Label(label = 'NONE')
-            #grid.add(label)
-            def on_button_add_node(a):
-                # TODO mapping between the button and the node
-                print('adding ' + str(self.cpp_treeview_listbox))
-            button_add_node = Gtk.Button(label='add')
+            def on_button_add_node(button):
+                possible_replacements = button.node.get_possible_replacements()
+                #print(possible_replacements)
+                # TODO let the user select a choice from possible_replacements
+                ret = self.cpp_tree.replace_node(node, possible_replacements[0])
+                self.log_append_message(ret)
+                self.redraw_treeview_cpp()
+                self.redraw_textview_cpp_code()
+                self.redraw_textview_python_code()
+            button_add_node = ButtonWithNode(label=label)
+            button_add_node.add_node(node)
             grid.add(button_add_node)
             button_add_node.connect("clicked", on_button_add_node)
         else:

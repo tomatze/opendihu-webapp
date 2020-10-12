@@ -203,24 +203,10 @@ class CPPTree:
     def add_missing_placeholder_nodes(self):
         self.root.childs
 
-    def get_possible_replacements_for_node(self, node):
-        if isinstance(node, RootNode):
-            return []
-        for i in range(len(node.parent.childs.get_real_childs())):
-            if node == node.parent.childs.get_real_childs()[i]:
-                child_index = i
-        possible_node_names = self.combinations[node.parent.name]["template_arguments"][child_index]
-        possible_replacements = []
-        for name in possible_node_names:
-            possible_replacement = Node(self.combinations)
-            possible_replacement.name = name
-            if "template_arguments" in self.combinations[name]:
-                possible_replacement.can_have_childs = True
-            possible_replacements.append(possible_replacement)
-        # TODO sort by occurence in examples
-        return possible_replacements
-
-
+    def replace_node(self, node, replacement_node):
+        self.undo_stack.duplicate_current_state()
+        node.parent.childs.replace(node, replacement_node)
+        return Info('replaced node with ' + str(replacement_node.name))
 
     # this function returns a list of all possible childs of a given class
     def get_possible_childs(self, name):

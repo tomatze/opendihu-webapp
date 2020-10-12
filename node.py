@@ -29,6 +29,7 @@ class Childs():
                     self.__childs.append(PlaceholderNode(self.combinations, needed=True))
                 else:
                     self.__childs.append(PlaceholderNode(self.combinations, needed=False))
+                self.__childs[len(self.__childs) - 1].parent = self.node
 
     def get_childs(self):
         if not self.populated:
@@ -44,19 +45,23 @@ class Childs():
                 ret.append(child)
         return ret
 
-    def replace(self, i, child):
+    def replace(self, child_old, child_new):
         if not self.populated:
             self.populate()
-        self.__childs[i] = child
-        child.parent = self.node
+        child_new.parent = self.node
+        for i in range(len(self.__childs)):
+            if self.__childs[i] == child_old:
+                self.__childs[i] = child_new
+                break
+        print('replaced ' + child_old.name + ' with ' + child_new.name)
 
     # normally gets called first
     def replace_next_placeholder(self, child):
         if not self.populated:
             self.populate()
-        for i in range(len(self.__childs)):
-            if isinstance(self.__childs[i], PlaceholderNode):
-                self.replace(i, child)
+        for c in self.get_childs():
+            if isinstance(c, PlaceholderNode):
+                self.replace(c, child)
                 return
         # force adding the child if no PlaceholderNodes are left in self.__childs (in case of unknown templates)
         # TODO maybe message if this happens
@@ -79,6 +84,29 @@ class Node:
 
         self.settings_dict = None
         self.settings_container_default = None
+
+    def get_possible_replacements(self):
+        # special case for rootnode
+        if not self.parent:
+            return []
+        for i in range(len(self.parent.childs.get_childs())):
+            if self == self.parent.childs.get_childs()[i]:
+                child_index = i
+                break
+        possible_node_names = self.combinations[self.parent.name]["template_arguments"][child_index]
+        possible_replacements = []
+        for name in possible_node_names:
+            possible_replacement = Node(self.combinations)
+            possible_replacement.name = name
+            #TODO fix add_missing_default_python_settings and uncomment this
+            #possible_replacement.add_missing_default_python_settings()
+            try: #try because of Integer name not found in self.combinations
+                if "template_arguments" in self.combinations[name]:
+                    possible_replacement.can_have_childs = True
+            except: pass
+            possible_replacements.append(possible_replacement)
+        # TODO sort by occurence in examples
+        return possible_replacements
 
     # sets self.settings_container_default to the values gotten from possible_solver_combinations
     # this is not in __init__(), because self.name (used here) gets defined later
@@ -111,6 +139,7 @@ class Node:
     # this function recursively adds missing python-settings to self.settings_dict
     # returns number of added settings
     # TODO handle SettingsConditional (maybe with has_key?)
+    # TODO what to do when there are no default settings defined in possible_solver_combinations
     def add_missing_default_python_settings(self, self_settings_container=None, settings_container_default=None, self_settings_global_dict=None):
         # counter for added settings
         changes = 0
