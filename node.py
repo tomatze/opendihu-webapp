@@ -106,6 +106,7 @@ class Node:
             except: pass
             possible_replacements.append(possible_replacement)
         # TODO sort by occurence in examples
+        # TODO handle 'Integer'
         return possible_replacements
 
     # sets self.settings_container_default to the values gotten from possible_solver_combinations

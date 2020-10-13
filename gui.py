@@ -18,9 +18,61 @@ class NodeLine(GObject.GObject):
         self.node = node
         self.depth = depth
 
-class Window(Gtk.Window):
+class ListBoxRowWithNode(Gtk.ListBoxRow):
+    def add_node(self, node):
+        self.node = node
+
+class NodeReplaceWindow(Gtk.Window):
+    def __init__(self, node, main_window):
+        super(NodeReplaceWindow, self).__init__()
+
+        possible_replacements = node.get_possible_replacements()
+
+        grid = Gtk.Grid()
+        self.add(grid)
+
+        store = Gio.ListStore()
+        listbox = Gtk.ListBox()
+        listbox.set_vexpand(True)
+        listbox.set_hexpand(True)
+        listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        listbox.bind_model(store, self.listbox_create_widget)
+
+        scroll = Gtk.ScrolledWindow()
+        scroll.add(listbox)
+        scroll.set_min_content_height(500)
+        scroll.set_min_content_width(500)
+        grid.add(scroll)
+
+        def on_button_replace(_):
+            replacement = listbox.get_selected_row().node
+            ret = main_window.cpp_tree.replace_node(node, replacement)
+            main_window.log_append_message(ret)
+            main_window.redraw_treeview_cpp()
+            main_window.redraw_textview_cpp_code()
+            main_window.redraw_textview_python_code()
+            self.close()
+
+        button_replace = Gtk.Button(label='replace')
+        button_replace.connect("clicked", on_button_replace)
+        grid.attach_next_to(button_replace, scroll, Gtk.PositionType.BOTTOM, 1, 1)
+
+        for replacement in possible_replacements:
+            store.append(NodeLine(replacement, 0))
+
+        self.show_all()
+
+    def listbox_create_widget(self, node_line):
+        listbox_row = ListBoxRowWithNode()
+        listbox_row.add_node(node_line.node)
+        grid = Gtk.Grid()
+        grid.add(Gtk.Label(label=node_line.node.name))
+        listbox_row.add(grid)
+        return listbox_row
+
+class MainWindow(Gtk.Window):
     def __init__(self):
-        super(Window, self).__init__()
+        super(MainWindow, self).__init__()
 
         self.init_ui()
         self.init_backend()
@@ -86,10 +138,6 @@ class Window(Gtk.Window):
         self.text_view_cpp_code.get_buffer().set_text(text)
 
     def redraw_treeview_cpp(self):
-        #self.store_treeview_cpp.clear()
-        #self.redraw_treeview_cpp_recursive(self.cpp_tree.root, None)
-        #self.treeview_cpp.expand_all()
-
         self.cpp_treeview_store.remove_all()
         self.redraw_treeview_cpp_recursive(self.cpp_tree.root, 0)
 
@@ -97,8 +145,6 @@ class Window(Gtk.Window):
         self.cpp_treeview_store.append(NodeLine(node, depth))
         for child in node.childs.get_childs():
             self.redraw_treeview_cpp_recursive(child, depth + 1)
-        #self.cpp_treeview_store.append(NodeLine(None, depth + 1))
-        #possible_childs = self.cpp_tree.get_possible_childs(node)
 
     # binded to self.cpp_treeview_listbox
     # if we append item to self.cpp_treeview_store this function gets called and creates the widget
@@ -131,14 +177,8 @@ class Window(Gtk.Window):
         return grid
 
     def cpp_treeview_replace_node(self, node):
-        possible_replacements = node.get_possible_replacements()
-        #print(possible_replacements)
         # TODO let the user select a choice from possible_replacements
-        ret = self.cpp_tree.replace_node(node, possible_replacements[0])
-        self.log_append_message(ret)
-        self.redraw_treeview_cpp()
-        self.redraw_textview_cpp_code()
-        self.redraw_textview_python_code()
+        _window = NodeReplaceWindow(node, self)
 
     def log_append_message(self, message):
         if isinstance(message, list):
@@ -281,20 +321,6 @@ class Window(Gtk.Window):
         self.tabs_cpp_treeview = Gtk.Notebook()
         self.grid_treeview.add(self.tabs_cpp_treeview)
 
-        #self.store_treeview_cpp = Gtk.TreeStore(str)
-        #self.treeview_cpp = Gtk.TreeView(model=self.store_treeview_cpp)
-        #self.treeview_cpp.set_vexpand(True)
-        #self.treeview_cpp.set_hexpand(True)
-        #tvcolumn = Gtk.TreeViewColumn()
-        #self.treeview_cpp.append_column(tvcolumn)
-
-        #cell = Gtk.CellRendererText()
-        #tvcolumn.pack_start(cell, True)
-        #tvcolumn.add_attribute(cell, 'text', 0)
-        #self.scroll_cpp_treeview = Gtk.ScrolledWindow()
-        #self.scroll_cpp_treeview.add(self.treeview_cpp)
-        #self.tabs_cpp_treeview.append_page(self.scroll_cpp_treeview, Gtk.Label(label='C++'))
-
         self.cpp_treeview_store = Gio.ListStore()
         self.cpp_treeview_listbox = Gtk.ListBox()
         self.cpp_treeview_listbox.set_vexpand(True)
@@ -312,7 +338,7 @@ class Window(Gtk.Window):
         self.scroll_python_treeview = Gtk.ScrolledWindow()
         self.tabs_python_treeview.append_page(self.scroll_python_treeview, Gtk.Label(label='Python'))
 
-win = Window()
+win = MainWindow()
 win.show_all()
 win.maximize()
 Gtk.main()
