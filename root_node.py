@@ -11,7 +11,7 @@ class RootNode(Node):
         self.settings_dict_prefix = ''
         self.settings_dict_postfix = ''
 
-        self.add_missing_default_python_settings()
+        self.add_missing_default_python_settings(self.settings_dict)
 
     def get_python_settings(self):
         settings_dict = self.get_python_settings_dict_recursive()

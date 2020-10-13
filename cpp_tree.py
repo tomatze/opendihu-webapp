@@ -24,7 +24,6 @@ class CPPTree:
         self.combinations = possible_solver_combinations.possible_solver_combinations
 
         self.root = None
-        self.undo_stack = UndoStack(self)
 
         # create a list of keys
         self.keys = list(self.combinations.keys())
@@ -82,6 +81,8 @@ class CPPTree:
 
         # add template_arguments for GLOBAL (runnables)
         self.combinations['GLOBAL']["template_arguments"] = [self.runnables]
+
+        self.undo_stack = UndoStack(self)
 
     def reset(self):
         self.undo_stack.add_new_root_node()
@@ -233,7 +234,7 @@ class CPPTree:
         return self.root.get_python_settings()
 
     def add_missing_default_python_settings(self):
-        changes = self.root.add_missing_default_python_settings()
+        changes = self.root.add_missing_default_python_settings(self.root.settings_dict)
         if changes > 0:
             self.undo_stack.duplicate_current_state()
         return Info('added ' + str(changes) + ' missing default python-settings')

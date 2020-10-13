@@ -46,6 +46,7 @@ class NodeReplaceWindow(Gtk.Window):
 
         def on_button_replace(_):
             replacement = listbox.get_selected_row().node
+            replacement.add_missing_default_python_settings(main_window.cpp_tree.root.settings_dict)
             ret = main_window.cpp_tree.replace_node(node, replacement)
             main_window.log_append_message(ret)
             main_window.redraw_treeview_cpp()

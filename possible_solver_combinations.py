@@ -426,9 +426,9 @@ possible_solver_combinations = {
         ],
         "python_options" : SettingsDict([
             SettingsDictEntry("OutputSurface", SettingsDict([
-                SettingsDictEntry("OutputWriter", SettingsList([
-                    #TODO
-                ])),
+                #TODO
+                #SettingsDictEntry("OutputWriter", SettingsList([
+                #])),
                 SettingsDictEntry("face", '["1-"]'),
                 SettingsChildPlaceholder(0)
             ]))
