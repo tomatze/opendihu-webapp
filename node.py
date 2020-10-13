@@ -19,17 +19,20 @@ class Childs():
         if not isinstance(self.node, PlaceholderNode) and self.node.name in self.node.combinations and "template_arguments" in self.node.combinations[self.node.name]:
             template_arguments = self.node.combinations[self.node.name]["template_arguments"]
             childs_count = len(template_arguments)
+            self.__childs = [None] * childs_count
             if "template_arguments_needed" in self.node.combinations[self.node.name]:
-                childs_count_needed = self.node.combinations[self.node.name]["template_arguments_needed"]
+                self.childs_count_needed = self.node.combinations[self.node.name]["template_arguments_needed"]
             else:
-                childs_count_needed = childs_count
-
+                self.childs_count_needed = childs_count
             for i in range(childs_count):
-                if i <= childs_count_needed:
-                    self.__childs.append(PlaceholderNode(self.combinations, needed=True))
-                else:
-                    self.__childs.append(PlaceholderNode(self.combinations, needed=False))
-                self.__childs[len(self.__childs) - 1].parent = self.node
+                self.__add_placeholder_i(i)
+
+    def __add_placeholder_i(self, i):
+        if i <= self.childs_count_needed:
+            self.__childs[i] = (PlaceholderNode(self.combinations, needed=True))
+        else:
+            self.__childs[i] = (PlaceholderNode(self.combinations, needed=False))
+        self.__childs[i].parent = self.node
 
     def get_childs(self):
         if not self.populated:
@@ -44,6 +47,13 @@ class Childs():
             if not isinstance(child, PlaceholderNode):
                 ret.append(child)
         return ret
+
+    def delete(self, child):
+        if not self.populated:
+            self.populate()
+        for i in range(len(self.__childs)):
+            if self.__childs[i] == child:
+                self.__add_placeholder_i(i)
 
     def replace(self, child_old, child_new):
         if not self.populated:

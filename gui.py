@@ -10,6 +10,7 @@ from python_settings import PythonSettings
 from helpers import Message, Error, Info
 import possible_solver_combinations
 from node import PlaceholderNode
+from root_node import RootNode
 
 # stores a node + its depth to view it in a ListBox
 class NodeLine(GObject.GObject):
@@ -31,12 +32,20 @@ class NodeReplaceWindow(Gtk.Window):
         grid = Gtk.Grid()
         self.add(grid)
 
+        def listbox_create_widget(node_line):
+            listbox_row = ListBoxRowWithNode()
+            listbox_row.add_node(node_line.node)
+            grid = Gtk.Grid()
+            grid.add(Gtk.Label(label=node_line.node.name))
+            listbox_row.add(grid)
+            return listbox_row
+
         store = Gio.ListStore()
         listbox = Gtk.ListBox()
         listbox.set_vexpand(True)
         listbox.set_hexpand(True)
         listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
-        listbox.bind_model(store, self.listbox_create_widget)
+        listbox.bind_model(store, listbox_create_widget)
 
         scroll = Gtk.ScrolledWindow()
         scroll.add(listbox)
@@ -52,24 +61,31 @@ class NodeReplaceWindow(Gtk.Window):
             main_window.redraw_treeview_cpp()
             main_window.redraw_textview_cpp_code()
             main_window.redraw_textview_python_code()
+            #if node == main_window.treeview_selected_node:
+            main_window.redraw_treeview_python()
             self.close()
 
         button_replace = Gtk.Button(label='replace')
         button_replace.connect("clicked", on_button_replace)
+
+        listbox.set_activate_on_single_click(False)
+        def row_double_clicked(_, row):
+            on_button_replace(_)
+        listbox.connect('row-activated', row_double_clicked)
+
         grid.attach_next_to(button_replace, scroll, Gtk.PositionType.BOTTOM, 1, 1)
 
         for replacement in possible_replacements:
             store.append(NodeLine(replacement, 0))
 
-        self.show_all()
+        def on_keypress(_, event):
+            if event.keyval == Gdk.KEY_Escape:
+                self.close()
+            elif event.keyval == Gdk.KEY_Return:
+                on_button_replace(_)
+        self.connect('key-press-event', on_keypress)
 
-    def listbox_create_widget(self, node_line):
-        listbox_row = ListBoxRowWithNode()
-        listbox_row.add_node(node_line.node)
-        grid = Gtk.Grid()
-        grid.add(Gtk.Label(label=node_line.node.name))
-        listbox_row.add(grid)
-        return listbox_row
+        self.show_all()
 
 class MainWindow(Gtk.Window):
     def __init__(self):
@@ -81,13 +97,15 @@ class MainWindow(Gtk.Window):
     def init_backend(self):
         self.cpp_tree = CPPTree()
         self.redraw_textview_cpp_code()
-        self.redraw_treeview_cpp()
         self.redraw_textview_python_code()
+        self.redraw_treeview_cpp()
+        self.redraw_treeview_python()
 
     def on_button_add_defaults_python_code(self, _):
         ret = self.cpp_tree.add_missing_default_python_settings()
         self.log_append_message(ret)
         self.redraw_textview_python_code()
+        self.redraw_treeview_python()
 
     def on_button_apply_python_code(self, _):
         text_bounds = self.text_view_python_code.get_buffer().get_bounds()
@@ -96,6 +114,7 @@ class MainWindow(Gtk.Window):
         self.log_append_message(rets)
         if not isinstance(rets, Error):
             self.redraw_textview_python_code()
+            self.redraw_treeview_python()
 
     def on_button_apply_cpp_code(self, _):
         text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
@@ -106,6 +125,7 @@ class MainWindow(Gtk.Window):
             self.redraw_textview_cpp_code()
             self.redraw_treeview_cpp()
             self.redraw_textview_python_code()
+            self.redraw_treeview_python()
 
     def on_button_undo(self, _):
         ret = self.cpp_tree.undo_stack.undo()
@@ -114,12 +134,14 @@ class MainWindow(Gtk.Window):
             self.redraw_treeview_cpp()
             self.redraw_textview_cpp_code()
             self.redraw_textview_python_code()
+            self.redraw_treeview_python()
 
     def on_button_redo(self, _):
         ret = self.cpp_tree.undo_stack.redo()
         self.log_append_message(ret)
         if not isinstance(ret, Error):
             self.redraw_treeview_cpp()
+            self.redraw_treeview_python()
             self.redraw_textview_cpp_code()
             self.redraw_textview_python_code()
 
@@ -127,6 +149,7 @@ class MainWindow(Gtk.Window):
         ret = self.cpp_tree.reset()
         self.log_append_message(ret)
         self.redraw_treeview_cpp()
+        self.redraw_treeview_python()
         self.redraw_textview_cpp_code()
         self.redraw_textview_python_code()
 
@@ -147,6 +170,13 @@ class MainWindow(Gtk.Window):
         for child in node.childs.get_childs():
             self.redraw_treeview_cpp_recursive(child, depth + 1)
 
+    def redraw_treeview_python(self):
+        try:
+            node = self.cpp_treeview_listbox.get_selected_row().node
+            text = str(node.settings_dict)
+        except:
+            text = ''
+        self.python_treeview_code.get_buffer().set_text(text)
     # binded to self.cpp_treeview_listbox
     # if we append item to self.cpp_treeview_store this function gets called and creates the widget
     def cpp_treeview_listbox_create_widget(self, list_node):
@@ -174,11 +204,41 @@ class MainWindow(Gtk.Window):
         else:
             label = Gtk.Label(label=node.name)
             grid.add(label)
+            if not isinstance(node, RootNode):
+                spacer = Gtk.Label(label=' ')
+                grid.add(spacer)
+                button_delete_node = Gtk.Button()
+                icon = Gio.ThemedIcon(name="edit-delete-symbolic")
+                image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
+                button_delete_node.add(image)
+                def on_button_delete_node(_):
+                    self.cpp_treeview_delete_node(node)
+                button_delete_node.connect("clicked", on_button_delete_node)
+                grid.add(button_delete_node)
         grid.show_all()
-        return grid
+        row = ListBoxRowWithNode()
+        row.node = node
+        row.add(grid)
+        return row
 
     def cpp_treeview_replace_node(self, node):
         _window = NodeReplaceWindow(node, self)
+
+    def cpp_treeview_delete_node(self, node):
+        ret = self.cpp_tree.delete_node(node)
+        self.log_append_message(ret)
+        self.redraw_treeview_cpp()
+        self.redraw_treeview_python()
+        self.redraw_textview_cpp_code()
+        self.redraw_textview_python_code()
+
+    def on_python_treeview_button_apply(self, _):
+        # TODO
+        pass
+
+    def on_python_treeview_button_add_defaults(self, _):
+        # TODO
+        pass
 
     def log_append_message(self, message):
         if isinstance(message, list):
@@ -328,15 +388,43 @@ class MainWindow(Gtk.Window):
         self.cpp_treeview_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.cpp_treeview_listbox.bind_model(self.cpp_treeview_store, self.cpp_treeview_listbox_create_widget)
 
+        self.cpp_treeview_listbox.set_activate_on_single_click(False)
+        def row_double_clicked(_, row):
+            node = self.cpp_treeview_listbox.get_selected_row().node
+            self.cpp_treeview_replace_node(node)
+        self.cpp_treeview_listbox.connect('row-activated', row_double_clicked)
+        def row_clicked(_, row):
+            self.redraw_treeview_python()
+        self.cpp_treeview_listbox.connect('row-selected', row_clicked)
+
         self.scroll_cpp_treeview = Gtk.ScrolledWindow()
         self.scroll_cpp_treeview.add(self.cpp_treeview_listbox)
         self.tabs_cpp_treeview.append_page(self.scroll_cpp_treeview, Gtk.Label(label='C++'))
 
         # python tree view
-        self.tabs_python_treeview = Gtk.Notebook()
-        self.grid_treeview.attach_next_to(self.tabs_python_treeview, self.tabs_cpp_treeview, Gtk.PositionType.RIGHT, 1, 1)
-        self.scroll_python_treeview = Gtk.ScrolledWindow()
-        self.tabs_python_treeview.append_page(self.scroll_python_treeview, Gtk.Label(label='Python'))
+        self.python_treeview_tabs = Gtk.Notebook()
+        self.grid_treeview.attach_next_to(self.python_treeview_tabs, self.tabs_cpp_treeview, Gtk.PositionType.RIGHT, 1, 1)
+        self.python_treeview_grid = Gtk.Grid()
+        self.python_treeview_tabs.append_page(self.python_treeview_grid, Gtk.Label(label='Python'))
+        self.python_treeview_scroll = Gtk.ScrolledWindow()
+        self.python_treeview_grid.add(self.python_treeview_scroll)
+
+        self.python_treeview_code = GtkSource.View()
+        self.python_treeview_code.get_buffer().set_language(language_manager.get_language('python3'))
+        self.python_treeview_code.set_vexpand(True)
+        self.python_treeview_code.set_hexpand(True)
+        self.python_treeview_scroll.add(self.python_treeview_code)
+
+        self.python_treeview_buttons = Gtk.Grid()
+        self.python_treeview_grid.attach_next_to(self.python_treeview_buttons, self.python_treeview_scroll, Gtk.PositionType.BOTTOM, 1, 1)
+
+        self.python_treeview_button_apply = Gtk.Button(label='apply changes')
+        self.python_treeview_button_apply.connect("clicked", self.on_python_treeview_button_apply)
+        self.python_treeview_buttons.add(self.python_treeview_button_apply)
+
+        self.python_treeview_button_add_defaults = Gtk.Button(label='add default settings')
+        self.python_treeview_button_add_defaults.connect("clicked", self.on_python_treeview_button_add_defaults)
+        self.python_treeview_buttons.add(self.python_treeview_button_add_defaults)
 
 win = MainWindow()
 win.show_all()

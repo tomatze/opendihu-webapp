@@ -209,6 +209,11 @@ class CPPTree:
         node.parent.childs.replace(node, replacement_node)
         return Info('replaced node with ' + str(replacement_node.name))
 
+    def delete_node(self, node):
+        self.undo_stack.duplicate_current_state()
+        node.parent.childs.delete(node)
+        return Info('deleted ' + str(node.name))
+
     # this function returns a list of all possible childs of a given class
     def get_possible_childs(self, name):
         return self.combinations[name]["template_arguments"]
@@ -234,7 +239,9 @@ class CPPTree:
         return self.root.get_python_settings()
 
     def add_missing_default_python_settings(self):
+        self.undo_stack.duplicate_current_state()
         changes = self.root.add_missing_default_python_settings(self.root.settings_dict)
-        if changes > 0:
-            self.undo_stack.duplicate_current_state()
+        if not changes > 0:
+            self.undo_stack.undo()
+            self.undo_stack.remove_future()
         return Info('added ' + str(changes) + ' missing default python-settings')
