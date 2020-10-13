@@ -406,6 +406,9 @@ class Node:
                         else:
                             warnings.append(Warning(entry.key + ' is an unknown setting -> it was NOT added'))
 
+            elif isinstance(entry, SettingsChildPlaceholder):
+                # don't add placeholders found in SettingsDict
+                pass
             else:
                 # always add SettingsComments
                 self_settings_container.append(entry)
