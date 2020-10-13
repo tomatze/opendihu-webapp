@@ -233,8 +233,20 @@ class MainWindow(Gtk.Window):
         self.redraw_textview_python_code()
 
     def on_python_treeview_button_apply(self, _):
-        # TODO
-        pass
+        #try:
+        if 1 == 1:
+            node = self.cpp_treeview_listbox.get_selected_row().node
+
+            text_bounds = self.python_treeview_code.get_buffer().get_bounds()
+            text = self.python_treeview_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+
+            rets = self.cpp_tree.parse_python_settings(text, node)
+            self.log_append_message(rets)
+            if not isinstance(rets, Error):
+                self.redraw_treeview_python()
+                self.redraw_textview_python_code()
+        #except:
+        #    self.log_append_message(Error('Can not apply if no Node is selected'))
 
     def on_python_treeview_button_add_defaults(self, _):
         # TODO

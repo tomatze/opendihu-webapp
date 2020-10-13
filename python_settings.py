@@ -110,6 +110,9 @@ class SettingsDict(SettingsContainer):
                 self.append(entry)
             return
 
+        # remove outer braces
+        settings = settings[1:][:-1]
+
         # split settings into tokens using tokenize from the stdlib
         tokens = tokenize(BytesIO(settings.encode('utf-8')).readline)
 
@@ -395,11 +398,12 @@ class PythonSettings():
         if settings:
             # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
             split1 = settings.split('config = {\n')
-            self.prefix = split1[0]
+            self.prefix = split1[0][:-1]
             settings = split1[1]
             split2 = re.compile(r'(?m)^}').split(settings, 1)
             settings = split2[0]
-            self.postfix = split2[1]
+            settings = '{' + settings + '}'
+            self.postfix = split2[1][1:]
 
             # iterate over tokens to create SettingsDict
             self.config_dict = SettingsDict(settings)

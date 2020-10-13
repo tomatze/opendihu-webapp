@@ -219,21 +219,33 @@ class CPPTree:
         return self.combinations[name]["template_arguments"]
 
     ## after parsing the cpp_src, we can parse the python settings and map them to the nodes
-    def parse_python_settings(self, settings):
+    # if node is given, the settings are applied to a specific node
+    def parse_python_settings(self, settings, node=None):
         self.undo_stack.duplicate_current_state()
         # save PythonSettings so we also have the prefix and postfix
         try:
-            python_settings = PythonSettings(settings)
+            if node:
+                python_settings = PythonSettings()
+                python_settings.config_dict = SettingsDict(settings)
+                n = node
+            else:
+                python_settings = PythonSettings(settings)
+                n = self.root
         except:
             self.undo_stack.undo()
             self.undo_stack.remove_future()
             return Error('failed to create a PythonSettings object from code (propably a syntax-error)')
-        try:
-            return self.root.parse_python_settings(python_settings, keep_entries_that_have_no_default=True)
-        except:
-            self.undo_stack.undo()
-            self.undo_stack.remove_future()
-            return Error('failed to add PythonSettings object to ' + str(self.root.name) + ' (most likely a bug)')
+
+        return n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=True)
+        #try:
+        #    if node:
+        #        return n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=False)
+        #    else:
+        #        return n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=True)
+        #except:
+        #    self.undo_stack.undo()
+        #    self.undo_stack.remove_future()
+        #    return Error('failed to add PythonSettings object to ' + str(n.name) + ' (most likely a bug)')
 
     def get_python_settings(self):
         return self.root.get_python_settings()
