@@ -397,7 +397,7 @@ class PythonSettings():
     def __init__(self, settings=None):
         if settings:
             # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
-            split1 = settings.split('config = {\n')
+            split1 = settings.split('config = {')
             self.prefix = split1[0][:-1]
             settings = split1[1]
             split2 = re.compile(r'(?m)^}').split(settings, 1)
@@ -410,7 +410,7 @@ class PythonSettings():
             return None
 
     def __repr__(self):
-        return self.prefix + 'config = ' + str(self.config_dict) + self.postfix
+        return self.prefix + '\nconfig = ' + str(self.config_dict) + self.postfix
 
 
 # helper function wrapping pythons untokenize-function to improve readability of the returned string

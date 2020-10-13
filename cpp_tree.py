@@ -228,32 +228,36 @@ class CPPTree:
                 python_settings = PythonSettings()
                 python_settings.config_dict = SettingsDict(settings)
                 n = node
+                recurse_childs = False
             else:
                 python_settings = PythonSettings(settings)
                 n = self.root
+                recurse_childs = True
         except:
             self.undo_stack.undo()
             self.undo_stack.remove_future()
             return Error('failed to create a PythonSettings object from code (propably a syntax-error)')
 
-        return n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=True)
-        #try:
-        #    if node:
-        #        return n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=False)
-        #    else:
-        #        return n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=True)
-        #except:
-        #    self.undo_stack.undo()
-        #    self.undo_stack.remove_future()
-        #    return Error('failed to add PythonSettings object to ' + str(n.name) + ' (most likely a bug)')
+        try:
+            return n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=recurse_childs)
+        except:
+            self.undo_stack.undo()
+            self.undo_stack.remove_future()
+            return Error('failed to add PythonSettings object to ' + str(n.name) + ' (most likely a bug)')
 
     def get_python_settings(self):
         return self.root.get_python_settings()
 
-    def add_missing_default_python_settings(self):
+    def add_missing_default_python_settings(self, node=None):
+        if node:
+            n = node
+            recurse_childs = False
+        else:
+            n = self.root
+            recurse_childs = True
         self.undo_stack.duplicate_current_state()
-        changes = self.root.add_missing_default_python_settings(self.root.settings_dict)
+        changes = n.add_missing_default_python_settings(self.root.settings_dict, recurse_childs=recurse_childs)
         if not changes > 0:
             self.undo_stack.undo()
             self.undo_stack.remove_future()
-        return Info('added ' + str(changes) + ' missing default python-settings')
+        return Info('added ' + str(changes) + ' missing default python-settings to ' + str(n.name))

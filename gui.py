@@ -27,63 +27,104 @@ class NodeReplaceWindow(Gtk.Window):
     def __init__(self, node, main_window):
         super(NodeReplaceWindow, self).__init__()
 
-        possible_replacements = node.get_possible_replacements()
-
         grid = Gtk.Grid()
         self.add(grid)
 
-        def listbox_create_widget(node_line):
-            listbox_row = ListBoxRowWithNode()
-            listbox_row.add_node(node_line.node)
-            grid = Gtk.Grid()
-            grid.add(Gtk.Label(label=node_line.node.name))
-            listbox_row.add(grid)
-            return listbox_row
+        possible_replacements = node.get_possible_replacements()
 
-        store = Gio.ListStore()
-        listbox = Gtk.ListBox()
-        listbox.set_vexpand(True)
-        listbox.set_hexpand(True)
-        listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
-        listbox.bind_model(store, listbox_create_widget)
+        if [r for r in possible_replacements if r.name == 'Integer']:
+            # Integer
+            grid_entry = Gtk.Grid()
+            grid_entry.add(Gtk.Label(label='Integer: '))
+            entry = Gtk.Entry()
+            if not isinstance(node, PlaceholderNode):
+                text = str(node.name)
+            else:
+                text = '0'
+            entry.set_text(text)
+            grid_entry.add(entry)
+            grid.add(grid_entry)
 
-        scroll = Gtk.ScrolledWindow()
-        scroll.add(listbox)
-        scroll.set_min_content_height(500)
-        scroll.set_min_content_width(500)
-        grid.add(scroll)
-
-        def on_button_replace(_):
-            replacement = listbox.get_selected_row().node
-            replacement.add_missing_default_python_settings(main_window.cpp_tree.root.settings_dict)
-            ret = main_window.cpp_tree.replace_node(node, replacement)
-            main_window.log_append_message(ret)
-            main_window.redraw_treeview_cpp()
-            main_window.redraw_textview_cpp_code()
-            main_window.redraw_textview_python_code()
-            #if node == main_window.treeview_selected_node:
-            main_window.redraw_treeview_python()
-            self.close()
-
-        button_replace = Gtk.Button(label='replace')
-        button_replace.connect("clicked", on_button_replace)
-
-        listbox.set_activate_on_single_click(False)
-        def row_double_clicked(_, row):
-            on_button_replace(_)
-        listbox.connect('row-activated', row_double_clicked)
-
-        grid.attach_next_to(button_replace, scroll, Gtk.PositionType.BOTTOM, 1, 1)
-
-        for replacement in possible_replacements:
-            store.append(NodeLine(replacement, 0))
-
-        def on_keypress(_, event):
-            if event.keyval == Gdk.KEY_Escape:
+            def on_button_replace(_):
+                integer = entry.get_text()
+                try:
+                    int(integer)
+                except:
+                    main_window.log_append_message(Error(str(integer) + ' is not a valid Integer'))
+                    return
+                replacement = node.get_int_replacement(integer)
+                ret = main_window.cpp_tree.replace_node(node, replacement)
+                main_window.log_append_message(ret)
+                main_window.redraw_treeview_cpp()
+                main_window.redraw_textview_cpp_code()
+                main_window.redraw_textview_python_code()
+                main_window.redraw_treeview_python()
                 self.close()
-            elif event.keyval == Gdk.KEY_Return:
+
+            button_replace = Gtk.Button(label='replace')
+            button_replace.connect("clicked", on_button_replace)
+            grid.attach_next_to(button_replace, grid_entry, Gtk.PositionType.BOTTOM, 1, 1)
+
+            def on_keypress(_, event):
+                if event.keyval == Gdk.KEY_Escape:
+                    self.close()
+                elif event.keyval == Gdk.KEY_Return:
+                    on_button_replace(_)
+            self.connect('key-press-event', on_keypress)
+        else:
+            # no Integer
+            def listbox_create_widget(node_line):
+                listbox_row = ListBoxRowWithNode()
+                listbox_row.add_node(node_line.node)
+                grid = Gtk.Grid()
+                grid.add(Gtk.Label(label=node_line.node.name))
+                listbox_row.add(grid)
+                return listbox_row
+
+            store = Gio.ListStore()
+            listbox = Gtk.ListBox()
+            listbox.set_vexpand(True)
+            listbox.set_hexpand(True)
+            listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+            listbox.bind_model(store, listbox_create_widget)
+
+            scroll = Gtk.ScrolledWindow()
+            scroll.add(listbox)
+            scroll.set_min_content_height(500)
+            scroll.set_min_content_width(500)
+            grid.add(scroll)
+
+            def on_button_replace(_):
+                replacement = listbox.get_selected_row().node
+                replacement.add_missing_default_python_settings(main_window.cpp_tree.root.settings_dict)
+                ret = main_window.cpp_tree.replace_node(node, replacement)
+                main_window.log_append_message(ret)
+                main_window.redraw_treeview_cpp()
+                main_window.redraw_textview_cpp_code()
+                main_window.redraw_textview_python_code()
+                #if node == main_window.treeview_selected_node:
+                main_window.redraw_treeview_python()
+                self.close()
+
+            button_replace = Gtk.Button(label='replace')
+            button_replace.connect("clicked", on_button_replace)
+
+            listbox.set_activate_on_single_click(False)
+            def row_double_clicked(_, row):
                 on_button_replace(_)
-        self.connect('key-press-event', on_keypress)
+            listbox.connect('row-activated', row_double_clicked)
+
+            grid.attach_next_to(button_replace, scroll, Gtk.PositionType.BOTTOM, 1, 1)
+
+            for replacement in possible_replacements:
+                store.append(NodeLine(replacement, 0))
+
+            def on_keypress(_, event):
+                if event.keyval == Gdk.KEY_Escape:
+                    self.close()
+                elif event.keyval == Gdk.KEY_Return:
+                    on_button_replace(_)
+            self.connect('key-press-event', on_keypress)
 
         self.show_all()
 
@@ -233,8 +274,7 @@ class MainWindow(Gtk.Window):
         self.redraw_textview_python_code()
 
     def on_python_treeview_button_apply(self, _):
-        #try:
-        if 1 == 1:
+        try:
             node = self.cpp_treeview_listbox.get_selected_row().node
 
             text_bounds = self.python_treeview_code.get_buffer().get_bounds()
@@ -245,12 +285,20 @@ class MainWindow(Gtk.Window):
             if not isinstance(rets, Error):
                 self.redraw_treeview_python()
                 self.redraw_textview_python_code()
-        #except:
-        #    self.log_append_message(Error('Can not apply if no Node is selected'))
+        except:
+            self.log_append_message(Error('Can\'t apply settings if no Node is selected'))
 
     def on_python_treeview_button_add_defaults(self, _):
-        # TODO
-        pass
+        try:
+            node = self.cpp_treeview_listbox.get_selected_row().node
+
+            rets = self.cpp_tree.add_missing_default_python_settings(node)
+            self.log_append_message(rets)
+            if not isinstance(rets, Error):
+                self.redraw_treeview_python()
+                self.redraw_textview_python_code()
+        except:
+            self.log_append_message(Error('Can\'t add default settings if no Node is selected'))
 
     def log_append_message(self, message):
         if isinstance(message, list):
