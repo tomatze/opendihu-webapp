@@ -178,7 +178,6 @@ class MainWindow(Gtk.Window):
         return grid
 
     def cpp_treeview_replace_node(self, node):
-        # TODO let the user select a choice from possible_replacements
         _window = NodeReplaceWindow(node, self)
 
     def log_append_message(self, message):

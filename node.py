@@ -250,9 +250,7 @@ class Node:
                         dict = settings_global_dict.get_value(entry.global_key)
                         if not isinstance(dict, SettingsDict):
                             printe('we have to add to global,but global is not a dict')
-                            # create a new dict it can add to so we don't have to break controlflow
-                            # TODO counter gets broken by this hack
-                            dict = SettingsDict()
+                            continue
                         # get the name e.g. mesh0
                         if self_settings_container.has_key(entry.name_key):
                             name = self_settings_container.get_value(entry.name_key)
@@ -394,8 +392,7 @@ class Node:
                     # try giving the entry to the childs
                     for j in range(len(child_placeholders)):
                         #print('trying to give ' + str(entry.key) + ' to child ' + str(child_placeholders[j].childnumber))
-                        # TODO does this work with the new child implementation?
-                        child = self.childs.get_real_childs()[child_placeholders[j].childnumber]
+                        child = self.childs.get_childs()[child_placeholders[j].childnumber]
                         print(child.name)
                         (new_dict, warnings) = child.parse_python_settings_recursive(new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, is_called_on_child=True)
                         if len(new_dict) == 0:
