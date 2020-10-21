@@ -87,7 +87,7 @@ class CPPTree:
     # it is not in __init__ so it can return the Info
     # !!! if this is not called the behaviour of the UndoStack is undefined
     def load_empty_simulation(self):
-        self.undo_stack.add(RootNode(self.combinations, self.runnables))
+        self.undo_stack.add(RootNode(self.combinations))
         return Info('loaded empty simulation')
 
     # reads a string (normally the content of a example.cpp) and creates a new tree from it
@@ -96,7 +96,7 @@ class CPPTree:
     # you have to save them beforehand and parse them after this
     # returns Info if the RootNode changed, Error or Warning otherwise
     def parse_cpp_src(self, problem, validate_semantics=False):
-        new_root = RootNode(self.combinations, self.runnables)
+        new_root = RootNode(self.combinations)
         try:
             # remove single-line-comments from problem
             #problem = re.sub(r'(?m)^(.*)//.*\n?', r'\1\n', problem)
@@ -177,7 +177,7 @@ class CPPTree:
             new_root.childs.replace_next_placeholder(child)
 
             if validate_semantics:
-                 ret = new_root.validate_cpp_src()
+                 ret = new_root.validate_cpp_src_recursive()
                  if isinstance(ret, Error):
                      return ret
             # check if the new tree is different from the old tree
