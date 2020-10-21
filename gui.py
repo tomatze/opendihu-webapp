@@ -183,12 +183,11 @@ class MainWindow(Gtk.Window):
             grid.add(Gtk.Label(label='  '))
         if isinstance(node, PlaceholderNode):
             if node.needed:
-                color = Gdk.RGBA(1,0,0,.5)
                 label = 'add necessary template'
+                color = Gdk.RGBA(1,0,0,.5)
+                grid.override_background_color(Gtk.StateType.NORMAL, color)
             else:
-                color = Gdk.RGBA(0,1,0,.5)
                 label = 'add optional template'
-            grid.override_background_color(Gtk.StateType.NORMAL, color)
 
             def on_button_add_node(_):
                 self.cpp_treeview_replace_node(node)
@@ -213,15 +212,13 @@ class MainWindow(Gtk.Window):
 
             errors = node.validate_cpp_src()
             if errors:
-                color = Gdk.RGBA(1,0,0,.5)
                 s = ''
                 for error in errors:
                    s = s + str(error) + '\n'
                 grid.set_tooltip_text(s[:-1])
-                #grid.connect("query-tooltip", on_row_tooltip)
-            else:
-                color = Gdk.RGBA(0,1,0,.5)
-            grid.override_background_color(Gtk.StateType.NORMAL, color)
+
+                color = Gdk.RGBA(1,0,0,.5)
+                grid.override_background_color(Gtk.StateType.NORMAL, color)
         grid.show_all()
         row = ListBoxRowWithNode()
         row.node = node
