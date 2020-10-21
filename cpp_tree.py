@@ -80,14 +80,14 @@ class CPPTree:
         # add template_arguments for GLOBAL (runnables)
         self.combinations['GLOBAL']["template_arguments"] = [self.runnables]
 
-        self.undo_stack = UndoStack(self)
+        self.undo_stack = UndoStack()
 
     # adds a RootNode with no childs to undo_stack
     # this function has to be called after initializing this class
     # it is not in __init__ so it can return the Info
     # !!! if this is not called the behaviour of the UndoStack is undefined
     def load_empty_simulation(self):
-        self.undo_stack.add_new_root_node()
+        self.undo_stack.add(RootNode(self.combinations))
         return Info('loaded empty simulation')
 
     # reads a string (normally the content of a example.cpp) and creates a new tree from it

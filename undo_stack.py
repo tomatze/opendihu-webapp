@@ -4,10 +4,9 @@ from helpers import Error, Info
 
 # holds a list of different RootNodes and can switch between them to undo and redo actions
 class UndoStack:
-    def __init__(self, cpp_tree):
+    def __init__(self):
        self.stack = []
        self.current_index = -1
-       self.cpp_tree = cpp_tree
 
     def get_current_root(self):
         return self.stack[self.current_index]
@@ -19,9 +18,6 @@ class UndoStack:
         # swap the new copy with the current root (so current root is at the end of the stack)
         self.stack[self.current_index], self.stack[self.current_index + 1] = self.stack[self.current_index + 1], self.stack[self.current_index]
         self.current_index = self.current_index + 1
-
-    def add_new_root_node(self):
-        self.add(RootNode(self.cpp_tree.combinations))
 
     def undo(self):
         if self.current_index > 0:
