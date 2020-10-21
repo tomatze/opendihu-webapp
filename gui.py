@@ -55,10 +55,7 @@ class NodeReplaceWindow(Gtk.Window):
                 replacement = node.get_int_replacement(integer)
                 ret = main_window.cpp_tree.replace_node(node, replacement)
                 main_window.log_append_message(ret)
-                main_window.redraw_treeview_cpp()
-                main_window.redraw_textview_cpp_code()
-                main_window.redraw_textview_python_code()
-                main_window.redraw_treeview_python()
+                main_window.redraw_all()
                 self.close()
 
             button_replace = Gtk.Button(label='replace')
@@ -99,11 +96,7 @@ class NodeReplaceWindow(Gtk.Window):
                 replacement.add_missing_default_python_settings(main_window.cpp_tree.undo_stack.get_current_root().settings_dict)
                 ret = main_window.cpp_tree.replace_node(node, replacement)
                 main_window.log_append_message(ret)
-                main_window.redraw_treeview_cpp()
-                main_window.redraw_textview_cpp_code()
-                main_window.redraw_textview_python_code()
-                #if node == main_window.treeview_selected_node:
-                main_window.redraw_treeview_python()
+                main_window.redraw_all()
                 self.close()
 
             button_replace = Gtk.Button(label='replace')
@@ -131,65 +124,27 @@ class NodeReplaceWindow(Gtk.Window):
 class MainWindow(Gtk.Window):
     def __init__(self):
         super(MainWindow, self).__init__()
-
         self.init_ui()
         self.init_backend()
 
     def init_backend(self):
         self.cpp_tree = CPPTree()
-        self.on_button_reset(None)
+        self.load_empty_simulation()
 
-    def on_button_add_defaults_python_code(self, _):
-        ret = self.cpp_tree.add_missing_default_python_settings()
-        self.log_append_message(ret)
-        self.redraw_textview_python_code()
-        self.redraw_treeview_python()
-
-    def on_button_apply_python_code(self, _):
-        text_bounds = self.text_view_python_code.get_buffer().get_bounds()
-        text = self.text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
-        rets = self.cpp_tree.parse_python_settings(text)
-        self.log_append_message(rets)
-        if not isinstance(rets, Error):
-            self.redraw_textview_python_code()
-            self.redraw_treeview_python()
-
-    def on_button_apply_cpp_code(self, _):
-        text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
-        text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
-        ret = self.cpp_tree.parse_cpp_src(text, validate_semantics=self.checkbox_validate_semantics.get_active())
-        self.log_append_message(ret)
-        if not isinstance(ret, Error) and not isinstance(ret, Warning):
-            self.redraw_textview_cpp_code()
-            self.redraw_treeview_cpp()
-            self.redraw_textview_python_code()
-            self.redraw_treeview_python()
-
-    def on_button_undo(self, _):
-        ret = self.cpp_tree.undo_stack.undo()
-        self.log_append_message(ret)
-        if not isinstance(ret, Error):
-            self.redraw_treeview_cpp()
-            self.redraw_textview_cpp_code()
-            self.redraw_textview_python_code()
-            self.redraw_treeview_python()
-
-    def on_button_redo(self, _):
-        ret = self.cpp_tree.undo_stack.redo()
-        self.log_append_message(ret)
-        if not isinstance(ret, Error):
-            self.redraw_treeview_cpp()
-            self.redraw_treeview_python()
-            self.redraw_textview_cpp_code()
-            self.redraw_textview_python_code()
-
-    def on_button_reset(self, _):
+    def load_empty_simulation(self):
         ret = self.cpp_tree.load_empty_simulation()
         self.log_append_message(ret)
-        self.redraw_treeview_cpp()
-        self.redraw_treeview_python()
-        self.redraw_textview_cpp_code()
+        self.redraw_all()
+
+
+    def redraw_python(self):
         self.redraw_textview_python_code()
+        self.redraw_treeview_python()
+
+    def redraw_all(self):
+        self.redraw_textview_cpp_code()
+        self.redraw_treeview_cpp()
+        self.redraw_python()
 
     def redraw_textview_python_code(self):
         text = str(self.cpp_tree.get_python_settings())
@@ -215,6 +170,8 @@ class MainWindow(Gtk.Window):
         except:
             text = ''
         self.python_treeview_code.get_buffer().set_text(text)
+
+
     # binded to self.cpp_treeview_listbox
     # if we append item to self.cpp_treeview_store this function gets called and creates the widget
     def cpp_treeview_listbox_create_widget(self, list_node):
@@ -265,10 +222,66 @@ class MainWindow(Gtk.Window):
     def cpp_treeview_delete_node(self, node):
         ret = self.cpp_tree.delete_node(node)
         self.log_append_message(ret)
-        self.redraw_treeview_cpp()
-        self.redraw_treeview_python()
-        self.redraw_textview_cpp_code()
-        self.redraw_textview_python_code()
+        self.redraw_all()
+
+    def log_append_message(self, message):
+        if isinstance(message, list):
+            for m in message:
+                self.log_append_line(str(m), m.color)
+        else:
+            self.log_append_line(str(message), message.color)
+
+    def log_append_line(self, text, color=None):
+        buffer = self.text_view_log.get_buffer()
+        iter = buffer.get_end_iter()
+        col = ''
+        if color:
+            col = ' color="' + color + '"'
+        for line in str(text).splitlines():
+            if buffer.get_char_count() > 0:
+                buffer.insert(iter, '\n')
+            # move mark
+            buffer.move_mark(self.log_text_mark_end, iter)
+            buffer.insert_markup(iter, '<span' + col + '>' + line + '</span>', -1)
+        # scroll to end
+        self.text_view_log.scroll_to_mark(self.log_text_mark_end, 0, False, 0, 0)
+
+
+    def on_button_add_defaults_python_code(self, _):
+        ret = self.cpp_tree.add_missing_default_python_settings()
+        self.log_append_message(ret)
+        self.redraw_python()
+
+    def on_button_apply_python_code(self, _):
+        text_bounds = self.text_view_python_code.get_buffer().get_bounds()
+        text = self.text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+        rets = self.cpp_tree.parse_python_settings(text)
+        self.log_append_message(rets)
+        if not isinstance(rets, Error):
+            self.redraw_python()
+
+    def on_button_apply_cpp_code(self, _):
+        text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
+        text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+        ret = self.cpp_tree.parse_cpp_src(text, validate_semantics=self.checkbox_validate_semantics.get_active())
+        self.log_append_message(ret)
+        if not isinstance(ret, Error) and not isinstance(ret, Warning):
+            self.redraw_all()
+
+    def on_button_undo(self, _):
+        ret = self.cpp_tree.undo_stack.undo()
+        self.log_append_message(ret)
+        if not isinstance(ret, Error):
+            self.redraw_all()
+
+    def on_button_redo(self, _):
+        ret = self.cpp_tree.undo_stack.redo()
+        self.log_append_message(ret)
+        if not isinstance(ret, Error):
+            self.redraw_all()
+
+    def on_button_reset(self, _):
+        self.load_empty_simulation()
 
     def on_python_treeview_button_apply(self, _):
         try:
@@ -296,29 +309,6 @@ class MainWindow(Gtk.Window):
                 self.redraw_textview_python_code()
         except:
             self.log_append_message(Error('Can\'t add default settings if no Node is selected'))
-
-    def log_append_message(self, message):
-        if isinstance(message, list):
-            for m in message:
-                self.log_append_line(str(m), m.color)
-        else:
-            self.log_append_line(str(message), message.color)
-
-    def log_append_line(self, text, color=None):
-        buffer = self.text_view_log.get_buffer()
-        iter = buffer.get_end_iter()
-        col = ''
-        if color:
-            col = ' color="' + color + '"'
-        for line in str(text).splitlines():
-            if buffer.get_char_count() > 0:
-                buffer.insert(iter, '\n')
-            # move mark
-            buffer.move_mark(self.log_text_mark_end, iter)
-            buffer.insert_markup(iter, '<span' + col + '>' + line + '</span>', -1)
-
-        # scroll to end
-        self.text_view_log.scroll_to_mark(self.log_text_mark_end, 0, False, 0, 0)
 
     def init_ui(self):
         self.set_title("opendihu - webapp")
