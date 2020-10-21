@@ -1,7 +1,6 @@
 import copy
 
 from helpers import printe, indent, Error, Info, Warning
-import possible_solver_combinations
 from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice, SettingsConditional
 
 class Childs():
@@ -121,7 +120,6 @@ class Node:
         # TODO sort by occurence in examples
         return possible_replacements
 
-    # sets self.settings_container_default to the values gotten from possible_solver_combinations
     # this is not in __init__(), because self.name (used here) gets defined later
     def get_default_python_settings_dict(self):
         if self.settings_container_default == None:
