@@ -137,10 +137,7 @@ class MainWindow(Gtk.Window):
 
     def init_backend(self):
         self.cpp_tree = CPPTree()
-        self.redraw_textview_cpp_code()
-        self.redraw_textview_python_code()
-        self.redraw_treeview_cpp()
-        self.redraw_treeview_python()
+        self.on_button_reset(None)
 
     def on_button_add_defaults_python_code(self, _):
         ret = self.cpp_tree.add_missing_default_python_settings()
@@ -187,7 +184,7 @@ class MainWindow(Gtk.Window):
             self.redraw_textview_python_code()
 
     def on_button_reset(self, _):
-        ret = self.cpp_tree.reset()
+        ret = self.cpp_tree.load_empty_simulation()
         self.log_append_message(ret)
         self.redraw_treeview_cpp()
         self.redraw_treeview_python()

@@ -2,17 +2,15 @@ import copy
 from root_node import RootNode
 from helpers import Error, Info
 
+# holds a list of different RootNodes and can switch between them to undo and redo actions
 class UndoStack:
     def __init__(self, cpp_tree):
        self.stack = []
        self.current_index = -1
        self.cpp_tree = cpp_tree
 
-       self.add_new_root_node()
-
     def duplicate_current_state(self):
         # deepcopy current root
-        #self.add(copy.deepcopy(self.cpp_tree.root))
         self.remove_future()
         self.stack.append(copy.deepcopy(self.cpp_tree.root))
         # swap the new copy with the current root (so current root is at the end of the stack)
