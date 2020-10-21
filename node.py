@@ -2,7 +2,7 @@ import copy
 
 from helpers import printe, indent, Error, Info, Warning
 import possible_solver_combinations
-from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice
+from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice, SettingsConditional
 
 class Childs():
     def __init__(self, node):
@@ -65,7 +65,7 @@ class Childs():
                 return
         printe('failed to replace node')
 
-    # normally gets called first
+    # normally gets called while parsing cpp-code
     def replace_next_placeholder(self, child):
         if not self.populated:
             self.populate()
@@ -74,7 +74,6 @@ class Childs():
                 self.replace(c, child)
                 return
         # force adding the child if no PlaceholderNodes are left in self.__childs (in case of unknown templates)
-        # TODO maybe message if this happens
         self.__childs.append(child)
 
     def clear(self):
@@ -120,7 +119,6 @@ class Node:
             except: pass
             possible_replacements.append(possible_replacement)
         # TODO sort by occurence in examples
-        # TODO handle 'Integer'
         return possible_replacements
 
     # sets self.settings_container_default to the values gotten from possible_solver_combinations
@@ -447,7 +445,7 @@ class Node:
 
         # insert all SettingsChildPlaceholders that are in python_options on this level
         # we do this here, to always have the childs on the bottom for consistency
-        # TODO append them to self_settings_container after first use and only the not used ones here at the bottom
+        # TODO maybe append them to self_settings_container after first use and only the not used ones here at the bottom
         for child_placeholder in child_placeholders:
             self_settings_container.append(child_placeholder)
 

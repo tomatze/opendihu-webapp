@@ -291,7 +291,7 @@ class SettingsDict(SettingsContainer):
 
     def __repr__(self):
         return self.repr(0)
-    def repr(self, depth):
+    def repr(self, depth, hide_placeholders=True):
         if len(self) == 0:
             return '{}'
         indentation = '  '
@@ -310,7 +310,10 @@ class SettingsDict(SettingsContainer):
                 if i == len(self) - 1:
                     optional_comma = ''
                 entrie_r = indentation * (depth + 1) + entrie.key + ' : '+ value + optional_comma + comments
+            elif hide_placeholders and isinstance(entrie, SettingsChildPlaceholder):
+                continue
             elif isinstance(entrie, SettingsComment):
+                # SettingsChildPlaceholder gets handled here if hide_placeholders==False
                 entrie_r = indentation * (depth + 1) + entrie.comment
             elif isinstance(entrie, SettingsEmptyLine):
                 entrie_r = ''

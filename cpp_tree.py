@@ -102,8 +102,7 @@ class CPPTree:
             #problem = re.sub(r'(?m)^(.*)//.*\n?', r'\1\n', problem)
             # mark comments with 'α commentβ' instead of '// comment' so they are easy to parse
             problem = re.sub(r'(?m)^(.*)//(.*)\n?', r'\1α\2β\n', problem)
-            # TODO save comments in tree and print them in repr
-            # TODO maybe also remove multi-line-comments
+            # TODO maybe also handle multi-line-comments
 
             # remove LOG(DEBUG) lines
             problem = re.sub(r'(.*)LOG\(DEBUG\)<<(.*)', '', problem)
