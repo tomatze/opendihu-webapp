@@ -94,7 +94,7 @@ class CPPTree:
     # the new tree will not have any python-settings attached to it
     # if you want to attach the python-settings from the old tree to the new one,
     # you have to save them beforehand and parse them after this
-    # returns Info if the RootNode changed, Error or Warning otherwise
+    # returns a list of Messages (changed something if no Warning or Error in there)
     def parse_cpp_src(self, problem, validate_semantics=False):
         new_root = RootNode(self.combinations)
         try:
@@ -177,17 +177,17 @@ class CPPTree:
             new_root.childs.replace_next_placeholder(child)
 
             if validate_semantics:
-                 ret = new_root.validate_cpp_src_recursive()
-                 if isinstance(ret, Error):
-                     return ret
+                 errors = new_root.validate_cpp_src_recursive()
+                 if errors:
+                     return errors
             # check if the new tree is different from the old tree
             if not self.undo_stack.get_current_root().compare_cpp(new_root):
                 self.undo_stack.add(new_root)
-                return Info('cpp-src parsed successfully')
+                return [Info('cpp-src parsed successfully')]
             else:
-                return Warning('no changes found in cpp-src')
+                return [Warning('no changes found in cpp-src')]
         except:
-            return Error('failed to parse cpp-src (syntax-error)')
+            return [Error('failed to parse cpp-src (syntax-error)')]
 
     # returns a string, which contains the generated cpp source-code using the tree and the template.cpp
     def __repr__(self):

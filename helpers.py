@@ -11,7 +11,7 @@ class Message:
             self.prefix = 'Message'
         if not hasattr(self, 'color'):
             self.color = None
-        self.print()
+        #self.print()
     def __repr__(self):
         return str(self.prefix + ': ' + self.message)
     def print(self):

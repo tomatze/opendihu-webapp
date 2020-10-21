@@ -210,6 +210,18 @@ class MainWindow(Gtk.Window):
                     self.cpp_treeview_delete_node(node)
                 button_delete_node.connect("clicked", on_button_delete_node)
                 grid.add(button_delete_node)
+
+            errors = node.validate_cpp_src()
+            if errors:
+                color = Gdk.RGBA(1,0,0,.5)
+                s = ''
+                for error in errors:
+                   s = s + str(error) + '\n'
+                grid.set_tooltip_text(s[:-1])
+                #grid.connect("query-tooltip", on_row_tooltip)
+            else:
+                color = Gdk.RGBA(0,1,0,.5)
+            grid.override_background_color(Gtk.StateType.NORMAL, color)
         grid.show_all()
         row = ListBoxRowWithNode()
         row.node = node
@@ -263,9 +275,9 @@ class MainWindow(Gtk.Window):
     def on_button_apply_cpp_code(self, _):
         text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
         text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
-        ret = self.cpp_tree.parse_cpp_src(text, validate_semantics=self.checkbox_validate_semantics.get_active())
-        self.log_append_message(ret)
-        if not isinstance(ret, Error) and not isinstance(ret, Warning):
+        rets = self.cpp_tree.parse_cpp_src(text, validate_semantics=self.checkbox_validate_semantics.get_active())
+        self.log_append_message(rets)
+        if not any(isinstance(ret, Error) or isinstance(ret, Warning) for ret in rets):
             self.redraw_all()
 
     def on_button_undo(self, _):
