@@ -154,19 +154,22 @@ class TestParser(unittest.TestCase):
     # this test parses all cpp examples and validates them
     def test_parse_and_validate_examples(self):
         example = CPPTree()
+        example.load_empty_simulation()
         for path in self.example_paths:
             file = open(path, "r")
             src = file.read()
             file.close()
             example.parse_cpp_src(src)
-            self.assertEqual(isinstance(example.root.validate_cpp_src(example), Error), False, msg=path)
+            self.assertEqual(isinstance(example.undo_stack.get_current_root().validate_cpp_src(example), Error), False, msg=path)
 
     # this test parses all examples (src1) and creates their src (src2)
     # it then parses src2 and compares the trees of both examples
     # if this fails, there is probably something wrong in Node.create_src()
     def test_create_src(self):
         example1 = CPPTree()
+        example1.load_empty_simulation()
         example2 = CPPTree()
+        example2.load_empty_simulation()
         for path in self.example_paths:
             file = open(path, "r")
             src1 = file.read()
@@ -174,7 +177,7 @@ class TestParser(unittest.TestCase):
             example1.parse_cpp_src(src1)
             src2 = str(example1)
             example2.parse_cpp_src(src2)
-            self.assertEqual(example1.root.childs.get_real_childs()[0].compare_cpp(example2.root.childs.get_real_childs()[0]), True, msg=path)
+            self.assertEqual(example1.undo_stack.get_current_root().childs.get_real_childs()[0].compare_cpp(example2.undo_stack.get_current_root().childs.get_real_childs()[0]), True, msg=path)
 
 if __name__ == '__main__':
     unittest.main()

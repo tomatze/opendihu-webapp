@@ -7,7 +7,7 @@ from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk
 
 from cpp_tree import CPPTree
 from python_settings import PythonSettings
-from helpers import Message, Error, Info
+from helpers import Message, Error, Info, Warning
 import possible_solver_combinations
 from node import PlaceholderNode
 from root_node import RootNode
@@ -96,7 +96,7 @@ class NodeReplaceWindow(Gtk.Window):
 
             def on_button_replace(_):
                 replacement = listbox.get_selected_row().node
-                replacement.add_missing_default_python_settings(main_window.cpp_tree.root.settings_dict)
+                replacement.add_missing_default_python_settings(main_window.cpp_tree.undo_stack.get_current_root().settings_dict)
                 ret = main_window.cpp_tree.replace_node(node, replacement)
                 main_window.log_append_message(ret)
                 main_window.redraw_treeview_cpp()
@@ -159,7 +159,7 @@ class MainWindow(Gtk.Window):
         text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
         ret = self.cpp_tree.parse_cpp_src(text, validate_semantics=self.checkbox_validate_semantics.get_active())
         self.log_append_message(ret)
-        if not isinstance(ret, Error):
+        if not isinstance(ret, Error) and not isinstance(ret, Warning):
             self.redraw_textview_cpp_code()
             self.redraw_treeview_cpp()
             self.redraw_textview_python_code()
@@ -201,7 +201,7 @@ class MainWindow(Gtk.Window):
 
     def redraw_treeview_cpp(self):
         self.cpp_treeview_store.remove_all()
-        self.redraw_treeview_cpp_recursive(self.cpp_tree.root, 0)
+        self.redraw_treeview_cpp_recursive(self.cpp_tree.undo_stack.get_current_root(), 0)
 
     def redraw_treeview_cpp_recursive(self, node, depth):
         self.cpp_treeview_store.append(NodeLine(node, depth))

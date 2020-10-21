@@ -9,14 +9,16 @@ class UndoStack:
        self.current_index = -1
        self.cpp_tree = cpp_tree
 
+    def get_current_root(self):
+        return self.stack[self.current_index]
+
     def duplicate_current_state(self):
         # deepcopy current root
         self.remove_future()
-        self.stack.append(copy.deepcopy(self.cpp_tree.root))
+        self.stack.append(copy.deepcopy(self.get_current_root()))
         # swap the new copy with the current root (so current root is at the end of the stack)
         self.stack[self.current_index], self.stack[self.current_index + 1] = self.stack[self.current_index + 1], self.stack[self.current_index]
         self.current_index = self.current_index + 1
-        self.__update_cpp_tree()
 
     def add_new_root_node(self):
         self.add(RootNode(self.cpp_tree.combinations))
@@ -24,7 +26,6 @@ class UndoStack:
     def undo(self):
         if self.current_index > 0:
             self.current_index = self.current_index - 1
-            self.__update_cpp_tree()
             return Info('undo successful')
         else:
             return Error('cannot undo')
@@ -32,22 +33,15 @@ class UndoStack:
     def redo(self):
         if len(self.stack) - 1 > self.current_index:
             self.current_index = self.current_index + 1
-            self.__update_cpp_tree()
             return Info('redo successful')
         else:
             return Error('cannot redo')
-
-    def __update_cpp_tree(self):
-        self.cpp_tree.root = self.stack[self.current_index]
 
     def add(self, node):
         self.remove_future()
         self.stack.append(node)
         self.current_index = self.current_index + 1
-        self.__update_cpp_tree()
 
     def remove_future(self):
         # pop everything newer than the current root
         self.stack = self.stack[:self.current_index + 1]
-
-

@@ -3,7 +3,7 @@ import traceback
 import inspect
 import copy
 
-from helpers import printe, indent, Error, Info
+from helpers import printe, indent, Error, Info, Warning
 import possible_solver_combinations
 from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice
 from node import Node
@@ -12,7 +12,7 @@ from undo_stack import UndoStack
 
 
 # this class is the backend
-# it holds the root_node of the cpp-tree and all functions that can be used by an interface
+# it holds the cpp-tree and all functions that can be used by an interface
 class CPPTree:
     # initialize class varibales
     def __init__(self):
@@ -22,8 +22,6 @@ class CPPTree:
         file_cpp_template.close()
 
         self.combinations = possible_solver_combinations.possible_solver_combinations
-
-        self.root = None
 
         # create a list of keys
         self.keys = list(self.combinations.keys())
@@ -84,9 +82,10 @@ class CPPTree:
 
         self.undo_stack = UndoStack(self)
 
-    # adds a root_node with no childs to the tree
+    # adds a RootNode with no childs to undo_stack
     # this function has to be called after initializing this class
-    # if this is not called root_node is None and other functions may fail
+    # it is not in __init__ so it can return the Info
+    # !!! if this is not called the behaviour of the UndoStack is undefined
     def load_empty_simulation(self):
         self.undo_stack.add_new_root_node()
         return Info('loaded empty simulation')
@@ -95,6 +94,7 @@ class CPPTree:
     # the new tree will not have any python-settings attached to it
     # if you want to attach the python-settings from the old tree to the new one,
     # you have to save them beforehand and parse them after this
+    # returns Info if the RootNode changed, Error or Warning otherwise
     def parse_cpp_src(self, problem, validate_semantics=False):
         new_root = RootNode(self.combinations)
         try:
@@ -137,6 +137,7 @@ class CPPTree:
             #problem = re.sub(r' ', '', problem)
 
             # create tree from problem with a simple parser
+            # this populates new_root and its children
             problem = '<' + problem + '>'
             stack = []
             stack.append(Node(self.combinations))
@@ -180,19 +181,20 @@ class CPPTree:
                  ret = new_root.validate_cpp_src(self)
                  if isinstance(ret, Error):
                      return ret
-            if not self.root.compare_cpp(new_root):
+            # check if the new tree is different from the old tree
+            if not self.undo_stack.get_current_root().compare_cpp(new_root):
                 self.undo_stack.add(new_root)
                 return Info('cpp-src parsed successfully')
             else:
-                return Info('no changes found in cpp-src')
+                return Warning('no changes found in cpp-src')
         except:
             return Error('failed to parse cpp-src (syntax-error)')
 
     # returns a string, which contains the generated cpp source-code using the tree and the template.cpp
     def __repr__(self):
-        if len(self.root.childs.get_real_childs()) > 0:
+        if len(self.undo_stack.get_current_root().childs.get_real_childs()) > 0:
             index = self.cpp_template.find(' problem(settings)')
-            return self.cpp_template[:index] + indent(str(self.root.childs.get_real_childs()[0]), '  ') + self.cpp_template[index:]
+            return self.cpp_template[:index] + indent(str(self.undo_stack.get_current_root().childs.get_real_childs()[0]), '  ') + self.cpp_template[index:]
         else:
             return self.cpp_template
 
@@ -222,7 +224,7 @@ class CPPTree:
                 recurse_childs = False
             else:
                 python_settings = PythonSettings(settings)
-                n = self.root
+                n = self.undo_stack.get_current_root()
                 recurse_childs = True
         except:
             self.undo_stack.undo()
@@ -238,7 +240,7 @@ class CPPTree:
 
     # get the trees PythonSettings object, which holds the global python_settings and its prefix+postfix
     def get_python_settings(self):
-        return self.root.get_python_settings()
+        return self.undo_stack.get_current_root().get_python_settings()
 
     # add missing default-python-settings to a given node
     def add_missing_default_python_settings(self, node=None):
@@ -246,10 +248,10 @@ class CPPTree:
             n = node
             recurse_childs = False
         else:
-            n = self.root
+            n = self.undo_stack.get_current_root()
             recurse_childs = True
         self.undo_stack.duplicate_current_state()
-        changes = n.add_missing_default_python_settings(self.root.settings_dict, recurse_childs=recurse_childs)
+        changes = n.add_missing_default_python_settings(self.undo_stack.get_current_root().settings_dict, recurse_childs=recurse_childs)
         if not changes > 0:
             self.undo_stack.undo()
             self.undo_stack.remove_future()
