@@ -152,7 +152,6 @@ class Node:
     # this function recursively adds missing python-settings to self.settings_dict
     # returns number of added settings
     # TODO handle SettingsConditional (maybe with has_key?)
-    # TODO what to do when there are no default settings defined in possible_solver_combinations
     def add_missing_default_python_settings(self, settings_global_dict, recurse_childs=True, self_settings_container=None, settings_container_default=None):
         # counter for added settings
         changes = 0
@@ -183,7 +182,7 @@ class Node:
                     changes = changes + child.add_missing_default_python_settings(settings_global_dict=settings_global_dict, recurse_childs=recurse_childs)
 
         # handle SettingsList
-        if isinstance(self_settings_container, SettingsList):
+        if isinstance(self_settings_container, SettingsList) and isinstance(settings_container_default, SettingsList):
             # add default_entry if missing
             if len(self_settings_container) == 0:
                 default_entry = copy.deepcopy(settings_container_default[0])
@@ -198,7 +197,7 @@ class Node:
                         settings_container_default_recurse = settings_container_default[0].value
                         changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, recurse_childs=recurse_childs, settings_container_default=settings_container_default_recurse, settings_global_dict=settings_global_dict,)
         # handle SettingsDict
-        elif isinstance(self_settings_container, SettingsDict):
+        elif isinstance(self_settings_container, SettingsDict) and isinstance(settings_container_default, SettingsDict):
             # resolve all SettingsChoice to defaults
             if isinstance(settings_container_default, SettingsDict):
                 settings_container_default_resolved = SettingsDict()
@@ -308,9 +307,7 @@ class Node:
             self.settings_dict = None
         self.settings_dict_prefix = python_settings.prefix
         self.settings_dict_postfix = python_settings.postfix
-        (_, warnings) = self.parse_python_settings_recursive(python_settings.config_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, recurse_childs=recurse_childs)
-        print(len(warnings))
-        # TODO fix warnings stacking up
+        (_, warnings) = self.parse_python_settings_recursive(python_settings.config_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, recurse_childs=recurse_childs, warnings=[])
         warnings.append(Info('written python-settings for ' + str(self.name)))
         return warnings
 
@@ -319,7 +316,7 @@ class Node:
     # rest is only not None in recursive calls on childs and can be ignored if called from outside
     # warnings is a list of Warnings
     def parse_python_settings_recursive(self, settings_container, keep_entries_that_have_no_default=False, self_settings_container=None, settings_container_default=None, is_called_on_child=False, warnings=[], recurse_childs=True):
-        # TODO SettingsConditional? 
+        # TODO SettingsConditional
         # TODO if a SettingsDictEntry has no comment, add the default-comment (extra function)
         # these should be given as parameters when recursion happens on the same object again
         # self_settings_container is a reference to the sub-SettingsDict in self.settings_dict we are currently handling
@@ -421,8 +418,7 @@ class Node:
                             #print('trying to give ' + str(entry.key) + ' to child ' + str(child_placeholders[j].childnumber))
                             child = self.childs.get_childs()[child_placeholders[j].childnumber]
                             if not isinstance(child, PlaceholderNode):
-                                print(child.name)
-                                (new_dict, warnings) = child.parse_python_settings_recursive(new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, is_called_on_child=True, recurse_childs=recurse_childs)
+                                (new_dict, warnings) = child.parse_python_settings_recursive(new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, is_called_on_child=True, recurse_childs=recurse_childs, warnings=warnings)
                             if len(new_dict) == 0:
                                 break
 
