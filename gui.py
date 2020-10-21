@@ -275,6 +275,11 @@ class MainWindow(Gtk.Window):
         rets = self.cpp_tree.parse_cpp_src(text, validate_semantics=self.checkbox_validate_semantics.get_active())
         self.log_append_message(rets)
         if not any(isinstance(ret, Error) or isinstance(ret, Warning) for ret in rets):
+            self.log_append_message(Info('trying to parse python-settings from the old cpp-tree to the new one'))
+            text_bounds = self.text_view_python_code.get_buffer().get_bounds()
+            text = self.text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+            rets = self.cpp_tree.parse_python_settings(text)
+            self.log_append_message(rets)
             self.redraw_all()
 
     def on_button_undo(self, _):
