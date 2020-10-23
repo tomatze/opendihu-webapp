@@ -22,10 +22,13 @@ This Project aims to simplify the creation of a new simulation in opendihu for e
 
 ## windows (using MSYS2)
 * download and install [MSYS2](https://www.msys2.org/#installation)
-* run MSYS2 and install requirements
+* run MSYS2 and install requirements:
+
 `pacman -S mingw-w64-x86_64-gtk3 mingw-w64-x86_64-python3 mingw-w64-x86_64-python3-gobject mingw-w64-x86_64-gtksourceview4`
 
 # Usage
 `git clone 'https://github.com/tomatze/opendihu-webapp'`
+
 `cd opendihu-webapp`
+
 `python3 gui.py`
