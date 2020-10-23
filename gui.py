@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('GtkSource', '4')
@@ -126,9 +127,11 @@ class NodeReplaceWindow(Gtk.Window):
 
         self.show_all()
 
-class MainWindow(Gtk.Window):
-    def __init__(self):
-        super(MainWindow, self).__init__()
+class MainWindow(Gtk.ApplicationWindow):
+    def __init__(self, app):
+        #super(MainWindow, self).__init__()
+        Gtk.Window.__init__(self, application=app)
+        self.app = app
         self.init_ui()
         self.init_backend()
 
@@ -207,7 +210,7 @@ class MainWindow(Gtk.Window):
             button_add_node.connect("clicked", on_button_add_node)
             grid.add(button_add_node)
         else:
-            label = Gtk.Label(None)
+            label = Gtk.Label()
             label.set_markup("<b>" + str(node.name) + "</b>")
             grid.add(label)
             if not isinstance(node, RootNode):
@@ -499,7 +502,27 @@ class MainWindow(Gtk.Window):
         self.python_treeview_button_add_defaults.connect("clicked", self.on_python_treeview_button_add_defaults)
         self.python_treeview_buttons.add(self.python_treeview_button_add_defaults)
 
-win = MainWindow()
-win.show_all()
-win.maximize()
-Gtk.main()
+class MainApplication(Gtk.Application):
+    def __init__(self):
+        Gtk.Application.__init__(self)
+
+    def do_activate(self):
+        win = MainWindow(self)
+        win.show_all()
+        win.maximize()
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        ## menu_bar
+        builder = Gtk.Builder()
+        builder.add_from_file("menubar.ui")
+        self.set_menubar(builder.get_object("menubar"))
+
+app = MainApplication()
+exit_status = app.run(sys.argv)
+sys.exit(exit_status)
+
+#win = MainWindow()
+#win.show_all()
+#win.maximize()
+#Gtk.main()
