@@ -223,6 +223,53 @@ class MainWindow(Gtk.ApplicationWindow):
                 pass
         dialog.destroy()
 
+    def save_file(self, type):
+        if type == 'cpp':
+            title="Save to c++ file"
+        else:
+            title="Save to python file"
+        dialog = Gtk.FileChooserDialog(title=title, parent=self, action=Gtk.FileChooserAction.SAVE)
+        dialog.set_do_overwrite_confirmation(True)
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL,
+            Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN,
+            Gtk.ResponseType.OK,
+        )
+
+        filter_type = Gtk.FileFilter()
+        if type == 'cpp':
+            filter_type.set_name("C++ files")
+            filter_type.add_mime_type("text/x-c")
+        else:
+            filter_type.set_name("Python files")
+            filter_type.add_mime_type("text/x-python")
+        dialog.add_filter(filter_type)
+
+        filter_any = Gtk.FileFilter()
+        filter_any.set_name("Any files")
+        filter_any.add_pattern("*")
+        dialog.add_filter(filter_any)
+
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            try:
+                file = open(dialog.get_filename(), "w")
+                if type == 'cpp':
+                    text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
+                    text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+                    file.write(text)
+                    self.log_append_message(Info('saved c++-code to ' + dialog.get_filename()))
+                else:
+                    text_bounds = self.text_view_python_code.get_buffer().get_bounds()
+                    text = self.text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+                    file.write(text)
+                    self.log_append_message(Info('saved python-code to ' + dialog.get_filename()))
+                file.close()
+            except:
+                pass
+        dialog.destroy()
+
 
     # binded to self.cpp_treeview_listbox
     # if we append item to self.cpp_treeview_store this function gets called and creates the widget
@@ -403,6 +450,18 @@ class MainWindow(Gtk.ApplicationWindow):
             def on_open_python(_action, _parameter):
                 self.open_file('python')
             action.connect("activate", on_open_python)
+            self.add_action(action)
+
+            action = Gio.SimpleAction.new("menu_save_cpp", None)
+            def on_save_cpp(_action, _parameter):
+                self.save_file('cpp')
+            action.connect("activate", on_save_cpp)
+            self.add_action(action)
+
+            action = Gio.SimpleAction.new("menu_save_python", None)
+            def on_save_python(_action, _parameter):
+                self.save_file('python')
+            action.connect("activate", on_save_python)
             self.add_action(action)
 
 
