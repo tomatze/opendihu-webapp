@@ -19,8 +19,6 @@ class TestParser(unittest.TestCase):
         "diffusion/diffusion3d/src/diffusion.cpp",
         "diffusion/reaction_diffusion2d/src/diffusion_2d_1st_order.cpp",
         "diffusion/reaction_diffusion2d/src/reaction_diffusion_2d.cpp",
-        "electrophysiology/cellml/cellml_on_gpu/multiple_instances/src/cellml.cpp",
-        "electrophysiology/cellml/cellml_on_gpu/single_instance/src/cellml.cpp",
         "electrophysiology/cellml/hodgkin-huxley_shorten_ocallaghan_davidson_soboleva_2007/src/cellml.cpp",
         "electrophysiology/cellml/shorten/src/cellml.cpp",
         "electrophysiology/fibers/cuboid/src/cuboid.cpp",
@@ -30,10 +28,6 @@ class TestParser(unittest.TestCase):
         "electrophysiology/fibers/fibers_contraction/no_precice/src/biceps_contraction_not_fast.cpp",
         "electrophysiology/fibers/fibers_contraction/with_precice/src/contraction.cpp",
         "electrophysiology/fibers/fibers_contraction/with_precice/src/fibers.cpp",
-        # IGNORE Dummy
-        #"electrophysiology/fibers/fibers_contraction/with_tendons_precice/src/muscle_precice.cpp",
-        "electrophysiology/fibers/fibers_contraction/with_tendons_precice/src/tendon.cpp",
-        "electrophysiology/fibers/fibers_contraction/with_tendons_precice/src/tendon_precice.cpp",
         "electrophysiology/fibers/fibers_emg/src/fast_fibers_emg.cpp",
         "electrophysiology/fibers/fibers_emg/src/fast_fibers_shorten_emg.cpp",
         "electrophysiology/fibers/fibers_emg/src/fibers_emg.cpp",
@@ -41,10 +35,9 @@ class TestParser(unittest.TestCase):
         "electrophysiology/fibers/fibers_emg/src/fibers_febio.cpp",
         "electrophysiology/fibers/fibers_emg/src/fibers_linear_elasticity.cpp",
         "electrophysiology/fibers/fibers_fat_emg/failed/src/static_biceps_emg.cpp",
-        "electrophysiology/fibers/fibers_fat_emg/src/static_biceps_emg.cpp",
-        "electrophysiology/fibers/load_balancing/src/multiple_fibers.cpp",
+        "electrophysiology/fibers/load_balancing/src/fast_fiber.cpp",
         "electrophysiology/fibers/load_balancing/src/repartitioning.cpp",
-        "electrophysiology/fibers/load_balancing/src/with_load_balancing.cpp",
+        "electrophysiology/fibers/load_balancing/src/load_balancing.cpp",
         "electrophysiology/fibers/multiple_fibers/src/multiple_fibers.cpp",
         "electrophysiology/fibers/multiple_fibers_cubes_partitioning/src/multiple_fast_fibers_57_states.cpp",
         "electrophysiology/fibers/multiple_fibers_cubes_partitioning/src/multiple_fibers.cpp",
@@ -71,7 +64,7 @@ class TestParser(unittest.TestCase):
         "electrophysiology/multidomain/multidomain_contraction/src/multidomain_contraction.cpp",
         "electrophysiology/multidomain/multidomain_contraction/src/multidomain_contraction_hodgkin_huxley_razumova.cpp",
         "electrophysiology/multidomain/multidomain_contraction/src/multidomain_contraction_without_fat.cpp",
-        "electrophysiology/multidomain/multidomain_motoneuron/src/multidomain_neuromuscular.cpp",
+        "electrophysiology/multidomain/multidomain_motoneuron/src/multidomain_motoneuron.cpp",
         "electrophysiology/multidomain/multidomain_no_fat/src/multidomain.cpp",
         "electrophysiology/multidomain/multidomain_no_fat/src/multidomain_output.cpp",
         "electrophysiology/multidomain/multidomain_with_fat/src/multidomain_shorten_with_fat.cpp",
@@ -108,8 +101,8 @@ class TestParser(unittest.TestCase):
         "laplace/laplace_composite/src/laplace_composite_3d.cpp",
         "laplace/laplace_composite/src/laplace_composite_linear_2d.cpp",
         "laplace/laplace_composite/src/laplace_composite_linear_3d.cpp",
-        "poisson/poisson1d/poisson_example_1d.cpp",
-        "poisson/poisson2d/poisson_example_2d.cpp",
+        "poisson/poisson1d/src/poisson_example_1d.cpp",
+        "poisson/poisson2d/src/poisson_example_2d.cpp",
         "solid_mechanics/chaste/src/3d_muscle.cpp",
         # IGNORE
         #"solid_mechanics/chaste/src/solving_elasticity_problems_tutorial.cpp",
@@ -160,7 +153,7 @@ class TestParser(unittest.TestCase):
             src = file.read()
             file.close()
             example.parse_cpp_src(src)
-            self.assertEqual(isinstance(example.undo_stack.get_current_root().validate_cpp_src(example), Error), False, msg=path)
+            self.assertEqual(isinstance(example.undo_stack.get_current_root().validate_cpp_src(), Error), False, msg=path)
 
     # this test parses all examples (src1) and creates their src (src2)
     # it then parses src2 and compares the trees of both examples
