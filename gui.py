@@ -179,6 +179,50 @@ class MainWindow(Gtk.ApplicationWindow):
             text = ''
         self.python_treeview_code.get_buffer().set_text(text)
 
+    def open_file(self, type):
+        if type == 'cpp':
+            title="Please choose a c++ file"
+        else:
+            title="Please choose a python file"
+        dialog = Gtk.FileChooserDialog(title=title, parent=self, action=Gtk.FileChooserAction.OPEN)
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL,
+            Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN,
+            Gtk.ResponseType.OK,
+        )
+
+        filter_type = Gtk.FileFilter()
+        if type == 'cpp':
+            filter_type.set_name("C++ files")
+            filter_type.add_mime_type("text/x-c")
+        else:
+            filter_type.set_name("Python files")
+            filter_type.add_mime_type("text/x-python")
+        dialog.add_filter(filter_type)
+
+        filter_any = Gtk.FileFilter()
+        filter_any.set_name("Any files")
+        filter_any.add_pattern("*")
+        dialog.add_filter(filter_any)
+
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            try:
+                file = open(dialog.get_filename(), "r")
+                text = file.read()
+                file.close()
+                if type == 'cpp':
+                    self.text_view_cpp_code.get_buffer().set_text(text)
+                    self.on_button_apply_cpp_code(None)
+                else:
+                    self.text_view_python_code.get_buffer().set_text(text)
+                    self.on_button_apply_python_code(None)
+                self.log_append_message(Info('loaded ' + dialog.get_filename()))
+            except:
+                pass
+        dialog.destroy()
+
 
     # binded to self.cpp_treeview_listbox
     # if we append item to self.cpp_treeview_store this function gets called and creates the widget
@@ -322,8 +366,7 @@ class MainWindow(Gtk.ApplicationWindow):
             rets = self.cpp_tree.parse_python_settings(text, node)
             self.log_append_message(rets)
             if not isinstance(rets, Error):
-                self.redraw_treeview_python()
-                self.redraw_textview_python_code()
+                self.redraw_python()
         except:
             self.log_append_message(Error('Can\'t apply settings if no Node is selected'))
 
@@ -334,14 +377,34 @@ class MainWindow(Gtk.ApplicationWindow):
             rets = self.cpp_tree.add_missing_default_python_settings(node)
             self.log_append_message(rets)
             if not isinstance(rets, Error):
-                self.redraw_treeview_python()
-                self.redraw_textview_python_code()
+                self.redraw_python()
         except:
             self.log_append_message(Error('Can\'t add default settings if no Node is selected'))
 
     def init_ui(self):
         self.set_title("opendihu - webapp")
         self.connect("destroy", Gtk.main_quit)
+
+        # menu_bar
+        action = Gio.SimpleAction.new("menu_new", None)
+        def on_new(_action, _parameter):
+            self.load_empty_simulation()
+        action.connect("activate", on_new)
+        self.add_action(action)
+
+        if not webmode:
+            action = Gio.SimpleAction.new("menu_open_cpp", None)
+            def on_open_cpp(_action, _parameter):
+                self.open_file('cpp')
+            action.connect("activate", on_open_cpp)
+            self.add_action(action)
+
+            action = Gio.SimpleAction.new("menu_open_python", None)
+            def on_open_python(_action, _parameter):
+                self.open_file('python')
+            action.connect("activate", on_open_python)
+            self.add_action(action)
+
 
         # header_bar
         self.header_bar = Gtk.HeaderBar()
@@ -513,11 +576,20 @@ class MainApplication(Gtk.Application):
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
-        ## menu_bar
+
+        # menu_bar
         builder = Gtk.Builder()
         builder.add_from_file("menubar.ui")
         self.set_menubar(builder.get_object("menubar"))
 
+        if not webmode:
+            action = Gio.SimpleAction.new("menu_quit", None)
+            def on_quit(_action, _parameter):
+                sys.exit()
+            action.connect("activate", on_quit)
+            self.add_action(action)
+
+webmode = False
 app = MainApplication()
 exit_status = app.run(sys.argv)
 sys.exit(exit_status)
