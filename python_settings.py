@@ -352,6 +352,9 @@ class SettingsList(SettingsContainer):
         self.list_comprehension = None
         if entries:
             for entry in entries:
+                # if we only pass strings, we don't have to encapsualte them manually
+                if isinstance(entry, str):
+                    entry = SettingsListEntry(entry)
                 self.append(entry)
     def __repr__(self):
         return self.repr(0)

@@ -57,7 +57,7 @@ class CPPTree:
         for _key, value in self.combinations.items():
             template_arguments = value.get("template_arguments", [])
             for i in range(0, len(template_arguments)):
-                template_argument = template_arguments[i]
+                (_template_argument_description, template_argument) = template_arguments[i]
                 for item in template_argument:
                     # expand ::
                     if len(item) >= 2 and item[-1] == ':' and item[-2] == ':':
@@ -78,7 +78,7 @@ class CPPTree:
                             template_argument.append(key_sub)
 
         # add template_arguments for GLOBAL (runnables)
-        self.combinations['GLOBAL']["template_arguments"] = [self.runnables]
+        self.combinations['GLOBAL']["template_arguments"] = [("runnable", self.runnables)]
 
         self.undo_stack = UndoStack()
 

@@ -30,7 +30,10 @@ class NodeReplaceWindow(Gtk.Window):
         grid = Gtk.Grid()
         self.add(grid)
 
-        possible_replacements = node.get_possible_replacements()
+        (possible_replacements_description, possible_replacements) = node.get_possible_replacements()
+
+        description = Gtk.Label(label=possible_replacements_description)
+        grid.add(description)
 
         if [r for r in possible_replacements if r.name == 'Integer']:
             # Integer
@@ -43,7 +46,8 @@ class NodeReplaceWindow(Gtk.Window):
                 text = '0'
             entry.set_text(text)
             grid_entry.add(entry)
-            grid.add(grid_entry)
+            grid.attach_next_to(grid_entry, description, Gtk.PositionType.BOTTOM, 1, 1)
+            #grid.add(grid_entry)
 
             def on_button_replace(_):
                 integer = entry.get_text()
@@ -89,7 +93,8 @@ class NodeReplaceWindow(Gtk.Window):
             scroll.add(listbox)
             scroll.set_min_content_height(500)
             scroll.set_min_content_width(500)
-            grid.add(scroll)
+            grid.attach_next_to(scroll, description, Gtk.PositionType.BOTTOM, 1, 1)
+            #grid.add(scroll)
 
             def on_button_replace(_):
                 replacement = listbox.get_selected_row().node
@@ -181,6 +186,12 @@ class MainWindow(Gtk.Window):
         grid = Gtk.Grid()
         for _ in range(depth):
             grid.add(Gtk.Label(label='  '))
+
+        description = node.get_contextual_description()
+        if not isinstance(node, RootNode):
+            label = Gtk.Label(label=description + ' ')
+            grid.add(label)
+
         if isinstance(node, PlaceholderNode):
             if node.needed:
                 label = 'add necessary template'
@@ -196,7 +207,8 @@ class MainWindow(Gtk.Window):
             button_add_node.connect("clicked", on_button_add_node)
             grid.add(button_add_node)
         else:
-            label = Gtk.Label(label=node.name)
+            label = Gtk.Label(None)
+            label.set_markup("<b>" + str(node.name) + "</b>")
             grid.add(label)
             if not isinstance(node, RootNode):
                 spacer = Gtk.Label(label=' ')

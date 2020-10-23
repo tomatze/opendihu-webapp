@@ -99,6 +99,20 @@ class Node:
         replacement.name = integer
         return replacement
 
+    def get_contextual_description(self):
+        # special case for rootnode
+        if not self.parent:
+            return ''
+        try:
+            for i in range(len(self.parent.childs.get_childs())):
+                if self == self.parent.childs.get_childs()[i]:
+                    child_index = i
+                    break
+            (node_description, _possible_node_names) = self.combinations[self.parent.name]["template_arguments"][child_index]
+            return node_description
+        except:
+            return 'UNKNOWN'
+
     def get_possible_replacements(self):
         # special case for rootnode
         if not self.parent:
@@ -107,7 +121,7 @@ class Node:
             if self == self.parent.childs.get_childs()[i]:
                 child_index = i
                 break
-        possible_node_names = self.combinations[self.parent.name]["template_arguments"][child_index]
+        (possible_node_description, possible_node_names) = self.combinations[self.parent.name]["template_arguments"][child_index]
         possible_replacements = []
         for name in possible_node_names:
             possible_replacement = Node(self.combinations)
@@ -119,7 +133,7 @@ class Node:
             except: pass
             possible_replacements.append(possible_replacement)
         # TODO sort by occurence in examples
-        return possible_replacements
+        return (possible_node_description, possible_replacements)
 
     # this is not in __init__(), because self.name (used here) gets defined later
     def get_default_python_settings_dict(self):
@@ -513,16 +527,17 @@ class Node:
                     break
                 i =  i + 1
 
+            (_template_argument_description, possible_template_arguments) = p_wanted_childs[i]
             if i > p_argument_count_max:
                 res.append(Error(str(self.parent.name) + ' only accepts ' + str(p_argument_count_max) + ' template_arguments'))
             else:
-                if p_wanted_childs[i] == ["Integer"]:
+                if possible_template_arguments == ["Integer"]:
                     try:
                         int(self.name)
                     except:
                         res.append(Error(str(self.name) + ' is not an Integer'))
-                elif self.name not in p_wanted_childs[i]:
-                    res.append(Error(str(self.name) + ' is not in the list of possible template_arguments for ' + self.parent.name + '\n' + 'possible template_arguments are: ' + str(p_wanted_childs[i])))
+                elif self.name not in possible_template_arguments:
+                    res.append(Error(str(self.name) + ' is not in the list of possible template_arguments for ' + self.parent.name + '\n' + 'possible template_arguments are: ' + str(possible_template_arguments)))
 
         return res
 
@@ -548,13 +563,14 @@ class Node:
             res.append(Error(str(node.name) + ' only accepts ' + str(argument_count_max) + ' template_arguments ' + str(child_count) + ' template_arguments given'))
         for i in range(len(node.childs.get_real_childs())):
             try:
-                if wanted_childs[i] == ["Integer"]:
+                (_template_argument_description, possible_template_arguments) = wanted_childs[i]
+                if possible_template_arguments == ["Integer"]:
                     try:
                         int(node.childs.get_real_childs()[i].name)
                     except:
                         res.append(Error(str(node.childs.get_real_childs()[i].name) + ' is not an Integer'))
-                elif node.childs.get_real_childs()[i].name not in wanted_childs[i]:
-                    res.append(Error(str(node.childs.get_real_childs()[i].name) + ' is not in the list of possible template_arguments for ' + node.name + '\n' + 'possible template_arguments are: ' + str(wanted_childs[i])))
+                elif node.childs.get_real_childs()[i].name not in possible_template_arguments:
+                    res.append(Error(str(node.childs.get_real_childs()[i].name) + ' is not in the list of possible template_arguments for ' + node.name + '\n' + 'possible template_arguments are: ' + str(possible_template_arguments)))
             except:
                 pass
             if recurse:
