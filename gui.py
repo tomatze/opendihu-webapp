@@ -400,8 +400,8 @@ class MainWindow(Gtk.ApplicationWindow):
         if not isinstance(ret, Error):
             self.redraw_all()
 
-    def on_button_reset(self, _):
-        self.load_empty_simulation()
+    #def on_button_reset(self, _):
+    #    self.load_empty_simulation()
 
     def on_python_treeview_button_apply(self, _):
         try:
@@ -437,6 +437,18 @@ class MainWindow(Gtk.ApplicationWindow):
         def on_new(_action, _parameter):
             self.load_empty_simulation()
         action.connect("activate", on_new)
+        self.add_action(action)
+
+        action = Gio.SimpleAction.new("menu_undo", None)
+        def on_undo(_action, _parameter):
+            self.on_button_undo(None)
+        action.connect("activate", on_undo)
+        self.add_action(action)
+
+        action = Gio.SimpleAction.new("menu_redo", None)
+        def on_redo(_action, _parameter):
+            self.on_button_redo(None)
+        action.connect("activate", on_redo)
         self.add_action(action)
 
         if not webmode:
@@ -483,9 +495,9 @@ class MainWindow(Gtk.ApplicationWindow):
         self.button_redo.connect("clicked", self.on_button_redo)
         self.header_bar.pack_start(self.button_redo)
 
-        self.button_reset = Gtk.Button(label='load empty simulation')
-        self.button_reset.connect("clicked", self.on_button_reset)
-        self.header_bar.pack_start(self.button_reset)
+        #self.button_reset = Gtk.Button(label='load empty simulation')
+        #self.button_reset.connect("clicked", self.on_button_reset)
+        #self.header_bar.pack_start(self.button_reset)
 
 
         # main grid

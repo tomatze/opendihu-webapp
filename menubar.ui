@@ -30,5 +30,18 @@
         </item>
       </section>
     </submenu>
+    <submenu>
+      <attribute name="label">Edit</attribute>
+      <section>
+        <item>
+          <attribute name="label">Undo</attribute>
+          <attribute name="action">win.menu_undo</attribute>
+        </item>
+        <item>
+          <attribute name="label">Redo</attribute>
+          <attribute name="action">win.menu_redo</attribute>
+        </item>
+      </section>
+    </submenu>
   </menu>
 </interface>
