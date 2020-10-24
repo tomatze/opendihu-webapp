@@ -12,7 +12,7 @@ This Project aims to simplify the creation of a new simulation in opendihu for e
 * [gtksourceview](https://gitlab.gnome.org/GNOME/gtksourceview)
 
 ## ubuntu
-`sudo apt-get install python3-gi python3-gi-cairo gir1.2-gtk-3.0 libgtksourceview-4-0`
+`sudo apt-get install -y python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-gtksource-4`
 
 ## archlinux
 `sudo pacman -S gtk3 python-gobject gtksourceview4`
@@ -29,6 +29,19 @@ This Project aims to simplify the creation of a new simulation in opendihu for e
 # Usage
 `git clone 'https://github.com/tomatze/opendihu-webapp'`
 
-`cd opendihu-webapp`
+`cd opendihu-webapp/src`
 
 `python3 gui.py`
+
+# Docker
+On Linux you can also run this project with docker. This should also work on MacOS and Windows if an X11-server is installed first
+
+## build the container
+`git clone 'https://github.com/tomatze/opendihu-webapp'`
+
+`cd opendihu-webapp`
+
+`./docker-build.sh`
+
+## run the container
+`./docker-run.sh`
