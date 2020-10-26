@@ -345,12 +345,31 @@ class MainWindow(Gtk.ApplicationWindow):
         return row
 
     def cpp_treeview_replace_node(self, node):
+        if self.check_python_treeview_for_unapplied_code():
+            return
         _window = NodeReplaceWindow(node, self)
 
     def cpp_treeview_delete_node(self, node):
+        if self.cpp_treeview_current_row != None and node != self.cpp_treeview_current_row.node:
+            if self.check_python_treeview_for_unapplied_code():
+                return
         ret = self.cpp_tree.delete_node(node)
         self.log_append_message(ret)
         self.redraw_all()
+
+    # returns True if there are unapplied changes in python_treeview_code, that should not be discarded
+    # returns Fals otherwise
+    def check_python_treeview_for_unapplied_code(self):
+        text_bounds = self.python_treeview_code.get_buffer().get_bounds()
+        text = self.python_treeview_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+        if self.cpp_treeview_current_row != None and str(self.cpp_treeview_current_row.node.settings_dict) != text:
+            dialog = DiscardNodeChangesDialog(self)
+            response = dialog.run()
+            dialog.destroy()
+            if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
+                self.cpp_treeview_listbox.select_row(self.cpp_treeview_current_row)
+                return True
+        return False
 
     def log_append_message(self, message):
         if isinstance(message, list):
@@ -376,11 +395,15 @@ class MainWindow(Gtk.ApplicationWindow):
 
 
     def on_button_add_defaults_python_code(self, _):
+        if self.check_python_treeview_for_unapplied_code():
+            return
         ret = self.cpp_tree.add_missing_default_python_settings()
         self.log_append_message(ret)
         self.redraw_python()
 
     def on_button_apply_python_code(self, _):
+        if self.check_python_treeview_for_unapplied_code():
+            return
         text_bounds = self.text_view_python_code.get_buffer().get_bounds()
         text = self.text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
         rets = self.cpp_tree.parse_python_settings(text)
@@ -389,6 +412,8 @@ class MainWindow(Gtk.ApplicationWindow):
             self.redraw_python()
 
     def on_button_apply_cpp_code(self, _):
+        if self.check_python_treeview_for_unapplied_code():
+            return
         text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
         text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
         rets = self.cpp_tree.parse_cpp_src(text, validate_semantics=self.checkbox_validate_semantics.get_active())
@@ -431,6 +456,8 @@ class MainWindow(Gtk.ApplicationWindow):
             self.log_append_message(Error('Can\'t apply settings if no Node is selected'))
 
     def on_python_treeview_button_add_defaults(self, _):
+        if self.check_python_treeview_for_unapplied_code():
+            return
         try:
             node = self.cpp_treeview_listbox.get_selected_row().node
 
@@ -619,18 +646,12 @@ class MainWindow(Gtk.ApplicationWindow):
             self.cpp_treeview_replace_node(node)
         self.cpp_treeview_listbox.connect('row-activated', row_double_clicked)
         def row_clicked(_, row):
-            if self.cpp_treeview_current_row:
+            if self.cpp_treeview_current_row != None:
                 if row.node != self.cpp_treeview_current_row.node:
                     # check if we have changes that are not applied yet
-                    text_bounds = self.python_treeview_code.get_buffer().get_bounds()
-                    text = self.python_treeview_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
-                    if str(self.cpp_treeview_current_row.node.settings_dict) != text:
-                        dialog = DiscardNodeChangesDialog(self)
-                        response = dialog.run()
-                        dialog.destroy()
-                        if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
-                            self.cpp_treeview_listbox.select_row(self.cpp_treeview_current_row)
-                            return
+                    if self.check_python_treeview_for_unapplied_code():
+                        self.cpp_treeview_listbox.select_row(self.cpp_treeview_current_row)
+                        return
                 else:
                     return
             self.redraw_treeview_python()
