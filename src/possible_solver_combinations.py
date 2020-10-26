@@ -118,6 +118,16 @@ timestepping_schemes_ode_common = [
    ])
 ]
 
+operator_splitting_common = timestepping_schemes_ode_common + [
+    SettingsDictEntry("connectedSlotsTerm1To2", '[0]', 'list of slots of term 2 that are connected to the slots of term 1', 'output_connector_slots.html#connectedslotsterm1to2-and-connectedslotsterm2to1'),
+    SettingsDictEntry("connectedSlotsTerm2To1", '[0]', 'list of slots of term 1 that are connected to the slots of term 2', 'output_connector_slots.html#connectedslotsterm1to2-and-connectedslotsterm2to1'),
+    SettingsDictEntry("Term1", SettingsDict([
+        SettingsChildPlaceholder(0)
+    ])),
+    SettingsDictEntry("Term2", SettingsDict([
+        SettingsChildPlaceholder(1)
+    ]))
+]
 
 possible_solver_combinations = {
     "GLOBAL": {
@@ -231,9 +241,14 @@ possible_solver_combinations = {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["timeSteppingScheme"]),
-            ('TODO', ["timeSteppingScheme"])
-        ]
+            ('First TimeSteppingScheme', ["timeSteppingScheme"]),
+            ('Second TimeSteppingScheme', ["timeSteppingScheme"])
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("Coupling", SettingsDict(
+                operator_splitting_common
+            ))
+        ])
     },
     "Control::LoadBalancing": {
         # TODO is this runnable
@@ -254,48 +269,31 @@ possible_solver_combinations = {
     },
 
 
-    "OperatorSplitting::Strang": {
-        "runnable": True,
-        "timeSteppingScheme": True,
-        "template_arguments": [
-            ('TODO', ["timeSteppingScheme"]),
-            ('TODO', ["timeSteppingScheme"])
-        ],
-        "python_options": SettingsDict([
-            SettingsDictEntry("StrangSplitting", SettingsDict([
-                SettingsDictEntry("timeStepWidth", '1e-1'),
-                SettingsDictEntry("endTime", '1000.0'),
-                SettingsDictEntry("Term1", SettingsDict([
-                    SettingsChildPlaceholder(0)
-                ])),
-                SettingsDictEntry("Term2", SettingsDict([
-                    SettingsChildPlaceholder(1)
-                ])),
-                SettingsChoice([], [
-                    SettingsDictEntry("Term3", SettingsDict([
-                        SettingsChildPlaceholder(2)
-                    ])),
-                ]),
-                SettingsChoice([], [
-                    SettingsDictEntry("Term4", SettingsDict([
-                        SettingsChildPlaceholder(3)
-                    ])),
-                ]),
-                SettingsChoice([], [
-                    SettingsDictEntry("Term5", SettingsDict([
-                        SettingsChildPlaceholder(4)
-                    ])),
-                ])
-            ]))
-        ])
-    },
     "OperatorSplitting::Godunov": {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["timeSteppingScheme"]),
-            ('TODO', ["timeSteppingScheme"])
-        ]
+            ('First TimeSteppingScheme', ["timeSteppingScheme"]),
+            ('Second TimeSteppingScheme', ["timeSteppingScheme"])
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("GodunovSplitting", SettingsDict(
+                operator_splitting_common
+            ))
+        ])
+    },
+    "OperatorSplitting::Strang": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('First TimeSteppingScheme', ["timeSteppingScheme"]),
+            ('Second TimeSteppingScheme', ["timeSteppingScheme"])
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("StrangSplitting", SettingsDict(
+                operator_splitting_common
+            ))
+        ])
     },
 
 
