@@ -237,19 +237,8 @@ possible_solver_combinations = {
             ]))
         ])
     },
-    "Control::Coupling": {
-        "runnable": True,
-        "timeSteppingScheme": True,
-        "template_arguments": [
-            ('First TimeSteppingScheme', ["timeSteppingScheme"]),
-            ('Second TimeSteppingScheme', ["timeSteppingScheme"])
-        ],
-        "python_options": SettingsDict([
-            SettingsDictEntry("Coupling", SettingsDict(
-                operator_splitting_common
-            ))
-        ])
-    },
+
+
     "Control::LoadBalancing": {
         # TODO is this runnable
         "runnable": True,
@@ -292,6 +281,56 @@ possible_solver_combinations = {
         "python_options": SettingsDict([
             SettingsDictEntry("StrangSplitting", SettingsDict(
                 operator_splitting_common
+            ))
+        ])
+    },
+
+
+    "Control::Coupling": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('First TimeSteppingScheme', ["timeSteppingScheme"]),
+            ('Second TimeSteppingScheme', ["timeSteppingScheme"])
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("Coupling", SettingsDict(
+                operator_splitting_common
+            ))
+        ])
+    },
+    "Control::MultipleCoupling": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments_needed" : 2,
+        "template_arguments": [
+            ('First TimeSteppingScheme', ["timeSteppingScheme"]),
+            ('Second TimeSteppingScheme', ["timeSteppingScheme"]),
+            ('Third TimeSteppingScheme', ["timeSteppingScheme"]),
+            ('Fourth TimeSteppingScheme', ["timeSteppingScheme"]),
+            ('Fifth TimeSteppingScheme', ["timeSteppingScheme"])
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("MultipleCoupling", SettingsDict(
+                timestepping_schemes_ode_common + [
+                    SettingsDictEntry("connectedSlotsTerm1To2", 'None', 'this would be the connected slots for a normal Coupling scheme, but here it should be set to None, use global option "connectedSlots" instead', 'output_connector_slots.html#connectedslotsterm1to2-and-connectedslotsterm2to1'),
+                    SettingsDictEntry("connectedSlotsTerm2To1", 'None', 'this would be the connected slots for a normal Coupling scheme, but here it should be set to None, use global option "connectedSlots" instead', 'output_connector_slots.html#connectedslotsterm1to2-and-connectedslotsterm2to1'),
+                    SettingsDictEntry("Term1", SettingsDict([
+                        SettingsChildPlaceholder(0)
+                    ])),
+                    SettingsDictEntry("Term2", SettingsDict([
+                        SettingsChildPlaceholder(1)
+                    ])),
+                    SettingsDictEntry("Term3", SettingsDict([
+                        SettingsChildPlaceholder(2)
+                    ])),
+                    SettingsDictEntry("Term4", SettingsDict([
+                        SettingsChildPlaceholder(3)
+                    ])),
+                    SettingsDictEntry("Term5", SettingsDict([
+                        SettingsChildPlaceholder(4)
+                    ]))
+                ]
             ))
         ])
     },
