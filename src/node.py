@@ -29,7 +29,7 @@ class Childs():
                 self.__add_placeholder_i(i)
 
     def __add_placeholder_i(self, i):
-        if i <= self.childs_count_needed:
+        if i < self.childs_count_needed:
             self.__childs[i] = (PlaceholderNode(
                 self.combinations, needed=True))
         else:
