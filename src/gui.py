@@ -24,6 +24,16 @@ class ListBoxRowWithNode(Gtk.ListBoxRow):
     def add_node(self, node):
         self.node = node
 
+class DiscardNodeChangesDialog(Gtk.Dialog):
+    def __init__(self, parent):
+        Gtk.Dialog.__init__(self, title="Warning", transient_for=parent, flags=0)
+        self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, 'discard changes', Gtk.ResponseType.OK)
+        self.set_default_size(150, 100)
+        label = Gtk.Label(label="Warning: Some changes to the current Node are not applied yet, and will be discarded!")
+        box = self.get_content_area()
+        box.add(label)
+        self.show_all()
+
 class NodeReplaceWindow(Gtk.Window):
     def __init__(self, node, main_window):
         super(NodeReplaceWindow, self).__init__()
@@ -173,10 +183,13 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def redraw_treeview_python(self):
         try:
-            node = self.cpp_treeview_listbox.get_selected_row().node
+            row = self.cpp_treeview_listbox.get_selected_row()
+            self.cpp_treeview_current_row = row
+            node = row.node
             text = str(node.settings_dict)
         except:
             text = ''
+            self.cpp_treeview_current_row = None
         self.python_treeview_code.get_buffer().set_text(text)
 
     def open_file(self, type):
@@ -429,6 +442,8 @@ class MainWindow(Gtk.ApplicationWindow):
             self.log_append_message(Error('Can\'t add default settings if no Node is selected'))
 
     def init_ui(self):
+        self.cpp_treeview_current_row = None
+
         self.set_title("opendihu - webapp")
         self.connect("destroy", Gtk.main_quit)
 
@@ -604,6 +619,20 @@ class MainWindow(Gtk.ApplicationWindow):
             self.cpp_treeview_replace_node(node)
         self.cpp_treeview_listbox.connect('row-activated', row_double_clicked)
         def row_clicked(_, row):
+            if self.cpp_treeview_current_row:
+                if row.node != self.cpp_treeview_current_row.node:
+                    # check if we have changes that are not applied yet
+                    text_bounds = self.python_treeview_code.get_buffer().get_bounds()
+                    text = self.python_treeview_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+                    if str(self.cpp_treeview_current_row.node.settings_dict) != text:
+                        dialog = DiscardNodeChangesDialog(self)
+                        response = dialog.run()
+                        dialog.destroy()
+                        if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
+                            self.cpp_treeview_listbox.select_row(self.cpp_treeview_current_row)
+                            return
+                else:
+                    return
             self.redraw_treeview_python()
         self.cpp_treeview_listbox.connect('row-selected', row_clicked)
 
