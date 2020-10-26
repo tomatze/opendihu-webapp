@@ -90,6 +90,7 @@ outputwriter = SettingsDictEntry("OutputWriter", SettingsList([
 ]), 'specifies a list of output writers that can be used to output geometry field variables in various formats', 'output_writer.html#outputwriter')
 
 timestepping_schemes_ode_common = [
+    SettingsChildPlaceholder(0),
     SettingsDictEntry("endTime", '1', 'run() method performs the simulation for t∈[0,endTime]', 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth'),
    SettingsChoice([
        SettingsDictEntry("numberTimeSteps", '10', None, 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth')
@@ -338,14 +339,77 @@ possible_solver_combinations = {
 
     "CellmlAdapter": {
         "discretizableInTime": True,
-        "template_arguments_needed": 1,
+        "template_arguments_needed": 2,
         "template_arguments": [
-            ('TODO', ["Integer"]),
-            ('TODO', ["Integer"]),
-            ('TODO', ["FunctionSpace::"])
+            ('Number of states', ["Integer"]),
+            ('Number of algebraics', ["Integer"]),
+            ('FunctionSpace', ["FunctionSpace::"])
         ],
         "python_options": SettingsDict([
-            outputwriter,
+            SettingsDictEntry("CellML", SettingsDict([
+                SettingsChoice([
+                    SettingsDictEntry("modelFilename", '"../../input/hodgkin_huxley_1952.c"', 'filename of the CellML model file (cellml-XML or c/c++)', 'cellml_adapter.html#modelfilename')
+                ], [
+                    SettingsDictEntry("libraryFilename", "../lib/model.so", 'filename of a shared object library (.so) that will be used to compute the model', 'cellml_adapter.html#libraryfilename')
+                ]),
+                SettingsDictEntry("statesInitialValues", '"CellML"', 'list with initial values for each state of the CellML model or "CellML" or "undefined"', 'cellml_adapter.html#statesinitialvalues'),
+                SettingsDictEntry("initializeStatesToEquilibrium", 'True', 'if the equilibrium values of the states should be computed before the simulation starts', 'cellml_adapter.html#initializestatestoequilibrium-and-initializestatestoequilibriumtimestepwidth'),
+                SettingsDictEntry("initializeStatesToEquilibriumTimestepWidth", '1e-4', 'timestep width to use to solve the equilibrium equation', 'cellml_adapter.html#initializestatestoequilibrium-and-initializestatestoequilibriumtimestepwidth'),
+                SettingsChoice([],[
+                    SettingsDictEntry("setSpecificParametersFunction", 'set_specific_parameters', 'function name', 'cellml_adapter.html#setspecificparametersfunction-and-setspecificparameterscallinterval')
+                ]),
+                SettingsChoice([],[
+                    SettingsDictEntry("setSpecificParametersFunction", '0', None, 'cellml_adapter.html#setspecificparametersfunction-and-setspecificparameterscallinterval')
+                ]),
+                SettingsChoice([],[
+                    SettingsDictEntry("setSpecificStatesFunction", 'set_specific_states', 'function name', 'cellml_adapter.html#setspecificstatesfunction-and-setspecificstatescallinterval')
+                ]),
+                SettingsChoice([],[
+                    SettingsDictEntry("setSpecificStatesCallInterval", '1', None, 'cellml_adapter.html#setspecificstatesfunction-and-setspecificstatescallinterval')
+                ]),
+                SettingsChoice([],[
+                    SettingsDictEntry("setSpecificStatesCallEnableBegin", '0', None, 'cellml_adapter.html#setspecificstatescallenablebegin-setspecificstatescallfrequency-and-setspecificstatesfrequencyjitter'),
+                    SettingsDictEntry("setSpecificStatesCallFrequency", '0.1', None, 'cellml_adapter.html#setspecificstatescallenablebegin-setspecificstatescallfrequency-and-setspecificstatesfrequencyjitter'),
+                    SettingsDictEntry("setSpecificStatesFrequencyJitter", '0', None, 'cellml_adapter.html#setspecificstatescallenablebegin-setspecificstatescallfrequency-and-setspecificstatesfrequencyjitter')
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("handleResultFunction", 'handle_result', 'function name', 'cellml_adapter.html#handleresultfunction-and-handleresultcallinterval')
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("handleResultCallInterval", '1', None, 'cellml_adapter.html#handleresultfunction-and-handleresultcallinterval')
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("parametersUsedAsAlgebraic", '[]', 'list of algebraic numbers that will be replaced by parameters', 'cellml_adapter.html#parametersusedasalgebraic')
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("parametersUsedAsConstant", '[]', 'list of indices, which constants in the computation will be replaced by parameters', 'cellml_adapter.html#parametersusedasconstant')
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("algebraicsForTransfer", '[]', 'list of algebraics that should be transferred to the other solver in either a Coupling, GodunovSplitting or StrangSplitting', 'cellml_adapter.html#algebraicsfortransfer-and-statesfortransfer')
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("statesForTransfer", '[]', 'list of states that should be transferred to the other solver in either a Coupling, GodunovSplitting or StrangSplitting', 'cellml_adapter.html#algebraicsfortransfer-and-statesfortransfer')
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("parametersInitialValues", '[]', 'list of values of the parameters. This also defines the number of parameters', 'cellml_adapter.html#parametersinitialvalues')
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("mappings", '{}', None, 'cellml_adapter.html#mappings')
+                ]),
+                SettingsChoice([
+                    SettingsDictEntry("nElements", '0', 'set the number of instances to be computed', 'cellml_adapter.html#meshname')
+                ],[
+                    SettingsDictEntry("meshName", '"meshX"', 'the mesh to use, to be defined under "Meshes"', 'cellml_adapter.html#meshname')
+                ]),
+                SettingsDictEntry("stimulationLogFilename", '"out/stimulation.log"', 'file name of an output file that will contain all firing times', 'cellml_adapter.html#stimulationlogfilename'),
+                SettingsDictEntry("optimizationType", '"vc"', 'one of simd, vc, openmp', 'cellml_adapter.html#optimizationtype'),
+                SettingsChoice([], [
+                    SettingsDictEntry("compilerFlags", '"-fPIC -finstrument-functions -ftree-vectorize -fopt-info-vec-optimized=vectorizer_optimized.log -shared"', 'additional compiler flags for the compilation of the source file', 'cellml_adapter.html#compilerflags')
+                ]),
+                SettingsChoice([], [
+                    outputwriter
+                ])
+            ]))
         ])
     },
 
