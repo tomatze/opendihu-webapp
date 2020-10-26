@@ -77,7 +77,7 @@ class CPPTree:
 
         # add template_arguments for GLOBAL (runnables)
         self.combinations['GLOBAL']["template_arguments"] = [
-            ("runnable", self.runnables)]
+            ("Runnable", self.runnables)]
 
         self.undo_stack = UndoStack()
 
