@@ -646,7 +646,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.cpp_treeview_replace_node(node)
         self.cpp_treeview_listbox.connect('row-activated', row_double_clicked)
         def row_clicked(_, row):
-            if self.cpp_treeview_current_row != None:
+            if row != None and self.cpp_treeview_current_row != None:
                 if row.node != self.cpp_treeview_current_row.node:
                     # check if we have changes that are not applied yet
                     if self.check_python_treeview_for_unapplied_code():
