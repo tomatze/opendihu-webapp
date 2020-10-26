@@ -67,25 +67,26 @@ solver = SettingsSolver([
 ])
 
 outputwriter = SettingsDictEntry("OutputWriter", SettingsList([
-    SettingsDict([]),
-    SettingsDict([
-        SettingsDictEntry("format", '"Paraview"', 'one of Paraview, PythonFile, ExFile, MegaMol, PythonCallback', 'output_writer.html#outputwriter'),
-        SettingsDictEntry("filename", '"out/filename"', 'the file name of the output file to write', 'output_writer.html#filename'),
-        SettingsDictEntry("outputInterval", '1', 'the interval in which timesteps an actual file should be written', 'output_writer.html#outputinterval'),
-        SettingsDictEntry("fileNumbering", '"incremental"', 'incremental or timeStepIndex', 'output_writer.html#filenumbering'),
-        SettingsDictEntry("binary", 'True', 'whether to produce binary data files', 'output_writer.html#binary'),
-        SettingsDictEntry("fixedFormat", 'True', None, 'output_writer.html#fixedformat'),
-        SettingsDictEntry("combineFiles", 'False', None, 'output_writer.html#combinefiles'),
-        SettingsChoice([],[
-            SettingsDictEntry("onlyNodalValues", 'True', None, None),
-        ]),
-        SettingsChoice([],[
-            SettingsDictEntry("sphereSize", '"0.005*0.005*0.01"', 'ExFile: defines how spheres, used to visualize nodes, will be rendered. The format is x*y*z', 'output_writer.html#exfile'),
-        ]),
-        SettingsChoice([],[
-            SettingsDictEntry("callback", 'callback', 'PythonCallback: python-function to call back to', 'output_writer.html#pythoncallback'),
-        ]),
-    ])
+    SettingsListEntry(
+        SettingsDict([
+            SettingsDictEntry("format", '"Paraview"', 'one of Paraview, PythonFile, ExFile, MegaMol, PythonCallback', 'output_writer.html#outputwriter'),
+            SettingsDictEntry("filename", '"out/filename"', 'the file name of the output file to write', 'output_writer.html#filename'),
+            SettingsDictEntry("outputInterval", '1', 'the interval in which timesteps an actual file should be written', 'output_writer.html#outputinterval'),
+            SettingsDictEntry("fileNumbering", '"incremental"', 'incremental or timeStepIndex', 'output_writer.html#filenumbering'),
+            SettingsDictEntry("binary", 'True', 'whether to produce binary data files', 'output_writer.html#binary'),
+            SettingsDictEntry("fixedFormat", 'True', None, 'output_writer.html#fixedformat'),
+            SettingsDictEntry("combineFiles", 'False', None, 'output_writer.html#combinefiles'),
+            SettingsChoice([],[
+                SettingsDictEntry("onlyNodalValues", 'True', None, None),
+            ]),
+            SettingsChoice([],[
+                SettingsDictEntry("sphereSize", '"0.005*0.005*0.01"', 'ExFile: defines how spheres, used to visualize nodes, will be rendered. The format is x*y*z', 'output_writer.html#exfile'),
+            ]),
+            SettingsChoice([],[
+                SettingsDictEntry("callback", 'callback', 'PythonCallback: python-function to call back to', 'output_writer.html#pythoncallback'),
+            ]),
+        ])
+    )
 ]), 'specifies a list of output writers that can be used to output geometry field variables in various formats', 'output_writer.html#outputwriter')
 
 possible_solver_combinations = {
@@ -487,7 +488,6 @@ possible_solver_combinations = {
             SettingsDictEntry("FiniteElementMethod", SettingsDict([
                 SettingsChildPlaceholder(0),
                 SettingsDictEntry("slotName", '""', 'specifies the name of the slot that contains the solution variable', 'finite_element_method.html#slotname'),
-                outputwriter,
                 SettingsDictEntry("prefactor", '1', 'a scalar multiplier of the Laplace operator term, i.e. c in c⋅Δu or c⋅∇⋅(A∇u)', 'finite_element_method.html#prefactor'),
                 SettingsDictEntry("rightHandSide", '{}', 'right hand side vector f (either as list or as dict)', 'finite_element_method.html#righthandside'),
                 SettingsDictEntry("dirichletBoundaryConditions", '{}', 'a dict with {<dof no>: <value>} entries', 'boundary_conditions.html#dirichlet-boundary-conditions'),
@@ -499,7 +499,10 @@ possible_solver_combinations = {
                 SettingsChoice([], [
                     SettingsDictEntry("diffusionTensor", '[]', 'for anisotropic diffusion, the diffusion tensor can be given as a list of double valus in row-major order', 'finite_element_method.html#diffusiontensor')
                 ]),
-                solver
+                solver,
+                SettingsChoice([], [
+                    outputwriter
+                ]),
             ]))
         ])
     },
