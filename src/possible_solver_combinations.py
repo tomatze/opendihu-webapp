@@ -1,4 +1,4 @@
-from python_settings import SettingsDict, SettingsList, SettingsChildPlaceholder, SettingsChoice, SettingsDictEntry, SettingsListEntry, SettingsSolver, SettingsMesh
+from python_settings import SettingsDict, SettingsList, SettingsChildPlaceholder, SettingsChoice, SettingsDictEntry, SettingsListEntry, SettingsSolver, SettingsMesh, SettingsComment
 # each dict entry corresponds to a cpp-template
 # each template-dict can have a ordered list with template_arguments (assuming there are no template_arguments if omitted)
 
@@ -55,22 +55,52 @@ from python_settings import SettingsDict, SettingsList, SettingsChildPlaceholder
 # BasisFunction::
 # Quadrature::
 # Equation::
+
+solver = SettingsSolver([
+    SettingsDictEntry("solverType", '"gmres"', 'the KSPType of the solver, i.e. which solver to use', 'solver.html#solvertype'),
+    SettingsDictEntry("preconditionerType", '"none"', 'the preconditioner type of PETSc to use', 'solver.html#preconditionertype'),
+    SettingsDictEntry("relativeTolerance", '1e-5', 'the relative tolerance of the residuum after which the solver is converged', 'solver.html#relativetolerance'),
+    SettingsDictEntry("maxIterations", '1e4', 'the maximum number of iterations after which the solver aborts and states divergence', 'solver.html#maxiterations'),
+    SettingsDictEntry("dumpFilename", '""',
+                      "if this is set to a non-empty string, the system matrix and right hand side vector will be dumped before every linear solve", 'solver.html#dumpfilename'),
+    SettingsDictEntry("dumpFormat", '"default"', 'the format in which to export/dump data of matrices and vectors in the file', 'solver.html#dumpformat')
+])
+
+outputwriter = SettingsDictEntry("OutputWriter", SettingsList([
+    SettingsDict([]),
+    SettingsDict([
+        SettingsDictEntry("format", '"Paraview"', 'one of Paraview, PythonFile, ExFile, MegaMol, PythonCallback', 'output_writer.html#outputwriter'),
+        SettingsDictEntry("filename", '"out/filename"', 'the file name of the output file to write', 'output_writer.html#filename'),
+        SettingsDictEntry("outputInterval", '1', 'the interval in which timesteps an actual file should be written', 'output_writer.html#outputinterval'),
+        SettingsDictEntry("fileNumbering", '"incremental"', 'incremental or timeStepIndex', 'output_writer.html#filenumbering'),
+        SettingsDictEntry("binary", 'True', 'whether to produce binary data files', 'output_writer.html#binary'),
+        SettingsDictEntry("fixedFormat", 'True', None, 'output_writer.html#fixedformat'),
+        SettingsDictEntry("combineFiles", 'False', None, 'output_writer.html#combinefiles'),
+        SettingsChoice([],[
+            SettingsDictEntry("onlyNodalValues", 'True', None, None),
+        ]),
+        SettingsChoice([],[
+            SettingsDictEntry("sphereSize", '"0.005*0.005*0.01"', 'ExFile: defines how spheres, used to visualize nodes, will be rendered. The format is x*y*z', 'output_writer.html#exfile'),
+        ]),
+        SettingsChoice([],[
+            SettingsDictEntry("callback", 'callback', 'PythonCallback: python-function to call back to', 'output_writer.html#pythoncallback'),
+        ]),
+    ])
+]), 'specifies a list of output writers that can be used to output geometry field variables in various formats', 'output_writer.html#outputwriter')
+
 possible_solver_combinations = {
     "GLOBAL": {
+        # template_arguments gets set by cpp_tree.py (to all runnables)
         "python_options": SettingsDict([
             SettingsDictEntry("scenarioName", '"test-scenario"'),
             SettingsDictEntry("logFormat", '"csv"', "csv or json"),
+            SettingsDictEntry("meta", SettingsDict(), 'additional fields that will appear in the log'),
             SettingsDictEntry("solverStructureDiagramFile",
-                              '"solver_structure.txt"'),
+                              '"solver_structure.txt"', 'filename of file that will contain a visualization of the solver structure and data mapping', 'output_connector_slots.html#solverstructurediagramfile'),
+            SettingsDictEntry("connectedSlots", '[]', None, 'output_connector_slots.html#using-global-slot-names'),
             SettingsDictEntry("mappingsBetweenMeshesLogFile",
-                              '"mappings_between_meshes.txt"'),
-            SettingsDictEntry("MappingsBetweenMeshes", '{}'),
-            #SettingsDictEntry("Meshes", '{}'),
-            #SettingsDictEntry("Solvers", '{}'),
-            SettingsDictEntry("meta", SettingsDict([
-                # TODO add meta
-                SettingsDictEntry("partitioning", '""')
-            ])),
+                              '""', 'this is the name of a log file that will contain events during creation and mapping', 'mappings_between_meshes.html#mappingsbetweenmesheslogfile'),
+            SettingsDictEntry("MappingsBetweenMeshes", '{}', None, 'mappings_between_meshes.html#mappingsbetweenmeshes'),
             SettingsChildPlaceholder(0)
         ])
     },
@@ -161,7 +191,8 @@ possible_solver_combinations = {
                         SettingsDictEntry("ranks", 'list(range(4))'),
                         SettingsChildPlaceholder(0)
                     ]))
-                ]))
+                ])),
+                outputwriter
             ]))
         ])
     },
@@ -244,7 +275,10 @@ possible_solver_combinations = {
             ('TODO', ["Integer"]),
             ('TODO', ["Integer"]),
             ('TODO', ["FunctionSpace::"])
-        ]
+        ],
+        "python_options": SettingsDict([
+            outputwriter,
+        ])
     },
 
 
@@ -452,26 +486,20 @@ possible_solver_combinations = {
         "python_options": SettingsDict([
             SettingsDictEntry("FiniteElementMethod", SettingsDict([
                 SettingsChildPlaceholder(0),
-                SettingsDictEntry("prefactor", '1'),
-                SettingsDictEntry("rightHandSide", '{}'),
-                SettingsDictEntry("dirichletBoundaryConditions", '{}'),
-                SettingsDictEntry("dirichletOutputFilename", 'None'),
-                SettingsDictEntry("neumannBoundaryConditions", '[]'),
+                SettingsDictEntry("slotName", '""', 'specifies the name of the slot that contains the solution variable', 'finite_element_method.html#slotname'),
+                outputwriter,
+                SettingsDictEntry("prefactor", '1', 'a scalar multiplier of the Laplace operator term, i.e. c in c⋅Δu or c⋅∇⋅(A∇u)', 'finite_element_method.html#prefactor'),
+                SettingsDictEntry("rightHandSide", '{}', 'right hand side vector f (either as list or as dict)', 'finite_element_method.html#righthandside'),
+                SettingsDictEntry("dirichletBoundaryConditions", '{}', 'a dict with {<dof no>: <value>} entries', 'boundary_conditions.html#dirichlet-boundary-conditions'),
+                SettingsDictEntry("dirichletOutputFilename", 'None', 'write Dirichlet Boundary conditions to .vtp file', 'boundary_conditions.html#dirichlet-output-filename'),
+                SettingsDictEntry("neumannBoundaryConditions", '[]', None, 'boundary_conditions.html#neumann-boundary-conditions'),
                 SettingsDictEntry(
-                    "updatePrescribedValuesFromSolution", 'False'),
-                SettingsDictEntry("inputMeshIsGlobal", 'True'),
-                SettingsSolver([
-                    SettingsDictEntry("solverType", '"gmres"'),
-                    SettingsDictEntry("preconditionerType", '"none"'),
-                    SettingsDictEntry("relativeTolerance", '1e-5'),
-                    SettingsDictEntry("maxIterations", '1e4'),
-                    SettingsDictEntry("dumpFilename", '""',
-                                      "no filename means dump is disabled"),
-                    SettingsDictEntry("dumpFormat", '"default"')
-                ]),
+                    "updatePrescribedValuesFromSolution", 'False', 'if set to true, the values that are initially set in the solution field variable are used as the prescribed values at the dofs in dirichletBoundaryConditions', 'finite_element_method.html#updateprescribedvaluesfromsolution'),
+                SettingsDictEntry("inputMeshIsGlobal", 'True', 'together with rightHandSide it specifies whether the given values are interpreted as local values or global values in the context of a parallel execution on multiple processes', 'finite_element_method.html#inputmeshisglobal'),
                 SettingsChoice([], [
-                    SettingsDictEntry("diffusionTensor", '[]')
-                ])
+                    SettingsDictEntry("diffusionTensor", '[]', 'for anisotropic diffusion, the diffusion tensor can be given as a list of double valus in row-major order', 'finite_element_method.html#diffusiontensor')
+                ]),
+                solver
             ]))
         ])
     },
