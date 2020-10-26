@@ -10,8 +10,8 @@ from io import BytesIO
 
 
 class SettingsComment:
-    def __init__(self):
-        self.comment = None
+    def __init__(self, comment=None):
+        self.comment = comment
 
 
 # a placeholder in a SettingsDict, which can be replaced with some SettingsDictEntrys
@@ -84,7 +84,7 @@ class SettingsContainer(list):
 
 # normal entry in a SettingsDict
 class SettingsDictEntry:
-    def __init__(self, key=None, value=None, comment=None):
+    def __init__(self, key=None, value=None, comment=None, doc_link=None):
         if isinstance(key, str) and not key[0] == '"':
             self.key = '"' + key + '"'
         else:
@@ -92,7 +92,10 @@ class SettingsDictEntry:
         self.value = value
         self.comments = []
         if comment:
-            self.comments.append('#' + comment)
+            self.comments.append('# ' + comment)
+        self.doc_link = None
+        if doc_link:
+            self.doc_link = doc_link
 
 
 # normal entry for a SettingsList
