@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('GtkSource', '4')
 from root_node import RootNode
 from node import PlaceholderNode
 import possible_solver_combinations
@@ -8,9 +11,6 @@ from python_settings import PythonSettings
 from cpp_tree import CPPTree
 from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk
 import sys
-import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('GtkSource', '4')
 
 
 # stores a node + its depth to view it in a ListBox
