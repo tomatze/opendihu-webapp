@@ -139,7 +139,6 @@ class NodeReplaceWindow(Gtk.Window):
 
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, app):
-        #super(MainWindow, self).__init__()
         Gtk.Window.__init__(self, application=app)
         self.app = app
         self.init_ui()
@@ -714,8 +713,3 @@ webmode = False
 app = MainApplication()
 exit_status = app.run(sys.argv)
 sys.exit(exit_status)
-
-#win = MainWindow()
-#win.show_all()
-#win.maximize()
-#Gtk.main()
