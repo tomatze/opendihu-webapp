@@ -3,6 +3,8 @@ from helpers import printe, indent, Error, Info
 from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice
 
 # specialized Node with some extra stuff
+
+
 class RootNode(Node):
     def __init__(self, combinations):
         super().__init__(combinations)

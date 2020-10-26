@@ -3,10 +3,12 @@ from root_node import RootNode
 from helpers import Error, Info
 
 # holds a list of different RootNodes and can switch between them to undo and redo actions
+
+
 class UndoStack:
     def __init__(self):
-       self.stack = []
-       self.current_index = -1
+        self.stack = []
+        self.current_index = -1
 
     def get_current_root(self):
         return self.stack[self.current_index]
@@ -16,7 +18,8 @@ class UndoStack:
         self.remove_future()
         self.stack.append(copy.deepcopy(self.get_current_root()))
         # swap the new copy with the current root (so current root is at the end of the stack)
-        self.stack[self.current_index], self.stack[self.current_index + 1] = self.stack[self.current_index + 1], self.stack[self.current_index]
+        self.stack[self.current_index], self.stack[self.current_index +
+                                                   1] = self.stack[self.current_index + 1], self.stack[self.current_index]
         self.current_index = self.current_index + 1
 
     def undo(self):

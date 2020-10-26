@@ -56,17 +56,19 @@ from python_settings import SettingsDict, SettingsList, SettingsChildPlaceholder
 # Quadrature::
 # Equation::
 possible_solver_combinations = {
-    "GLOBAL" : {
-        "python_options" : SettingsDict([
+    "GLOBAL": {
+        "python_options": SettingsDict([
             SettingsDictEntry("scenarioName", '"test-scenario"'),
             SettingsDictEntry("logFormat", '"csv"', "csv or json"),
-            SettingsDictEntry("solverStructureDiagramFile", '"solver_structure.txt"'),
-            SettingsDictEntry("mappingsBetweenMeshesLogFile", '"mappings_between_meshes.txt"'),
+            SettingsDictEntry("solverStructureDiagramFile",
+                              '"solver_structure.txt"'),
+            SettingsDictEntry("mappingsBetweenMeshesLogFile",
+                              '"mappings_between_meshes.txt"'),
             SettingsDictEntry("MappingsBetweenMeshes", '{}'),
             #SettingsDictEntry("Meshes", '{}'),
             #SettingsDictEntry("Solvers", '{}'),
             SettingsDictEntry("meta", SettingsDict([
-                #TODO add meta
+                # TODO add meta
                 SettingsDictEntry("partitioning", '""')
             ])),
             SettingsChildPlaceholder(0)
@@ -74,83 +76,84 @@ possible_solver_combinations = {
     },
 
 
-    "Postprocessing::ParallelFiberEstimation" : {
-        "runnable" : True,
-        "template_arguments" : [
-            ('TODO', [ "BasisFunction::" ])
+    "Postprocessing::ParallelFiberEstimation": {
+        "runnable": True,
+        "template_arguments": [
+            ('TODO', ["BasisFunction::"])
         ]
     },
-    "Postprocessing::StreamlineTracer" : {
-        "runnable" : True,
-        "template_arguments" : [
-            ('TODO', [ "discretizableInTime" ])
+    "Postprocessing::StreamlineTracer": {
+        "runnable": True,
+        "template_arguments": [
+            ('TODO', ["discretizableInTime"])
         ]
     },
 
 
-    "PreciceAdapter::ContractionDirichletBoundaryConditions" : {
-        "runnable" : True,
-        "template_arguments" : [
-            ('TODO', [ "timeSteppingScheme" ])
+    "PreciceAdapter::ContractionDirichletBoundaryConditions": {
+        "runnable": True,
+        "template_arguments": [
+            ('TODO', ["timeSteppingScheme"])
         ]
     },
-    "PreciceAdapter::ContractionNeumannBoundaryConditions" : {
-        "runnable" : True,
-        "template_arguments" : [
-            ('TODO', [ "timeSteppingScheme" ])
+    "PreciceAdapter::ContractionNeumannBoundaryConditions": {
+        "runnable": True,
+        "template_arguments": [
+            ('TODO', ["timeSteppingScheme"])
         ]
     },
-    "PreciceAdapter::PartitionedFibers" : {
-        "runnable" : True,
-        "template_arguments" : [
-            ('TODO', [ "timeSteppingScheme" ])
+    "PreciceAdapter::PartitionedFibers": {
+        "runnable": True,
+        "template_arguments": [
+            ('TODO', ["timeSteppingScheme"])
         ]
     },
-    "PreciceAdapter::MuscleContraction" : {
-        "runnable" : True,
-        "template_arguments" : [
-            ('TODO', [ "MuscleContractionSolver" ])
+    "PreciceAdapter::MuscleContraction": {
+        "runnable": True,
+        "template_arguments": [
+            ('TODO', ["MuscleContractionSolver"])
         ]
     },
-    "MuscleContractionSolver" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments_needed" : 0,
-        "template_arguments" : [
+    "MuscleContractionSolver": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments_needed": 0,
+        "template_arguments": [
             # TODO this should only accept Mesh::StructuredDeformableOfDimension<3>
             # and maybe Mesh::CompositeOfDimension<3>?
-            ('TODO', [ "Mesh::" ])
+            ('TODO', ["Mesh::"])
         ]
     },
-    "FastMonodomainSolver" : {
+    "FastMonodomainSolver": {
         # TODO is this runnable?
-        "runnable" : True,
-        #TODO can this be handled like a timeSteppingScheme?
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "Control::MultipleInstances" ])
+        "runnable": True,
+        # TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["Control::MultipleInstances"])
         ]
     },
-    "SpatialDiscretization::HyperelasticitySolver" : {
-        "runnable" : True,
-        #TODO can this be handled like a timeSteppingScheme?
-        "timeSteppingScheme" : True,
-        "template_arguments_needed" : 0,
-        "template_arguments" : [
-            ('TODO', [ "Equation::SolidMechanics::TransverselyIsotropicMooneyRivlinIncompressible3D" ])
+    "SpatialDiscretization::HyperelasticitySolver": {
+        "runnable": True,
+        # TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme": True,
+        "template_arguments_needed": 0,
+        "template_arguments": [
+            ('TODO', [
+             "Equation::SolidMechanics::TransverselyIsotropicMooneyRivlinIncompressible3D"])
             # TODO can this handle more template_arguments?
         ]
     },
 
 
-    "Control::MultipleInstances" : {
-        "runnable" : True,
-        #TODO can this be handled like a timeSteppingScheme?
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "timeSteppingScheme" ])
+    "Control::MultipleInstances": {
+        "runnable": True,
+        # TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["timeSteppingScheme"])
         ],
-        "python_options" : SettingsDict([
+        "python_options": SettingsDict([
             SettingsDictEntry("MultipleInstances", SettingsDict([
                 SettingsDictEntry("nInstances", '1'),
                 SettingsDictEntry("instances", SettingsList([
@@ -162,41 +165,41 @@ possible_solver_combinations = {
             ]))
         ])
     },
-    "Control::Coupling" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "timeSteppingScheme" ]),
-            ('TODO', [ "timeSteppingScheme" ])
+    "Control::Coupling": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["timeSteppingScheme"]),
+            ('TODO', ["timeSteppingScheme"])
         ]
     },
-    "Control::LoadBalancing" : {
+    "Control::LoadBalancing": {
         # TODO is this runnable
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "timeSteppingScheme" ])
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["timeSteppingScheme"])
         ]
     },
-    "Control::MapDofs" : {
-        "runnable" : True,
-        #TODO can this be handled like a timeSteppingScheme?
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "FunctionSpace::" ]),
-            ('TODO', [ "timeSteppingScheme" ])
+    "Control::MapDofs": {
+        "runnable": True,
+        # TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["FunctionSpace::"]),
+            ('TODO', ["timeSteppingScheme"])
         ]
     },
 
 
-    "OperatorSplitting::Strang" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "timeSteppingScheme" ]),
-            ('TODO', [ "timeSteppingScheme" ])
+    "OperatorSplitting::Strang": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["timeSteppingScheme"]),
+            ('TODO', ["timeSteppingScheme"])
         ],
-        "python_options" : SettingsDict([
+        "python_options": SettingsDict([
             SettingsDictEntry("StrangSplitting", SettingsDict([
                 SettingsDictEntry("timeStepWidth", '1e-1'),
                 SettingsDictEntry("endTime", '1000.0'),
@@ -224,78 +227,78 @@ possible_solver_combinations = {
             ]))
         ])
     },
-    "OperatorSplitting::Godunov" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "timeSteppingScheme" ]),
-            ('TODO', [ "timeSteppingScheme" ])
+    "OperatorSplitting::Godunov": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["timeSteppingScheme"]),
+            ('TODO', ["timeSteppingScheme"])
         ]
     },
 
 
-    "CellmlAdapter" : {
-        "discretizableInTime" : True,
-        "template_arguments_needed" : 1,
-        "template_arguments" : [
-            ('TODO', [ "Integer" ]),
-            ('TODO', [ "Integer" ]),
-            ('TODO', [ "FunctionSpace::" ])
+    "CellmlAdapter": {
+        "discretizableInTime": True,
+        "template_arguments_needed": 1,
+        "template_arguments": [
+            ('TODO', ["Integer"]),
+            ('TODO', ["Integer"]),
+            ('TODO', ["FunctionSpace::"])
         ]
     },
 
 
-    "ModelOrderReduction::POD" : {
-        "discretizableInTime" : True,
-        "template_arguments" : [
-            ('TODO', [ "discretizableInTime" ]),
-            ('TODO', [ "ModelOrderReduction::LinearPart" ])
+    "ModelOrderReduction::POD": {
+        "discretizableInTime": True,
+        "template_arguments": [
+            ('TODO', ["discretizableInTime"]),
+            ('TODO', ["ModelOrderReduction::LinearPart"])
         ]
     },
-    "ModelOrderReduction::LinearPart" : {},
-    "ModelOrderReduction::ExplicitEulerReduced" : {
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "TimeSteppingScheme::ExplicitEuler" ])
+    "ModelOrderReduction::LinearPart": {},
+    "ModelOrderReduction::ExplicitEulerReduced": {
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["TimeSteppingScheme::ExplicitEuler"])
         ]
     },
-    "ModelOrderReduction::ImplicitEulerReduced" : {
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "TimeSteppingScheme::ImplicitEuler" ])
-        ]
-    },
-
-
-    "FunctionSpace::FunctionSpace" : {
-        "template_arguments" : [
-            ('TODO', [ "Mesh::" ]),
-            ('TODO', [ "BasisFunction::" ])
+    "ModelOrderReduction::ImplicitEulerReduced": {
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["TimeSteppingScheme::ImplicitEuler"])
         ]
     },
 
 
-    "TimeSteppingScheme::ExplicitEuler" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "discretizableInTime" ])
+    "FunctionSpace::FunctionSpace": {
+        "template_arguments": [
+            ('TODO', ["Mesh::"]),
+            ('TODO', ["BasisFunction::"])
         ]
     },
-    "TimeSteppingScheme::ImplicitEuler" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "discretizableInTime" ])
+
+
+    "TimeSteppingScheme::ExplicitEuler": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["discretizableInTime"])
         ]
     },
-    "TimeSteppingScheme::Heun" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "discretizableInTime" ])
+    "TimeSteppingScheme::ImplicitEuler": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["discretizableInTime"])
+        ]
+    },
+    "TimeSteppingScheme::Heun": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["discretizableInTime"])
         ],
-        "python_options" : SettingsDict([
+        "python_options": SettingsDict([
             SettingsDictEntry("Heun", SettingsDict([
                 SettingsDictEntry("endTime", '1'),
                 SettingsDictEntry("timeStepWidth", '0.001'),
@@ -303,70 +306,70 @@ possible_solver_combinations = {
             ]))
         ])
     },
-    "TimeSteppingScheme::HeunAdaptive" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "discretizableInTime" ])
+    "TimeSteppingScheme::HeunAdaptive": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["discretizableInTime"])
         ]
     },
-    "TimeSteppingScheme::CrankNicolson" : {
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "discretizableInTime" ])
+    "TimeSteppingScheme::CrankNicolson": {
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["discretizableInTime"])
         ]
     },
-    "TimeSteppingScheme::RepeatedCall" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            #TODO does this really accept any timeSteppingScheme
-            ('TODO', [ "timeSteppingScheme" ])
+    "TimeSteppingScheme::RepeatedCall": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            # TODO does this really accept any timeSteppingScheme
+            ('TODO', ["timeSteppingScheme"])
         ]
     },
-    "TimeSteppingScheme::RepeatedCallStatic" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "SpatialDiscretization::FiniteElementMethod" ])
+    "TimeSteppingScheme::RepeatedCallStatic": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["SpatialDiscretization::FiniteElementMethod"])
         ]
     },
-    #specalizedSolvers:
-    "TimeSteppingScheme::DynamicHyperelasticitySolver" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments_needed" : 0,
-        "template_arguments" : [
-            ('TODO', [ "Equation::" ]),
+    # specalizedSolvers:
+    "TimeSteppingScheme::DynamicHyperelasticitySolver": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments_needed": 0,
+        "template_arguments": [
+            ('TODO', ["Equation::"]),
             # TODO this should only accept Mesh::StructuredDeformableOfDimension<3>
-            ('TODO', [ "Mesh::StructuredRegularFixedOfDimension" ])
+            ('TODO', ["Mesh::StructuredRegularFixedOfDimension"])
         ]
     },
-    "TimeSteppingScheme::StaticBidomainSolver" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "SpatialDiscretization::FiniteElementMethod" ]),
-            ('TODO', [ "SpatialDiscretization::FiniteElementMethod" ])
+    "TimeSteppingScheme::StaticBidomainSolver": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["SpatialDiscretization::FiniteElementMethod"]),
+            ('TODO', ["SpatialDiscretization::FiniteElementMethod"])
         ]
     },
-    "TimeSteppingScheme::MultidomainSolver" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "SpatialDiscretization::FiniteElementMethod" ]),
-            ('TODO', [ "SpatialDiscretization::FiniteElementMethod" ])
+    "TimeSteppingScheme::MultidomainSolver": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["SpatialDiscretization::FiniteElementMethod"]),
+            ('TODO', ["SpatialDiscretization::FiniteElementMethod"])
         ]
     },
-    "TimeSteppingScheme::MultidomainWithFatSolver" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "SpatialDiscretization::FiniteElementMethod" ]),
-            ('TODO', [ "SpatialDiscretization::FiniteElementMethod" ]),
-            ('TODO', [ "SpatialDiscretization::FiniteElementMethod" ])
+    "TimeSteppingScheme::MultidomainWithFatSolver": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["SpatialDiscretization::FiniteElementMethod"]),
+            ('TODO', ["SpatialDiscretization::FiniteElementMethod"]),
+            ('TODO', ["SpatialDiscretization::FiniteElementMethod"])
         ],
-        "python_options" : SettingsDict([
+        "python_options": SettingsDict([
             # TODO
             SettingsDictEntry("MultidomainSolver", SettingsDict([
                 SettingsDictEntry("PotentialFlow", SettingsDict([
@@ -381,54 +384,55 @@ possible_solver_combinations = {
             ]))
         ])
     },
-    "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True
+    "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio": {
+        "runnable": True,
+        "timeSteppingScheme": True
     },
-    "TimeSteppingScheme::NonlinearElasticitySolverFebio" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True
+    "TimeSteppingScheme::NonlinearElasticitySolverFebio": {
+        "runnable": True,
+        "timeSteppingScheme": True
     },
-    "TimeSteppingScheme::QuasiStaticLinearElasticitySolver" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "SpatialDiscretization::FiniteElementMethod" ])
+    "TimeSteppingScheme::QuasiStaticLinearElasticitySolver": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["SpatialDiscretization::FiniteElementMethod"])
         ]
     },
-    "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverChaste" : {
-        "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "Integer" ])
-        ]
-    },
-
-
-    "PrescribedValues" : { "runnable" : True,
-        "timeSteppingScheme" : True,
-        "template_arguments_needed" : 1,
-        "template_arguments" : [
-            ('TODO', [ "FunctionSpace::FunctionSpace" ]),
-            ('TODO', [ "1", "2", "3" ]),
-            ('TODO', [ "1", "2", "3" ])
+    "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverChaste": {
+        "runnable": True,
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["Integer"])
         ]
     },
 
 
+    "PrescribedValues": {"runnable": True,
+                         "timeSteppingScheme": True,
+                         "template_arguments_needed": 1,
+                         "template_arguments": [
+                             ('TODO', ["FunctionSpace::FunctionSpace"]),
+                             ('TODO', ["1", "2", "3"]),
+                             ('TODO', ["1", "2", "3"])
+                         ]
+                         },
 
-    "OutputWriter::OutputSurface" : {
-        "runnable" : True,
-        #TODO can this be handled like a timeSteppingScheme?
-        "timeSteppingScheme" : True,
-        "template_arguments" : [
-            ('TODO', [ "timeSteppingScheme", "SpatialDiscretization::FiniteElementMethod" ])
+
+
+    "OutputWriter::OutputSurface": {
+        "runnable": True,
+        # TODO can this be handled like a timeSteppingScheme?
+        "timeSteppingScheme": True,
+        "template_arguments": [
+            ('TODO', ["timeSteppingScheme",
+                      "SpatialDiscretization::FiniteElementMethod"])
         ],
-        "python_options" : SettingsDict([
+        "python_options": SettingsDict([
             SettingsDictEntry("OutputSurface", SettingsDict([
-                #TODO
-                #SettingsDictEntry("OutputWriter", SettingsList([
-                #])),
+                # TODO
+                # SettingsDictEntry("OutputWriter", SettingsList([
+                # ])),
                 SettingsDictEntry("face", '["1-"]'),
                 SettingsChildPlaceholder(0)
             ]))
@@ -436,16 +440,16 @@ possible_solver_combinations = {
     },
 
 
-    "SpatialDiscretization::FiniteElementMethod" : {
-        "runnable" : True,
-        "discretizableInTime" : True,
-        "template_arguments" : [
-            ('TODO', [ "Mesh::" ]),
-            ('TODO', [ "BasisFunction::" ]),
-            ('TODO', [ "Quadrature::" ]),
-            ('TODO', [ "Equation::" ])
+    "SpatialDiscretization::FiniteElementMethod": {
+        "runnable": True,
+        "discretizableInTime": True,
+        "template_arguments": [
+            ('TODO', ["Mesh::"]),
+            ('TODO', ["BasisFunction::"]),
+            ('TODO', ["Quadrature::"]),
+            ('TODO', ["Equation::"])
         ],
-        "python_options" : SettingsDict([
+        "python_options": SettingsDict([
             SettingsDictEntry("FiniteElementMethod", SettingsDict([
                 SettingsChildPlaceholder(0),
                 SettingsDictEntry("prefactor", '1'),
@@ -453,28 +457,30 @@ possible_solver_combinations = {
                 SettingsDictEntry("dirichletBoundaryConditions", '{}'),
                 SettingsDictEntry("dirichletOutputFilename", 'None'),
                 SettingsDictEntry("neumannBoundaryConditions", '[]'),
-                SettingsDictEntry("updatePrescribedValuesFromSolution", 'False'),
+                SettingsDictEntry(
+                    "updatePrescribedValuesFromSolution", 'False'),
                 SettingsDictEntry("inputMeshIsGlobal", 'True'),
                 SettingsSolver([
                     SettingsDictEntry("solverType", '"gmres"'),
                     SettingsDictEntry("preconditionerType", '"none"'),
                     SettingsDictEntry("relativeTolerance", '1e-5'),
                     SettingsDictEntry("maxIterations", '1e4'),
-                    SettingsDictEntry("dumpFilename", '""', "no filename means dump is disabled"),
+                    SettingsDictEntry("dumpFilename", '""',
+                                      "no filename means dump is disabled"),
                     SettingsDictEntry("dumpFormat", '"default"')
                 ]),
-                SettingsChoice([],[
+                SettingsChoice([], [
                     SettingsDictEntry("diffusionTensor", '[]')
                 ])
             ]))
         ])
     },
 
-    "Mesh::StructuredRegularFixedOfDimension" : {
-        "template_arguments" : [
-            ("dimension", [ "1", "2", "3" ])
+    "Mesh::StructuredRegularFixedOfDimension": {
+        "template_arguments": [
+            ("dimension", ["1", "2", "3"])
         ],
-        "python_options" : SettingsDict([
+        "python_options": SettingsDict([
             SettingsMesh([
                 SettingsDictEntry("nElements", SettingsList(['0', '1'])),
                 SettingsDictEntry("physicalExtent", '[1.0, 1.0]'),
@@ -482,11 +488,11 @@ possible_solver_combinations = {
             ])
         ])
     },
-    "Mesh::StructuredDeformableOfDimension" : {
-        "template_arguments" : [
-            ("dimension", [ "1", "2", "3" ])
+    "Mesh::StructuredDeformableOfDimension": {
+        "template_arguments": [
+            ("dimension", ["1", "2", "3"])
         ],
-        "python_options" : SettingsDict([
+        "python_options": SettingsDict([
             SettingsMesh([
                 SettingsDictEntry("nElements", SettingsList(['0', '1'])),
                 SettingsDictEntry("inputMeshIsGlobal", 'True'),
@@ -499,78 +505,79 @@ possible_solver_combinations = {
             ])
         ])
     },
-    "Mesh::UnstructuredDeformableOfDimension" : {
-        "template_arguments" : [
-            ('TODO', [ "1", "2", "3" ])
+    "Mesh::UnstructuredDeformableOfDimension": {
+        "template_arguments": [
+            ('TODO', ["1", "2", "3"])
         ]
     },
-    "Mesh::CompositeOfDimension" : {
-        "template_arguments" : [
-            ('TODO', [ "1", "2", "3" ])
+    "Mesh::CompositeOfDimension": {
+        "template_arguments": [
+            ('TODO', ["1", "2", "3"])
         ]
     },
 
 
-    "BasisFunction::CompletePolynomialOfDimensionAndOrder" : {
-        "template_arguments" : [
-            ('TODO', [ "1", "2", "3" ]),
-            ('TODO', [ "0", "1", "2" ])
+    "BasisFunction::CompletePolynomialOfDimensionAndOrder": {
+        "template_arguments": [
+            ('TODO', ["1", "2", "3"]),
+            ('TODO', ["0", "1", "2"])
         ]
     },
-    "BasisFunction::Hermite" : {},
-    "BasisFunction::LagrangeOfOrder" : {
-        "template_arguments_needed" : 0,
-        "template_arguments" : [
-            ('TODO', [ "1", "2" ])
+    "BasisFunction::Hermite": {},
+    "BasisFunction::LagrangeOfOrder": {
+        "template_arguments_needed": 0,
+        "template_arguments": [
+            ('TODO', ["1", "2"])
         ]
     },
     # TODO are there BasisFunction::Mixed?
 
 
-    "Quadrature::None" : {},
-    "Quadrature::ClenshawCurtis" : {
-        "template_arguments" : [
-            ('TODO', [ "1", "2", "3", "4", "5", "6", "7", "64" ])
+    "Quadrature::None": {},
+    "Quadrature::ClenshawCurtis": {
+        "template_arguments": [
+            ('TODO', ["1", "2", "3", "4", "5", "6", "7", "64"])
         ]
     },
-    "Quadrature::Gauss" : {
-        "template_arguments" : [
-            ('TODO', [ "1" , "2" , "3", "4", "5", "6", "7", "8", "10", "12", "16", "20", "24", "64" ])
+    "Quadrature::Gauss": {
+        "template_arguments": [
+            ('TODO', ["1", "2", "3", "4", "5", "6", "7",
+                      "8", "10", "12", "16", "20", "24", "64"])
         ]
     },
-    "Quadrature::NewtonCotes" : {
-        "template_arguments" : [
-            ('TODO', [ "1", "2", "3", "4", "5", "6", "7", "8" ])
+    "Quadrature::NewtonCotes": {
+        "template_arguments": [
+            ('TODO', ["1", "2", "3", "4", "5", "6", "7", "8"])
         ]
     },
-    "Quadrature::TensorProduct" : {
-        "template_arguments" : [
-            ('TODO', [ "1", "2", "3" ]),
-            ('TODO', [ "Quadrature::" ])
+    "Quadrature::TensorProduct": {
+        "template_arguments": [
+            ('TODO', ["1", "2", "3"]),
+            ('TODO', ["Quadrature::"])
         ]
     },
     # TODO are there Quadrature::Mixed?
-    #"Quadrature::Mixed" : {
+    # "Quadrature::Mixed" : {
     #    "template_arguments" : [
     #       [ ],
     #       [ "Quadrature::ClenshawCurtis", "Quadrature::Gauss", "Quadrature::NewtonCotes" ]
     #    ]
-    #},
+    # },
 
 
-    "Equation::Dynamic::IsotropicDiffusion" : {},
-    "Equation::Dynamic::AnisotropicDiffusion" : {},
-    "Equation::Dynamic::DirectionalDiffusion" : {},
-    "Equation::Static::Laplace" : {},
-    "Equation::Static::GeneralizedLaplace" : {},
-    "Equation::Static::LinearElasticity" : {},
-    "Equation::Static::LinearElasticityActiveStress" : {},
-    #TODO are these correct?
-    "Equation::SolidMechanics::MooneyRivlinIncompressible3D" : {},
-    "Equation::SolidMechanics::TransverselyIsotropicMooneyRivlinIncompressible3D" : {},
-    "Equation::SolidMechanics::TransverselyIsotropicMooneyRivlinIncompressibleActive3D" : {},
-    "Equation::SolidMechanics::HyperelasticTendon" : {},
-    "Equation::SolidMechanics::HyperelasticityBase" : {},
-    "Equation::Static::Poisson" : {},
-    "Equation::Static::GeneralizedPoisson" : {},
+    "Equation::Dynamic::IsotropicDiffusion": {},
+    "Equation::Dynamic::AnisotropicDiffusion": {},
+    "Equation::Dynamic::DirectionalDiffusion": {},
+    "Equation::Static::Laplace": {},
+    "Equation::Static::GeneralizedLaplace": {},
+    "Equation::Static::LinearElasticity": {},
+    "Equation::Static::LinearElasticityActiveStress": {},
+    # TODO are these correct?
+    "Equation::SolidMechanics::MooneyRivlinIncompressible3D": {},
+    "Equation::SolidMechanics::TransverselyIsotropicMooneyRivlinIncompressible3D": {},
+    "Equation::SolidMechanics::TransverselyIsotropicMooneyRivlinIncompressibleActive3D": {},
+    "Equation::SolidMechanics::HyperelasticTendon": {},
+    "Equation::SolidMechanics::HyperelasticityBase": {},
+    "Equation::Static::Poisson": {},
+    "Equation::Static::GeneralizedPoisson": {},
 }

@@ -5,6 +5,7 @@ import unittest
 from cpp_tree import CPPTree
 from helpers import Error
 
+
 class TestParser(unittest.TestCase):
 
     example_root = "../opendihu-clean/examples/"
@@ -13,7 +14,7 @@ class TestParser(unittest.TestCase):
         "diffusion/anisotropic_diffusion/src/anisotropic_diffusion3d.cpp",
         "diffusion/diffusion1d/src/diffusion_1d.cpp",
         # IGNORE because of surrounding if-statements
-        #"diffusion/diffusion1d/src/diffusion_1d_pod.cpp",
+        # "diffusion/diffusion1d/src/diffusion_1d_pod.cpp",
         "diffusion/diffusion2d/src/diffusion_2d_1st_order.cpp",
         "diffusion/diffusion2d/src/diffusion_2d_2nd_order.cpp",
         "diffusion/diffusion3d/src/diffusion.cpp",
@@ -24,7 +25,7 @@ class TestParser(unittest.TestCase):
         "electrophysiology/fibers/cuboid/src/cuboid.cpp",
         "electrophysiology/fibers/fibers_contraction/no_precice/src/biceps_contraction.cpp",
         # IGNORE Dummy
-        #"electrophysiology/fibers/fibers_contraction/no_precice/src/biceps_contraction_no_cell.cpp",
+        # "electrophysiology/fibers/fibers_contraction/no_precice/src/biceps_contraction_no_cell.cpp",
         "electrophysiology/fibers/fibers_contraction/no_precice/src/biceps_contraction_not_fast.cpp",
         "electrophysiology/fibers/fibers_contraction/with_precice/src/contraction.cpp",
         "electrophysiology/fibers/fibers_contraction/with_precice/src/fibers.cpp",
@@ -70,8 +71,8 @@ class TestParser(unittest.TestCase):
         "electrophysiology/multidomain/multidomain_with_fat/src/multidomain_shorten_with_fat.cpp",
         "electrophysiology/multidomain/multidomain_with_fat/src/multidomain_with_fat.cpp",
         # IGNORE TODO using insted of define
-        #"electrophysiology/neuromuscular/neurons_with_contraction/src/neurons_with_contraction.cpp",
-        #"electrophysiology/neuromuscular/only_neurons/src/only_neurons.cpp",
+        # "electrophysiology/neuromuscular/neurons_with_contraction/src/neurons_with_contraction.cpp",
+        # "electrophysiology/neuromuscular/only_neurons/src/only_neurons.cpp",
         # TODO problem.fixInvalidFibersInFile();
         "fiber_tracing/parallel_fiber_estimation/src/fix.cpp",
         "fiber_tracing/parallel_fiber_estimation/src/generate.cpp",
@@ -95,7 +96,7 @@ class TestParser(unittest.TestCase):
         "laplace/laplace3d/src/laplace_structured_deformable.cpp",
         "laplace/laplace3d/src/laplace_unstructured.cpp",
         # IGNORE
-        #"laplace/laplace3d/src/petsc_test.cpp",
+        # "laplace/laplace3d/src/petsc_test.cpp",
         "laplace/laplace3d_surface/src/laplace_surface.cpp",
         "laplace/laplace_composite/src/laplace_composite_2d.cpp",
         "laplace/laplace_composite/src/laplace_composite_3d.cpp",
@@ -105,7 +106,7 @@ class TestParser(unittest.TestCase):
         "poisson/poisson2d/src/poisson_example_2d.cpp",
         "solid_mechanics/chaste/src/3d_muscle.cpp",
         # IGNORE
-        #"solid_mechanics/chaste/src/solving_elasticity_problems_tutorial.cpp",
+        # "solid_mechanics/chaste/src/solving_elasticity_problems_tutorial.cpp",
         "solid_mechanics/dynamic_mooney_rivlin/gelatine1/src/dynamic.cpp",
         "solid_mechanics/dynamic_mooney_rivlin/gelatine2/src/dynamic.cpp",
         "solid_mechanics/dynamic_mooney_rivlin/muscle/src/dynamic_transversely_isotropic.cpp",
@@ -123,22 +124,22 @@ class TestParser(unittest.TestCase):
         "solid_mechanics/mooney_rivlin_isotropic/src/3d_hyperelasticity.cpp",
         "solid_mechanics/mooney_rivlin_transiso/src/3d_hyperelasticity.cpp",
         # IGNORE because of Material
-        #"solid_mechanics/shear_test/src/compressible_mooney_rivlin.cpp",
-        #"solid_mechanics/shear_test/src/compressible_mooney_rivlin_decoupled.cpp",
-        #"solid_mechanics/shear_test/src/incompressible_mooney_rivlin.cpp",
+        # "solid_mechanics/shear_test/src/compressible_mooney_rivlin.cpp",
+        # "solid_mechanics/shear_test/src/compressible_mooney_rivlin_decoupled.cpp",
+        # "solid_mechanics/shear_test/src/incompressible_mooney_rivlin.cpp",
         "solid_mechanics/shear_test/src/linear.cpp",
         # IGNORE because of Material
-        #"solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin.cpp",
-        #"solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin_decoupled.cpp",
+        # "solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin.cpp",
+        # "solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin_decoupled.cpp",
         "solid_mechanics/shear_test/src/nearly_incompressible_mooney_rivlin_febio.cpp",
         # IGNORE because of Material
-        #"solid_mechanics/tensile_test/src/compressible_mooney_rivlin.cpp",
-        #"solid_mechanics/tensile_test/src/compressible_mooney_rivlin_decoupled.cpp",
-        #"solid_mechanics/tensile_test/src/incompressible_mooney_rivlin.cpp",
+        # "solid_mechanics/tensile_test/src/compressible_mooney_rivlin.cpp",
+        # "solid_mechanics/tensile_test/src/compressible_mooney_rivlin_decoupled.cpp",
+        # "solid_mechanics/tensile_test/src/incompressible_mooney_rivlin.cpp",
         "solid_mechanics/tensile_test/src/linear.cpp",
         # IGNORE because of Material
-        #"solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin.cpp",
-        #"solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin_decoupled.cpp",
+        # "solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin.cpp",
+        # "solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin_decoupled.cpp",
         "solid_mechanics/tensile_test/src/nearly_incompressible_mooney_rivlin_febio.cpp"
     ]
     for i in range(len(example_paths)):
@@ -153,7 +154,8 @@ class TestParser(unittest.TestCase):
             src = file.read()
             file.close()
             example.parse_cpp_src(src)
-            self.assertEqual(isinstance(example.undo_stack.get_current_root().validate_cpp_src(), Error), False, msg=path)
+            self.assertEqual(isinstance(example.undo_stack.get_current_root(
+            ).validate_cpp_src(), Error), False, msg=path)
 
     # this test parses all examples (src1) and creates their src (src2)
     # it then parses src2 and compares the trees of both examples
@@ -170,7 +172,9 @@ class TestParser(unittest.TestCase):
             example1.parse_cpp_src(src1)
             src2 = str(example1)
             example2.parse_cpp_src(src2)
-            self.assertEqual(example1.undo_stack.get_current_root().childs.get_real_childs()[0].compare_cpp(example2.undo_stack.get_current_root().childs.get_real_childs()[0]), True, msg=path)
+            self.assertEqual(example1.undo_stack.get_current_root().childs.get_real_childs()[0].compare_cpp(
+                example2.undo_stack.get_current_root().childs.get_real_childs()[0]), True, msg=path)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -25,7 +25,7 @@ class CPPTree:
         self.keys = list(self.combinations.keys())
 
         # create lists of runnable, discretizableInTime, timeSteppingScheme
-        # runnable is used in validate_src(), the other lists are used to expand some template_arguments 
+        # runnable is used in validate_src(), the other lists are used to expand some template_arguments
         self.runnables = []
         self.discretizableInTime = []
         self.timeSteppingScheme = []
@@ -36,7 +36,6 @@ class CPPTree:
                 self.discretizableInTime.append(self.keys[i])
             if self.combinations[self.keys[i]].get('timeSteppingScheme', False) == True:
                 self.timeSteppingScheme.append(self.keys[i])
-
 
         # expand all template_arguments sublists of the form:
         # [ "Mesh::" ]
@@ -55,7 +54,8 @@ class CPPTree:
         for _key, value in self.combinations.items():
             template_arguments = value.get("template_arguments", [])
             for i in range(0, len(template_arguments)):
-                (_template_argument_description, template_argument) = template_arguments[i]
+                (_template_argument_description,
+                 template_argument) = template_arguments[i]
                 for item in template_argument:
                     # expand ::
                     if len(item) >= 2 and item[-1] == ':' and item[-2] == ':':
@@ -76,7 +76,8 @@ class CPPTree:
                             template_argument.append(key_sub)
 
         # add template_arguments for GLOBAL (runnables)
-        self.combinations['GLOBAL']["template_arguments"] = [("runnable", self.runnables)]
+        self.combinations['GLOBAL']["template_arguments"] = [
+            ("runnable", self.runnables)]
 
         self.undo_stack = UndoStack()
 
@@ -127,8 +128,10 @@ class CPPTree:
 
             # isolate problem
             problem = problem.split('settings(argc, argv);')[1]
-            problem = re.compile(r'>([^>]*)\(settings\);').split(problem)[0] + '>'
-            problem = re.compile(r' ([A-Za-z]*)\(settings\);').split(problem)[0]
+            problem = re.compile(
+                r'>([^>]*)\(settings\);').split(problem)[0] + '>'
+            problem = re.compile(
+                r' ([A-Za-z]*)\(settings\);').split(problem)[0]
 
             # remove spaces
             #problem = re.sub(r' ', '', problem)
@@ -148,7 +151,7 @@ class CPPTree:
                         comment_node.comment = comment_node.comment + char
                 else:
                     if char == ' ':
-                            pass
+                        pass
                     elif char == 'α':
                         comment_mode = True
                     elif char == '<':
@@ -175,9 +178,9 @@ class CPPTree:
             new_root.childs.replace_next_placeholder(child)
 
             if validate_semantics:
-                 errors = new_root.validate_cpp_src_recursive()
-                 if errors:
-                     return errors
+                errors = new_root.validate_cpp_src_recursive()
+                if errors:
+                    return errors
             # check if the new tree is different from the old tree
             if not self.undo_stack.get_current_root().compare_cpp(new_root):
                 self.undo_stack.add(new_root)
@@ -248,7 +251,8 @@ class CPPTree:
             n = self.undo_stack.get_current_root()
             recurse_childs = True
         self.undo_stack.duplicate_current_state()
-        changes = n.add_missing_default_python_settings(self.undo_stack.get_current_root().settings_dict, recurse_childs=recurse_childs)
+        changes = n.add_missing_default_python_settings(
+            self.undo_stack.get_current_root().settings_dict, recurse_childs=recurse_childs)
         if not changes > 0:
             self.undo_stack.undo()
             self.undo_stack.remove_future()

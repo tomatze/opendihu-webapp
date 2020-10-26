@@ -7,6 +7,8 @@ import token
 from io import BytesIO
 
 # a floating comment within a SettingsDict or SettingsList
+
+
 class SettingsComment:
     def __init__(self):
         self.comment = None
@@ -24,9 +26,12 @@ class SettingsChildPlaceholder(SettingsComment):
 
 # an empty line within a SettingsDict or SettingsList
 # this is used to restore simple formatting
-class SettingsEmptyLine: pass
+class SettingsEmptyLine:
+    pass
 
 # holds 2 lists, one with default SettingsDictEntrys and one with alternative SettingsDictEntrys
+
+
 class SettingsChoice:
     def __init__(self, defaults, alternatives):
         self.defaults = defaults
@@ -39,6 +44,7 @@ class SettingsConditional():
         self.condition = None
         self.if_block = None
         self.else_block = None
+
     def repr(self, depth):
         depth = depth - 1
         if isinstance(self.if_block, str):
@@ -128,12 +134,12 @@ class SettingsDict(SettingsContainer):
         for t in tokens:
             token_value = t.string
             token_type = t.exact_type
-            #print()
-            #try:
+            # print()
+            # try:
             #    print(stack[0])
-            #except: pass
-            #print(type(stack[-1]))
-            #print(mode_stack)
+            # except: pass
+            # print(type(stack[-1]))
+            # print(mode_stack)
             #print(token.tok_name[token_type] + token_value)
             if token_type == token.NL or token_type == token.NEWLINE:
                 # don't append comments to SettingsDictEntry or SettingsListEntry after newline
@@ -148,12 +154,13 @@ class SettingsDict(SettingsContainer):
                     stack[-1][-1].comments.append(token_value)
                 else:
                     reg_child_placeholder = re.compile('### CHILD [0-9] ###')
-                    match_child_placeholder = reg_child_placeholder.match(token_value)
-                    #reg_link_placeholder = re.compile('### [A-Z]+ ###')
+                    match_child_placeholder = reg_child_placeholder.match(
+                        token_value)
+                    # reg_link_placeholder = re.compile('### [A-Z]+ ###')
                     #match_link_placeholder = reg_link_placeholder.match(token_value)
                     if match_child_placeholder:
                         c = SettingsChildPlaceholder(token_value[10:-4])
-                    #elif match_link_placeholder:
+                    # elif match_link_placeholder:
                     #    c = SettingsLinkPlaceholder(token_value[4:-4])
                     else:
                         # add floating comment to the current SettingsDict or SettingsList
@@ -206,7 +213,8 @@ class SettingsDict(SettingsContainer):
             elif token_type == token.RSQB:
                 if mode_stack[-1] == "list_comprehension":
                     if nested_counter == 1:
-                        stack[-1].list_comprehension = tokens_to_string(token_buffer)
+                        stack[-1].list_comprehension = tokens_to_string(
+                            token_buffer)
                         token_buffer = []
                         nested_counter = 0
                         stack.pop()
@@ -247,7 +255,8 @@ class SettingsDict(SettingsContainer):
                     append_comment = True
                     if isinstance(stack[-1], SettingsDict):
                         if len(token_buffer) > 0:
-                            stack[-1][-1].value = tokens_to_string(token_buffer)
+                            stack[-1][-1].value = tokens_to_string(
+                                token_buffer)
                             token_buffer = []
                         mode_stack.pop()
                     else:
@@ -288,9 +297,9 @@ class SettingsDict(SettingsContainer):
 
             token_type_last = token_type
 
-
     def __repr__(self):
         return self.repr(0)
+
     def repr(self, depth, hide_placeholders=True):
         if len(self) == 0:
             return '{}'
@@ -309,7 +318,9 @@ class SettingsDict(SettingsContainer):
                 optional_comma = ','
                 if i == len(self) - 1:
                     optional_comma = ''
-                entrie_r = indentation * (depth + 1) + entrie.key + ' : '+ value + optional_comma + comments
+                entrie_r = indentation * \
+                    (depth + 1) + entrie.key + ' : ' + \
+                    value + optional_comma + comments
             elif hide_placeholders and isinstance(entrie, SettingsChildPlaceholder):
                 continue
             elif isinstance(entrie, SettingsComment):
@@ -322,6 +333,7 @@ class SettingsDict(SettingsContainer):
 
     def has_key(self, key):
         return any(isinstance(entry, SettingsDictEntry) and key == entry.key for entry in self)
+
     def get_value(self, key):
         for entry in self:
             if isinstance(entry, SettingsDictEntry) and entry.key == key:
@@ -336,6 +348,7 @@ class SettingsMesh(SettingsDict):
         self.name_key = '"meshName"'
         self.name_prefix = 'mesh'
         self.global_key = '"Meshes"'
+
 
 class SettingsSolver(SettingsDict):
     def __init__(self, options):
@@ -356,8 +369,10 @@ class SettingsList(SettingsContainer):
                 if isinstance(entry, str):
                     entry = SettingsListEntry(entry)
                 self.append(entry)
+
     def __repr__(self):
         return self.repr(0)
+
     def repr(self, depth):
         if len(self) == 0:
             return '[]'
@@ -379,7 +394,9 @@ class SettingsList(SettingsContainer):
                     optional_comma = ''
                     if self.list_comprehension:
                         comprehension = ' ' + self.list_comprehension
-                entrie_r = indentation * (depth + 1) + value + comprehension + optional_comma + comments
+                entrie_r = indentation * \
+                    (depth + 1) + value + comprehension + \
+                    optional_comma + comments
             elif isinstance(entrie, SettingsComment):
                 entrie_r = indentation * (depth + 1) + entrie.comment
             elif isinstance(entrie, SettingsEmptyLine):
@@ -400,6 +417,7 @@ class PythonSettings():
     config_dict = None
     postfix = ''
     # takes a string of a settings.py and parses it
+
     def __init__(self, settings=None):
         if settings:
             # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix

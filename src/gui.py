@@ -1,38 +1,45 @@
 #!/usr/bin/env python3
 
+from root_node import RootNode
+from node import PlaceholderNode
+import possible_solver_combinations
+from helpers import Message, Error, Info, Warning
+from python_settings import PythonSettings
+from cpp_tree import CPPTree
+from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk
 import sys
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('GtkSource', '4')
-from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk
 
-from cpp_tree import CPPTree
-from python_settings import PythonSettings
-from helpers import Message, Error, Info, Warning
-import possible_solver_combinations
-from node import PlaceholderNode
-from root_node import RootNode
 
 # stores a node + its depth to view it in a ListBox
+
 class NodeLine(GObject.GObject):
     def __init__(self, node, depth):
         GObject.GObject.__init__(self)
         self.node = node
         self.depth = depth
 
+
 class ListBoxRowWithNode(Gtk.ListBoxRow):
     def add_node(self, node):
         self.node = node
 
+
 class DiscardNodeChangesDialog(Gtk.Dialog):
     def __init__(self, parent):
-        Gtk.Dialog.__init__(self, title="Warning", transient_for=parent, flags=0)
-        self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, 'discard changes', Gtk.ResponseType.OK)
+        Gtk.Dialog.__init__(self, title="Warning",
+                            transient_for=parent, flags=0)
+        self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                         'discard changes', Gtk.ResponseType.OK)
         self.set_default_size(150, 100)
-        label = Gtk.Label(label="Warning: Some changes to the current Node are not applied yet, and will be discarded!")
+        label = Gtk.Label(
+            label="Warning: Some changes to the current Node are not applied yet, and will be discarded!")
         box = self.get_content_area()
         box.add(label)
         self.show_all()
+
 
 class NodeReplaceWindow(Gtk.Window):
     def __init__(self, node, main_window):
@@ -41,7 +48,8 @@ class NodeReplaceWindow(Gtk.Window):
         grid = Gtk.Grid()
         self.add(grid)
 
-        (possible_replacements_description, possible_replacements) = node.get_possible_replacements()
+        (possible_replacements_description,
+         possible_replacements) = node.get_possible_replacements()
 
         description = Gtk.Label(label=possible_replacements_description)
         grid.add(description)
@@ -57,15 +65,17 @@ class NodeReplaceWindow(Gtk.Window):
                 text = '0'
             entry.set_text(text)
             grid_entry.add(entry)
-            grid.attach_next_to(grid_entry, description, Gtk.PositionType.BOTTOM, 1, 1)
-            #grid.add(grid_entry)
+            grid.attach_next_to(grid_entry, description,
+                                Gtk.PositionType.BOTTOM, 1, 1)
+            # grid.add(grid_entry)
 
             def on_button_replace(_):
                 integer = entry.get_text()
                 try:
                     int(integer)
                 except:
-                    main_window.log_append_message(Error(str(integer) + ' is not a valid Integer'))
+                    main_window.log_append_message(
+                        Error(str(integer) + ' is not a valid Integer'))
                     return
                 replacement = node.get_int_replacement(integer)
                 ret = main_window.cpp_tree.replace_node(node, replacement)
@@ -75,7 +85,8 @@ class NodeReplaceWindow(Gtk.Window):
 
             button_replace = Gtk.Button(label='replace')
             button_replace.connect("clicked", on_button_replace)
-            grid.attach_next_to(button_replace, grid_entry, Gtk.PositionType.BOTTOM, 1, 1)
+            grid.attach_next_to(button_replace, grid_entry,
+                                Gtk.PositionType.BOTTOM, 1, 1)
 
             def on_keypress(_, event):
                 if event.keyval == Gdk.KEY_Escape:
@@ -104,12 +115,14 @@ class NodeReplaceWindow(Gtk.Window):
             scroll.add(listbox)
             scroll.set_min_content_height(500)
             scroll.set_min_content_width(500)
-            grid.attach_next_to(scroll, description, Gtk.PositionType.BOTTOM, 1, 1)
-            #grid.add(scroll)
+            grid.attach_next_to(scroll, description,
+                                Gtk.PositionType.BOTTOM, 1, 1)
+            # grid.add(scroll)
 
             def on_button_replace(_):
                 replacement = listbox.get_selected_row().node
-                replacement.add_missing_default_python_settings(main_window.cpp_tree.undo_stack.get_current_root().settings_dict)
+                replacement.add_missing_default_python_settings(
+                    main_window.cpp_tree.undo_stack.get_current_root().settings_dict)
                 ret = main_window.cpp_tree.replace_node(node, replacement)
                 main_window.log_append_message(ret)
                 main_window.redraw_all()
@@ -119,11 +132,13 @@ class NodeReplaceWindow(Gtk.Window):
             button_replace.connect("clicked", on_button_replace)
 
             listbox.set_activate_on_single_click(False)
+
             def row_double_clicked(_, row):
                 on_button_replace(_)
             listbox.connect('row-activated', row_double_clicked)
 
-            grid.attach_next_to(button_replace, scroll, Gtk.PositionType.BOTTOM, 1, 1)
+            grid.attach_next_to(button_replace, scroll,
+                                Gtk.PositionType.BOTTOM, 1, 1)
 
             for replacement in possible_replacements:
                 store.append(NodeLine(replacement, 0))
@@ -136,6 +151,7 @@ class NodeReplaceWindow(Gtk.Window):
             self.connect('key-press-event', on_keypress)
 
         self.show_all()
+
 
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, app):
@@ -152,7 +168,6 @@ class MainWindow(Gtk.ApplicationWindow):
         ret = self.cpp_tree.load_empty_simulation()
         self.log_append_message(ret)
         self.redraw_all()
-
 
     def redraw_python(self):
         self.redraw_textview_python_code()
@@ -173,7 +188,8 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def redraw_treeview_cpp(self):
         self.cpp_treeview_store.remove_all()
-        self.redraw_treeview_cpp_recursive(self.cpp_tree.undo_stack.get_current_root(), 0)
+        self.redraw_treeview_cpp_recursive(
+            self.cpp_tree.undo_stack.get_current_root(), 0)
 
     def redraw_treeview_cpp_recursive(self, node, depth):
         self.cpp_treeview_store.append(NodeLine(node, depth))
@@ -193,10 +209,11 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def open_file(self, type):
         if type == 'cpp':
-            title="Please choose a c++ file"
+            title = "Please choose a c++ file"
         else:
-            title="Please choose a python file"
-        dialog = Gtk.FileChooserDialog(title=title, parent=self, action=Gtk.FileChooserAction.OPEN)
+            title = "Please choose a python file"
+        dialog = Gtk.FileChooserDialog(
+            title=title, parent=self, action=Gtk.FileChooserAction.OPEN)
         dialog.add_buttons(
             Gtk.STOCK_CANCEL,
             Gtk.ResponseType.CANCEL,
@@ -230,17 +247,19 @@ class MainWindow(Gtk.ApplicationWindow):
                 else:
                     self.text_view_python_code.get_buffer().set_text(text)
                     self.on_button_apply_python_code(None)
-                self.log_append_message(Info('loaded ' + dialog.get_filename()))
+                self.log_append_message(
+                    Info('loaded ' + dialog.get_filename()))
             except:
                 pass
         dialog.destroy()
 
     def save_file(self, type):
         if type == 'cpp':
-            title="Save to c++ file"
+            title = "Save to c++ file"
         else:
-            title="Save to python file"
-        dialog = Gtk.FileChooserDialog(title=title, parent=self, action=Gtk.FileChooserAction.SAVE)
+            title = "Save to python file"
+        dialog = Gtk.FileChooserDialog(
+            title=title, parent=self, action=Gtk.FileChooserAction.SAVE)
         dialog.set_do_overwrite_confirmation(True)
         dialog.add_buttons(
             Gtk.STOCK_CANCEL,
@@ -269,22 +288,26 @@ class MainWindow(Gtk.ApplicationWindow):
                 file = open(dialog.get_filename(), "w")
                 if type == 'cpp':
                     text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
-                    text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+                    text = self.text_view_cpp_code.get_buffer().get_text(
+                        text_bounds[0], text_bounds[1], True)
                     file.write(text)
-                    self.log_append_message(Info('saved c++-code to ' + dialog.get_filename()))
+                    self.log_append_message(
+                        Info('saved c++-code to ' + dialog.get_filename()))
                 else:
                     text_bounds = self.text_view_python_code.get_buffer().get_bounds()
-                    text = self.text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+                    text = self.text_view_python_code.get_buffer().get_text(
+                        text_bounds[0], text_bounds[1], True)
                     file.write(text)
-                    self.log_append_message(Info('saved python-code to ' + dialog.get_filename()))
+                    self.log_append_message(
+                        Info('saved python-code to ' + dialog.get_filename()))
                 file.close()
             except:
                 pass
         dialog.destroy()
 
-
     # binded to self.cpp_treeview_listbox
     # if we append item to self.cpp_treeview_store this function gets called and creates the widget
+
     def cpp_treeview_listbox_create_widget(self, list_node):
         node = list_node.node
         depth = list_node.depth
@@ -301,7 +324,7 @@ class MainWindow(Gtk.ApplicationWindow):
         if isinstance(node, PlaceholderNode):
             if node.needed:
                 label = 'add necessary template'
-                color = Gdk.RGBA(1,0,0,.5)
+                color = Gdk.RGBA(1, 0, 0, .5)
                 grid.override_background_color(Gtk.StateType.NORMAL, color)
             else:
                 label = 'add optional template'
@@ -323,6 +346,7 @@ class MainWindow(Gtk.ApplicationWindow):
                 icon = Gio.ThemedIcon(name="edit-delete-symbolic")
                 image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
                 button_delete_node.add(image)
+
                 def on_button_delete_node(_):
                     self.cpp_treeview_delete_node(node)
                 button_delete_node.connect("clicked", on_button_delete_node)
@@ -332,10 +356,10 @@ class MainWindow(Gtk.ApplicationWindow):
             if errors:
                 s = ''
                 for error in errors:
-                   s = s + str(error) + '\n'
+                    s = s + str(error) + '\n'
                 grid.set_tooltip_text(s[:-1])
 
-                color = Gdk.RGBA(1,0,0,.5)
+                color = Gdk.RGBA(1, 0, 0, .5)
                 grid.override_background_color(Gtk.StateType.NORMAL, color)
         grid.show_all()
         row = ListBoxRowWithNode()
@@ -360,13 +384,15 @@ class MainWindow(Gtk.ApplicationWindow):
     # returns Fals otherwise
     def check_python_treeview_for_unapplied_code(self):
         text_bounds = self.python_treeview_code.get_buffer().get_bounds()
-        text = self.python_treeview_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+        text = self.python_treeview_code.get_buffer().get_text(
+            text_bounds[0], text_bounds[1], True)
         if self.cpp_treeview_current_row != None and str(self.cpp_treeview_current_row.node.settings_dict) != text:
             dialog = DiscardNodeChangesDialog(self)
             response = dialog.run()
             dialog.destroy()
             if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
-                self.cpp_treeview_listbox.select_row(self.cpp_treeview_current_row)
+                self.cpp_treeview_listbox.select_row(
+                    self.cpp_treeview_current_row)
                 return True
         return False
 
@@ -388,10 +414,11 @@ class MainWindow(Gtk.ApplicationWindow):
                 buffer.insert(iter, '\n')
             # move mark
             buffer.move_mark(self.log_text_mark_end, iter)
-            buffer.insert_markup(iter, '<span' + col + '>' + line + '</span>', -1)
+            buffer.insert_markup(iter, '<span' + col +
+                                 '>' + line + '</span>', -1)
         # scroll to end
-        self.text_view_log.scroll_to_mark(self.log_text_mark_end, 0, False, 0, 0)
-
+        self.text_view_log.scroll_to_mark(
+            self.log_text_mark_end, 0, False, 0, 0)
 
     def on_button_add_defaults_python_code(self, _):
         if self.check_python_treeview_for_unapplied_code():
@@ -404,7 +431,8 @@ class MainWindow(Gtk.ApplicationWindow):
         if self.check_python_treeview_for_unapplied_code():
             return
         text_bounds = self.text_view_python_code.get_buffer().get_bounds()
-        text = self.text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+        text = self.text_view_python_code.get_buffer().get_text(
+            text_bounds[0], text_bounds[1], True)
         rets = self.cpp_tree.parse_python_settings(text)
         self.log_append_message(rets)
         if not isinstance(rets, Error):
@@ -414,13 +442,17 @@ class MainWindow(Gtk.ApplicationWindow):
         if self.check_python_treeview_for_unapplied_code():
             return
         text_bounds = self.text_view_cpp_code.get_buffer().get_bounds()
-        text = self.text_view_cpp_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
-        rets = self.cpp_tree.parse_cpp_src(text, validate_semantics=self.checkbox_validate_semantics.get_active())
+        text = self.text_view_cpp_code.get_buffer().get_text(
+            text_bounds[0], text_bounds[1], True)
+        rets = self.cpp_tree.parse_cpp_src(
+            text, validate_semantics=self.checkbox_validate_semantics.get_active())
         self.log_append_message(rets)
         if not any(isinstance(ret, Error) or isinstance(ret, Warning) for ret in rets):
-            self.log_append_message(Info('trying to parse python-settings from the old cpp-tree to the new one'))
+            self.log_append_message(
+                Info('trying to parse python-settings from the old cpp-tree to the new one'))
             text_bounds = self.text_view_python_code.get_buffer().get_bounds()
-            text = self.text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+            text = self.text_view_python_code.get_buffer().get_text(
+                text_bounds[0], text_bounds[1], True)
             rets = self.cpp_tree.parse_python_settings(text)
             self.log_append_message(rets)
             self.redraw_all()
@@ -437,7 +469,7 @@ class MainWindow(Gtk.ApplicationWindow):
         if not isinstance(ret, Error):
             self.redraw_all()
 
-    #def on_button_reset(self, _):
+    # def on_button_reset(self, _):
     #    self.load_empty_simulation()
 
     def on_python_treeview_button_apply(self, _):
@@ -445,14 +477,16 @@ class MainWindow(Gtk.ApplicationWindow):
             node = self.cpp_treeview_listbox.get_selected_row().node
 
             text_bounds = self.python_treeview_code.get_buffer().get_bounds()
-            text = self.python_treeview_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+            text = self.python_treeview_code.get_buffer().get_text(
+                text_bounds[0], text_bounds[1], True)
 
             rets = self.cpp_tree.parse_python_settings(text, node)
             self.log_append_message(rets)
             if not isinstance(rets, Error):
                 self.redraw_python()
         except:
-            self.log_append_message(Error('Can\'t apply settings if no Node is selected'))
+            self.log_append_message(
+                Error('Can\'t apply settings if no Node is selected'))
 
     def on_python_treeview_button_add_defaults(self, _):
         if self.check_python_treeview_for_unapplied_code():
@@ -465,7 +499,8 @@ class MainWindow(Gtk.ApplicationWindow):
             if not isinstance(rets, Error):
                 self.redraw_python()
         except:
-            self.log_append_message(Error('Can\'t add default settings if no Node is selected'))
+            self.log_append_message(
+                Error('Can\'t add default settings if no Node is selected'))
 
     def init_ui(self):
         self.cpp_treeview_current_row = None
@@ -475,18 +510,21 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # menu_bar
         action = Gio.SimpleAction.new("menu_new", None)
+
         def on_new(_action, _parameter):
             self.load_empty_simulation()
         action.connect("activate", on_new)
         self.add_action(action)
 
         action = Gio.SimpleAction.new("menu_undo", None)
+
         def on_undo(_action, _parameter):
             self.on_button_undo(None)
         action.connect("activate", on_undo)
         self.add_action(action)
 
         action = Gio.SimpleAction.new("menu_redo", None)
+
         def on_redo(_action, _parameter):
             self.on_button_redo(None)
         action.connect("activate", on_redo)
@@ -494,29 +532,32 @@ class MainWindow(Gtk.ApplicationWindow):
 
         if not webmode:
             action = Gio.SimpleAction.new("menu_open_cpp", None)
+
             def on_open_cpp(_action, _parameter):
                 self.open_file('cpp')
             action.connect("activate", on_open_cpp)
             self.add_action(action)
 
             action = Gio.SimpleAction.new("menu_open_python", None)
+
             def on_open_python(_action, _parameter):
                 self.open_file('python')
             action.connect("activate", on_open_python)
             self.add_action(action)
 
             action = Gio.SimpleAction.new("menu_save_cpp", None)
+
             def on_save_cpp(_action, _parameter):
                 self.save_file('cpp')
             action.connect("activate", on_save_cpp)
             self.add_action(action)
 
             action = Gio.SimpleAction.new("menu_save_python", None)
+
             def on_save_python(_action, _parameter):
                 self.save_file('python')
             action.connect("activate", on_save_python)
             self.add_action(action)
-
 
         # header_bar
         self.header_bar = Gtk.HeaderBar()
@@ -538,8 +579,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         #self.button_reset = Gtk.Button(label='load empty simulation')
         #self.button_reset.connect("clicked", self.on_button_reset)
-        #self.header_bar.pack_start(self.button_reset)
-
+        # self.header_bar.pack_start(self.button_reset)
 
         # main grid
         self.paned_main = Gtk.Paned.new(Gtk.Orientation.VERTICAL)
@@ -558,15 +598,14 @@ class MainWindow(Gtk.ApplicationWindow):
         self.tabs_log.append_page(self.scroll_log, Gtk.Label(label='log'))
         self.paned_main.pack2(self.tabs_log, resize=False, shrink=False)
 
-
         # upper tabs
         self.tabs_main = Gtk.Notebook()
         self.paned_main.pack1(self.tabs_main, resize=True, shrink=False)
 
-
         # code view
         self.grid_code_view = Gtk.Grid(column_homogeneous=True)
-        self.tabs_main.append_page(self.grid_code_view, Gtk.Label(label='Code'))
+        self.tabs_main.append_page(
+            self.grid_code_view, Gtk.Label(label='Code'))
 
         # cpp code view
         self.tabs_cpp_code = Gtk.Notebook()
@@ -576,7 +615,8 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.text_view_cpp_code = GtkSource.View()
         language_manager = GtkSource.LanguageManager()
-        self.text_view_cpp_code.get_buffer().set_language(language_manager.get_language('cpp'))
+        self.text_view_cpp_code.get_buffer().set_language(
+            language_manager.get_language('cpp'))
         self.text_view_cpp_code.set_vexpand(True)
         self.text_view_cpp_code.set_hexpand(True)
         self.scroll_cpp_code = Gtk.ScrolledWindow()
@@ -585,27 +625,35 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.grid_cpp_code_buttons = Gtk.Grid()
         self.button_apply_cpp_code = Gtk.Button(label='apply changes')
-        self.button_apply_cpp_code.connect("clicked", self.on_button_apply_cpp_code)
+        self.button_apply_cpp_code.connect(
+            "clicked", self.on_button_apply_cpp_code)
         #self.button_verify_cpp_code = Gtk.Button(label='validate')
         #self.button_verify_cpp_code.connect("clicked", self.on_button_verify_cpp_code)
         self.checkbox_validate_semantics = Gtk.CheckButton()
-        self.checkbox_validate_semantics.set_label("check code for semantic errors")
+        self.checkbox_validate_semantics.set_label(
+            "check code for semantic errors")
         self.checkbox_validate_semantics.set_active(True)
         self.grid_cpp_code_buttons.add(self.button_apply_cpp_code)
-        self.grid_cpp_code_buttons.attach_next_to(self.checkbox_validate_semantics, self.button_apply_cpp_code, Gtk.PositionType.RIGHT, 1, 1)
-        self.grid_cpp_code.attach_next_to(self.grid_cpp_code_buttons, self.scroll_cpp_code, Gtk.PositionType.BOTTOM, 1, 1)
+        self.grid_cpp_code_buttons.attach_next_to(
+            self.checkbox_validate_semantics, self.button_apply_cpp_code, Gtk.PositionType.RIGHT, 1, 1)
+        self.grid_cpp_code.attach_next_to(
+            self.grid_cpp_code_buttons, self.scroll_cpp_code, Gtk.PositionType.BOTTOM, 1, 1)
 
-        self.tabs_cpp_code.append_page(self.grid_cpp_code, Gtk.Label(label='C++'))
+        self.tabs_cpp_code.append_page(
+            self.grid_cpp_code, Gtk.Label(label='C++'))
 
         # python code view
         self.tabs_python_code = Gtk.Notebook()
-        self.grid_code_view.attach_next_to(self.tabs_python_code, self.tabs_cpp_code, Gtk.PositionType.RIGHT, 1, 1)
+        self.grid_code_view.attach_next_to(
+            self.tabs_python_code, self.tabs_cpp_code, Gtk.PositionType.RIGHT, 1, 1)
 
         self.grid_python_code = Gtk.Grid()
-        self.tabs_python_code.append_page(self.grid_python_code, Gtk.Label(label='Python'))
+        self.tabs_python_code.append_page(
+            self.grid_python_code, Gtk.Label(label='Python'))
 
         self.text_view_python_code = GtkSource.View()
-        self.text_view_python_code.get_buffer().set_language(language_manager.get_language('python3'))
+        self.text_view_python_code.get_buffer().set_language(
+            language_manager.get_language('python3'))
         self.text_view_python_code.set_vexpand(True)
         self.text_view_python_code.set_hexpand(True)
         self.scroll_python_code = Gtk.ScrolledWindow()
@@ -613,16 +661,20 @@ class MainWindow(Gtk.ApplicationWindow):
         self.grid_python_code.add(self.scroll_python_code)
 
         self.grid_python_code_buttons = Gtk.Grid()
-        self.grid_python_code.attach_next_to(self.grid_python_code_buttons, self.scroll_python_code, Gtk.PositionType.BOTTOM, 1, 1)
+        self.grid_python_code.attach_next_to(
+            self.grid_python_code_buttons, self.scroll_python_code, Gtk.PositionType.BOTTOM, 1, 1)
 
         self.button_apply_python_code = Gtk.Button(label='apply changes')
-        self.button_apply_python_code.connect("clicked", self.on_button_apply_python_code)
+        self.button_apply_python_code.connect(
+            "clicked", self.on_button_apply_python_code)
         self.grid_python_code_buttons.add(self.button_apply_python_code)
 
-        self.button_add_defaults_python_code = Gtk.Button(label='add default settings')
-        self.button_add_defaults_python_code.connect("clicked", self.on_button_add_defaults_python_code)
-        self.grid_python_code_buttons.attach_next_to(self.button_add_defaults_python_code, self.button_apply_python_code, Gtk.PositionType.RIGHT, 1, 1)
-
+        self.button_add_defaults_python_code = Gtk.Button(
+            label='add default settings')
+        self.button_add_defaults_python_code.connect(
+            "clicked", self.on_button_add_defaults_python_code)
+        self.grid_python_code_buttons.attach_next_to(
+            self.button_add_defaults_python_code, self.button_apply_python_code, Gtk.PositionType.RIGHT, 1, 1)
 
         # tree view
         self.grid_treeview = Gtk.Grid(column_homogeneous=True)
@@ -637,19 +689,23 @@ class MainWindow(Gtk.ApplicationWindow):
         self.cpp_treeview_listbox.set_vexpand(True)
         self.cpp_treeview_listbox.set_hexpand(True)
         self.cpp_treeview_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
-        self.cpp_treeview_listbox.bind_model(self.cpp_treeview_store, self.cpp_treeview_listbox_create_widget)
+        self.cpp_treeview_listbox.bind_model(
+            self.cpp_treeview_store, self.cpp_treeview_listbox_create_widget)
 
         self.cpp_treeview_listbox.set_activate_on_single_click(False)
+
         def row_double_clicked(_, row):
             node = self.cpp_treeview_listbox.get_selected_row().node
             self.cpp_treeview_replace_node(node)
         self.cpp_treeview_listbox.connect('row-activated', row_double_clicked)
+
         def row_clicked(_, row):
             if row != None and self.cpp_treeview_current_row != None:
                 if row.node != self.cpp_treeview_current_row.node:
                     # check if we have changes that are not applied yet
                     if self.check_python_treeview_for_unapplied_code():
-                        self.cpp_treeview_listbox.select_row(self.cpp_treeview_current_row)
+                        self.cpp_treeview_listbox.select_row(
+                            self.cpp_treeview_current_row)
                         return
                 else:
                     return
@@ -658,32 +714,42 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.scroll_cpp_treeview = Gtk.ScrolledWindow()
         self.scroll_cpp_treeview.add(self.cpp_treeview_listbox)
-        self.tabs_cpp_treeview.append_page(self.scroll_cpp_treeview, Gtk.Label(label='C++'))
+        self.tabs_cpp_treeview.append_page(
+            self.scroll_cpp_treeview, Gtk.Label(label='C++'))
 
         # python tree view
         self.python_treeview_tabs = Gtk.Notebook()
-        self.grid_treeview.attach_next_to(self.python_treeview_tabs, self.tabs_cpp_treeview, Gtk.PositionType.RIGHT, 1, 1)
+        self.grid_treeview.attach_next_to(
+            self.python_treeview_tabs, self.tabs_cpp_treeview, Gtk.PositionType.RIGHT, 1, 1)
         self.python_treeview_grid = Gtk.Grid()
-        self.python_treeview_tabs.append_page(self.python_treeview_grid, Gtk.Label(label='Python'))
+        self.python_treeview_tabs.append_page(
+            self.python_treeview_grid, Gtk.Label(label='Python'))
         self.python_treeview_scroll = Gtk.ScrolledWindow()
         self.python_treeview_grid.add(self.python_treeview_scroll)
 
         self.python_treeview_code = GtkSource.View()
-        self.python_treeview_code.get_buffer().set_language(language_manager.get_language('python3'))
+        self.python_treeview_code.get_buffer().set_language(
+            language_manager.get_language('python3'))
         self.python_treeview_code.set_vexpand(True)
         self.python_treeview_code.set_hexpand(True)
         self.python_treeview_scroll.add(self.python_treeview_code)
 
         self.python_treeview_buttons = Gtk.Grid()
-        self.python_treeview_grid.attach_next_to(self.python_treeview_buttons, self.python_treeview_scroll, Gtk.PositionType.BOTTOM, 1, 1)
+        self.python_treeview_grid.attach_next_to(
+            self.python_treeview_buttons, self.python_treeview_scroll, Gtk.PositionType.BOTTOM, 1, 1)
 
         self.python_treeview_button_apply = Gtk.Button(label='apply changes')
-        self.python_treeview_button_apply.connect("clicked", self.on_python_treeview_button_apply)
+        self.python_treeview_button_apply.connect(
+            "clicked", self.on_python_treeview_button_apply)
         self.python_treeview_buttons.add(self.python_treeview_button_apply)
 
-        self.python_treeview_button_add_defaults = Gtk.Button(label='add default settings')
-        self.python_treeview_button_add_defaults.connect("clicked", self.on_python_treeview_button_add_defaults)
-        self.python_treeview_buttons.add(self.python_treeview_button_add_defaults)
+        self.python_treeview_button_add_defaults = Gtk.Button(
+            label='add default settings')
+        self.python_treeview_button_add_defaults.connect(
+            "clicked", self.on_python_treeview_button_add_defaults)
+        self.python_treeview_buttons.add(
+            self.python_treeview_button_add_defaults)
+
 
 class MainApplication(Gtk.Application):
     def __init__(self):
@@ -704,10 +770,12 @@ class MainApplication(Gtk.Application):
 
         if not webmode:
             action = Gio.SimpleAction.new("menu_quit", None)
+
             def on_quit(_action, _parameter):
                 sys.exit()
             action.connect("activate", on_quit)
             self.add_action(action)
+
 
 webmode = False
 app = MainApplication()

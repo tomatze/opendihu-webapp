@@ -3,6 +3,7 @@ import copy
 from helpers import printe, indent, Error, Info, Warning
 from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice, SettingsConditional
 
+
 class Childs():
     def __init__(self, node):
         self.node = node
@@ -20,7 +21,8 @@ class Childs():
             childs_count = len(template_arguments)
             self.__childs = [None] * childs_count
             if "template_arguments_needed" in self.node.combinations[self.node.name]:
-                self.childs_count_needed = self.node.combinations[self.node.name]["template_arguments_needed"]
+                self.childs_count_needed = self.node.combinations[
+                    self.node.name]["template_arguments_needed"]
             else:
                 self.childs_count_needed = childs_count
             for i in range(childs_count):
@@ -28,9 +30,11 @@ class Childs():
 
     def __add_placeholder_i(self, i):
         if i <= self.childs_count_needed:
-            self.__childs[i] = (PlaceholderNode(self.combinations, needed=True))
+            self.__childs[i] = (PlaceholderNode(
+                self.combinations, needed=True))
         else:
-            self.__childs[i] = (PlaceholderNode(self.combinations, needed=False))
+            self.__childs[i] = (PlaceholderNode(
+                self.combinations, needed=False))
         self.__childs[i].parent = self.node
 
     def get_childs(self):
@@ -108,7 +112,8 @@ class Node:
                 if self == self.parent.childs.get_childs()[i]:
                     child_index = i
                     break
-            (node_description, _possible_node_names) = self.combinations[self.parent.name]["template_arguments"][child_index]
+            (node_description,
+             _possible_node_names) = self.combinations[self.parent.name]["template_arguments"][child_index]
             return node_description
         except:
             return 'UNKNOWN'
@@ -121,16 +126,18 @@ class Node:
             if self == self.parent.childs.get_childs()[i]:
                 child_index = i
                 break
-        (possible_node_description, possible_node_names) = self.combinations[self.parent.name]["template_arguments"][child_index]
+        (possible_node_description,
+         possible_node_names) = self.combinations[self.parent.name]["template_arguments"][child_index]
         possible_replacements = []
         for name in possible_node_names:
             possible_replacement = Node(self.combinations)
             possible_replacement.name = name
-            #possible_replacement.add_missing_default_python_settings()
-            try: #try because of Integer name not found in self.combinations
+            # possible_replacement.add_missing_default_python_settings()
+            try:  # try because of Integer name not found in self.combinations
                 if "template_arguments" in self.combinations[name]:
                     possible_replacement.can_have_childs = True
-            except: pass
+            except:
+                pass
             possible_replacements.append(possible_replacement)
         # TODO sort by occurence in examples
         return (possible_node_description, possible_replacements)
@@ -146,7 +153,7 @@ class Node:
                 self.settings_container_default = None
         return self.settings_container_default
 
-    ## returns self.settings_dict with SettingsChildPlaceholders replaced with child dicts
+    # returns self.settings_dict with SettingsChildPlaceholders replaced with child dicts
     def get_python_settings_dict_recursive(self):
         # deepcopy self.settings_dict so we don't replace the SettingsChildPlaceholders in it
         own_dict = copy.deepcopy(self.settings_dict)
@@ -184,7 +191,7 @@ class Node:
 
             # recurse childs
             if recurse_childs:
-                childs_recurse= []
+                childs_recurse = []
                 for child in self.childs.get_real_childs():
                     # ignore childs that have an Integer as name
                     try:
@@ -192,7 +199,8 @@ class Node:
                     except:
                         childs_recurse.append(child)
                 for child in childs_recurse:
-                    changes = changes + child.add_missing_default_python_settings(settings_global_dict=settings_global_dict, recurse_childs=recurse_childs)
+                    changes = changes + child.add_missing_default_python_settings(
+                        settings_global_dict=settings_global_dict, recurse_childs=recurse_childs)
 
         # handle SettingsList
         if isinstance(self_settings_container, SettingsList) and isinstance(settings_container_default, SettingsList):
@@ -208,7 +216,8 @@ class Node:
                 if isinstance(entry, SettingsListEntry):
                     if not isinstance(entry.value, str):
                         settings_container_default_recurse = settings_container_default[0].value
-                        changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, recurse_childs=recurse_childs, settings_container_default=settings_container_default_recurse, settings_global_dict=settings_global_dict,)
+                        changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, recurse_childs=recurse_childs,
+                                                                                     settings_container_default=settings_container_default_recurse, settings_global_dict=settings_global_dict,)
         # handle SettingsDict
         elif isinstance(self_settings_container, SettingsDict) and isinstance(settings_container_default, SettingsDict):
             # resolve all SettingsChoice to defaults
@@ -240,7 +249,8 @@ class Node:
                         if isinstance(e, SettingsChildPlaceholder) and e.childnumber == entry.childnumber:
                             placeholder_already_added = True
                             break
-                    if not placeholder_already_added: self_settings_container.append(entry)
+                    if not placeholder_already_added:
+                        self_settings_container.append(entry)
 
                 elif isinstance(entry, SettingsDictEntry):
                     # add default-entry if we don't have the key already
@@ -265,14 +275,17 @@ class Node:
                         # global
                         # add e.g. Meshes : {} if not there
                         if not settings_global_dict.has_key(entry.global_key):
-                            settings_global_dict.append(SettingsDictEntry(entry.global_key, SettingsDict()))
+                            settings_global_dict.append(
+                                SettingsDictEntry(entry.global_key, SettingsDict()))
                         dict = settings_global_dict.get_value(entry.global_key)
                         if not isinstance(dict, SettingsDict):
-                            printe('we have to add to global,but global is not a dict')
+                            printe(
+                                'we have to add to global,but global is not a dict')
                             continue
                         # get the name e.g. mesh0
                         if self_settings_container.has_key(entry.name_key):
-                            name = self_settings_container.get_value(entry.name_key)
+                            name = self_settings_container.get_value(
+                                entry.name_key)
                         else:
                             i = 0
                             name = ''
@@ -281,25 +294,30 @@ class Node:
                                 if not dict.has_key(name):
                                     break
                                 i = i+1
-                            self_settings_container.append(SettingsDictEntry(entry.name_key, name))
+                            self_settings_container.append(
+                                SettingsDictEntry(entry.name_key, name))
                             #changes = changes + 1
                         # add global dict entry if not there (e.g. Meshes : { mesh0 : {} })
                         if not dict.has_key(name):
-                            dict.append(SettingsDictEntry(name, SettingsDict()))
+                            dict.append(SettingsDictEntry(
+                                name, SettingsDict()))
                             #changes = changes + 1
                         dict_to_append_to = dict.get_value(name)
 
                     # add all missing keys recursively
-                    changes = changes + self.add_missing_default_python_settings(self_settings_container=dict_to_append_to, recurse_childs=recurse_childs, settings_container_default=entry, settings_global_dict=settings_global_dict)
+                    changes = changes + self.add_missing_default_python_settings(
+                        self_settings_container=dict_to_append_to, recurse_childs=recurse_childs, settings_container_default=entry, settings_global_dict=settings_global_dict)
 
             # recurse levels
             for entry in self_settings_container:
                 if isinstance(entry, SettingsDictEntry):
                     # recurse all keys that are no strings, those are SettingsDict and SettingsList
                     if not isinstance(entry.value, str) and settings_container_default.has_key(entry.key):
-                        settings_container_default_recurse = settings_container_default.get_value(entry.key)
-                        changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, recurse_childs=recurse_childs, settings_container_default=settings_container_default_recurse, settings_global_dict=settings_global_dict)
-        #except:
+                        settings_container_default_recurse = settings_container_default.get_value(
+                            entry.key)
+                        changes = changes + self.add_missing_default_python_settings(
+                            self_settings_container=entry.value, recurse_childs=recurse_childs, settings_container_default=settings_container_default_recurse, settings_global_dict=settings_global_dict)
+        # except:
         #    printe('something went wrong while adding missing python-settings')
 
         return changes
@@ -320,7 +338,8 @@ class Node:
             self.settings_dict = None
         self.settings_dict_prefix = python_settings.prefix
         self.settings_dict_postfix = python_settings.postfix
-        (_, warnings) = self.parse_python_settings_recursive(python_settings.config_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, recurse_childs=recurse_childs, warnings=[])
+        (_, warnings) = self.parse_python_settings_recursive(python_settings.config_dict,
+                                                             keep_entries_that_have_no_default=keep_entries_that_have_no_default, recurse_childs=recurse_childs, warnings=[])
         warnings.append(Info('written python-settings for ' + str(self.name)))
         return warnings
 
@@ -348,7 +367,7 @@ class Node:
             if isinstance(entry, SettingsChildPlaceholder):
                 child_placeholders.append(entry)
 
-        #if is_called_on_child:
+        # if is_called_on_child:
         rest = SettingsDict()
 
         for i in range(len(settings_container)):
@@ -368,9 +387,11 @@ class Node:
                     settings_container_default_resolved = SettingsDict()
                     for e in settings_container_default:
                         if isinstance(e, SettingsMesh) or isinstance(e, SettingsSolver):
-                            settings_container_default_resolved.append(SettingsDictEntry(e.name_key, ""))
+                            settings_container_default_resolved.append(
+                                SettingsDictEntry(e.name_key, ""))
                             for default_e in e:
-                                settings_container_default_resolved.append(default_e)
+                                settings_container_default_resolved.append(
+                                    default_e)
                         else:
                             settings_container_default_resolved.append(e)
                     settings_container_default = settings_container_default_resolved
@@ -381,9 +402,11 @@ class Node:
                     for e in settings_container_default:
                         if isinstance(e, SettingsChoice):
                             for default_e in e.defaults:
-                                settings_container_default_resolved.append(default_e)
+                                settings_container_default_resolved.append(
+                                    default_e)
                             for alternative_e in e.alternatives:
-                                settings_container_default_resolved.append(alternative_e)
+                                settings_container_default_resolved.append(
+                                    alternative_e)
                         else:
                             settings_container_default_resolved.append(e)
                     settings_container_default = settings_container_default_resolved
@@ -398,7 +421,8 @@ class Node:
                         if isinstance(entry, SettingsDictEntry):
                             new_entry = SettingsDictEntry()
                             new_entry.key = entry.key
-                            settings_container_default_recurse = settings_container_default.get_value(entry.key)
+                            settings_container_default_recurse = settings_container_default.get_value(
+                                entry.key)
                         else:
                             new_entry = SettingsListEntry()
                             # TODO here we assume that there is only one SettingsListEntry in python_options we just use the first one
@@ -415,7 +439,8 @@ class Node:
                         self_settings_container.append(new_entry)
 
                         # recurse the new entry
-                        (_, warnings) = self.parse_python_settings_recursive(entry.value, self_settings_container=new_entry.value, settings_container_default=settings_container_default_recurse, keep_entries_that_have_no_default=keep_entries_that_have_no_default, warnings=warnings, recurse_childs=recurse_childs)
+                        (_, warnings) = self.parse_python_settings_recursive(entry.value, self_settings_container=new_entry.value, settings_container_default=settings_container_default_recurse,
+                                                                             keep_entries_that_have_no_default=keep_entries_that_have_no_default, warnings=warnings, recurse_childs=recurse_childs)
                     else:
                         # if the entry.value is no SettingsContainer -> just append the entry
                         self_settings_container.append(entry)
@@ -429,9 +454,11 @@ class Node:
                     if recurse_childs:
                         for j in range(len(child_placeholders)):
                             #print('trying to give ' + str(entry.key) + ' to child ' + str(child_placeholders[j].childnumber))
-                            child = self.childs.get_childs()[child_placeholders[j].childnumber]
+                            child = self.childs.get_childs(
+                            )[child_placeholders[j].childnumber]
                             if not isinstance(child, PlaceholderNode):
-                                (new_dict, warnings) = child.parse_python_settings_recursive(new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, is_called_on_child=True, recurse_childs=recurse_childs, warnings=warnings)
+                                (new_dict, warnings) = child.parse_python_settings_recursive(
+                                    new_dict, keep_entries_that_have_no_default=keep_entries_that_have_no_default, is_called_on_child=True, recurse_childs=recurse_childs, warnings=warnings)
                             if len(new_dict) == 0:
                                 break
 
@@ -440,10 +467,12 @@ class Node:
                         if is_called_on_child:
                             rest.append(entry)
                         elif keep_entries_that_have_no_default:
-                            warnings.append(Warning(entry.key + ' is an unknown setting -> added it anyway'))
+                            warnings.append(
+                                Warning(entry.key + ' is an unknown setting -> added it anyway'))
                             self_settings_container.append(entry)
                         else:
-                            warnings.append(Warning(entry.key + ' is an unknown setting -> it was NOT added'))
+                            warnings.append(
+                                Warning(entry.key + ' is an unknown setting -> it was NOT added'))
 
             elif isinstance(entry, SettingsChildPlaceholder):
                 # don't add placeholders found in SettingsDict
@@ -468,6 +497,7 @@ class Node:
         if self.comment != '':
             comment = '//' + self.comment + '\n'
         return comment + self.repr_recursive(0)
+
     def repr_recursive(self, depth):
         indentation = '  ' * depth
         indentation_child = '  ' * (depth + 1)
@@ -482,9 +512,11 @@ class Node:
             if i < len(self.childs.get_real_childs()) - 1:
                 comment_string = ',' + comment_string
             if childs_string == '':
-                childs_string = '\n' + indentation_child + child.repr_recursive(depth + 1) + comment_string
+                childs_string = '\n' + indentation_child + \
+                    child.repr_recursive(depth + 1) + comment_string
             else:
-                childs_string = childs_string + '\n' + indentation_child + child.repr_recursive(depth + 1) + comment_string
+                childs_string = childs_string + '\n' + indentation_child + \
+                    child.repr_recursive(depth + 1) + comment_string
         if childs_string == '':
             if self.can_have_childs:
                 return self.name + '<>'
@@ -516,7 +548,8 @@ class Node:
         # if not RootNode:
         if self.parent:
             try:
-                p_wanted_childs = self.combinations[self.parent.name].get("template_arguments", [])
+                p_wanted_childs = self.combinations[self.parent.name].get(
+                    "template_arguments", [])
                 p_argument_count_max = len(p_wanted_childs)
             except:
                 res.append(Error(str(self.parent.name) + ' is unknown'))
@@ -525,19 +558,23 @@ class Node:
             for child in self.parent.childs.get_childs():
                 if child == self:
                     break
-                i =  i + 1
+                i = i + 1
 
-            (_template_argument_description, possible_template_arguments) = p_wanted_childs[i]
+            (_template_argument_description,
+             possible_template_arguments) = p_wanted_childs[i]
             if i > p_argument_count_max:
-                res.append(Error(str(self.parent.name) + ' only accepts ' + str(p_argument_count_max) + ' template_arguments'))
+                res.append(Error(str(self.parent.name) + ' only accepts ' +
+                                 str(p_argument_count_max) + ' template_arguments'))
             else:
                 if possible_template_arguments == ["Integer"]:
                     try:
                         int(self.name)
                     except:
-                        res.append(Error(str(self.name) + ' is not an Integer'))
+                        res.append(
+                            Error(str(self.name) + ' is not an Integer'))
                 elif self.name not in possible_template_arguments:
-                    res.append(Error(str(self.name) + ' is not in the list of possible template_arguments for ' + self.parent.name + '\n' + 'possible template_arguments are: ' + str(possible_template_arguments)))
+                    res.append(Error(str(self.name) + ' is not in the list of possible template_arguments for ' +
+                                     self.parent.name + '\n' + 'possible template_arguments are: ' + str(possible_template_arguments)))
 
         return res
 
@@ -550,32 +587,41 @@ class Node:
         if not node:
             node = self
         try:
-            wanted_childs = self.combinations[node.name].get("template_arguments", [])
+            wanted_childs = self.combinations[node.name].get(
+                "template_arguments", [])
             argument_count_max = len(wanted_childs)
-            argument_count_min = self.combinations[node.name].get("template_arguments_needed", argument_count_max)
+            argument_count_min = self.combinations[node.name].get(
+                "template_arguments_needed", argument_count_max)
         except:
             # if the key node.name does not exist, we are at the bottom
             return res
         child_count = len(node.childs.get_real_childs())
-        if  child_count < argument_count_min:
-            res.append(Error(str(node.name) + ' needs at least ' + str(argument_count_min) + ' template_arguments but only ' + str(child_count) + ' template_arguments given'))
-        if  child_count > argument_count_max:
-            res.append(Error(str(node.name) + ' only accepts ' + str(argument_count_max) + ' template_arguments ' + str(child_count) + ' template_arguments given'))
+        if child_count < argument_count_min:
+            res.append(Error(str(node.name) + ' needs at least ' + str(argument_count_min) +
+                             ' template_arguments but only ' + str(child_count) + ' template_arguments given'))
+        if child_count > argument_count_max:
+            res.append(Error(str(node.name) + ' only accepts ' + str(argument_count_max) +
+                             ' template_arguments ' + str(child_count) + ' template_arguments given'))
         for i in range(len(node.childs.get_real_childs())):
             try:
-                (_template_argument_description, possible_template_arguments) = wanted_childs[i]
+                (_template_argument_description,
+                 possible_template_arguments) = wanted_childs[i]
                 if possible_template_arguments == ["Integer"]:
                     try:
                         int(node.childs.get_real_childs()[i].name)
                     except:
-                        res.append(Error(str(node.childs.get_real_childs()[i].name) + ' is not an Integer'))
+                        res.append(
+                            Error(str(node.childs.get_real_childs()[i].name) + ' is not an Integer'))
                 elif node.childs.get_real_childs()[i].name not in possible_template_arguments:
-                    res.append(Error(str(node.childs.get_real_childs()[i].name) + ' is not in the list of possible template_arguments for ' + node.name + '\n' + 'possible template_arguments are: ' + str(possible_template_arguments)))
+                    res.append(Error(str(node.childs.get_real_childs()[
+                               i].name) + ' is not in the list of possible template_arguments for ' + node.name + '\n' + 'possible template_arguments are: ' + str(possible_template_arguments)))
             except:
                 pass
             if recurse:
-                res = self._validate_cpp_src_recursive(node=node.childs.get_real_childs()[i], res=res)
+                res = self._validate_cpp_src_recursive(
+                    node=node.childs.get_real_childs()[i], res=res)
         return res
+
 
 class PlaceholderNode(Node):
     def __init__(self, combinations, needed):
