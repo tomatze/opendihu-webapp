@@ -478,10 +478,10 @@ possible_solver_combinations = {
         "runnable": True,
         "discretizableInTime": True,
         "template_arguments": [
-            ('TODO', ["Mesh::"]),
-            ('TODO', ["BasisFunction::"]),
-            ('TODO', ["Quadrature::"]),
-            ('TODO', ["Equation::"])
+            ('Mesh', ["Mesh::"]),
+            ('BasisFunction', ["BasisFunction::"]),
+            ('Quadrature', ["Quadrature::"]),
+            ('Equation', ["Equation::"])
         ],
         "python_options": SettingsDict([
             SettingsDictEntry("FiniteElementMethod", SettingsDict([
@@ -506,49 +506,66 @@ possible_solver_combinations = {
 
     "Mesh::StructuredRegularFixedOfDimension": {
         "template_arguments": [
-            ("dimension", ["1", "2", "3"])
+            ("Dimension", ["1", "2", "3"])
         ],
         "python_options": SettingsDict([
             SettingsMesh([
-                SettingsDictEntry("nElements", SettingsList(['0', '1'])),
-                SettingsDictEntry("physicalExtent", '[1.0, 1.0]'),
-                SettingsDictEntry("inputMeshIsGlobal", 'True')
+                SettingsDictEntry("nElements", SettingsList(['1', '1']), 'the number of elements of the mesh in the coordinate directions', 'mesh.html#nelements'),
+                SettingsDictEntry("physicalExtent", '[1.0, 1.0]', 'the “size” of the mesh in physical units (e.g. meters if SI units are used), in the coordinate directions', 'mesh.html#physicalextent'),
+                SettingsDictEntry("inputMeshIsGlobal", 'True', 'whether the values of nElements and physicalExtent describe the global domain (True) or the local subdomain (False) in parallel execution', 'mesh.html#inputmeshisglobal')
             ])
         ])
     },
+
     "Mesh::StructuredDeformableOfDimension": {
         "template_arguments": [
-            ("dimension", ["1", "2", "3"])
+            ("Dimension", ["1", "2", "3"])
         ],
         "python_options": SettingsDict([
             SettingsMesh([
-                SettingsDictEntry("nElements", SettingsList(['0', '1'])),
-                SettingsDictEntry("inputMeshIsGlobal", 'True'),
+                SettingsDictEntry("nElements", SettingsList(['1', '1']), 'the number of elements of the mesh in the coordinate directions', 'mesh.html#id1'),
+                SettingsDictEntry("inputMeshIsGlobal", 'True', 'whether the values of nElements and the nodePositions describe the global domain (True) or the local subdomain (False) in parallel execution', 'mesh.html#id2'),
                 SettingsChoice([
-                    SettingsDictEntry("physicalExtent", '[2.5, 5.0]'),
-                    SettingsDictEntry("physicalOffset", '[0.5, 0.0]')
+                    SettingsDictEntry("physicalExtent", '[1.0, 1.0]', 'the “size” of the mesh in physical units (e.g. meters if SI units are used), in the coordinate directions', 'mesh.html#physicalextent'),
+                    SettingsDictEntry("physicalOffset", '[0.0, 0.0]', 'offset all node positions by the given vector', 'mesh.html#structureddeformable')
                 ], [
-                    SettingsDictEntry("nodePositions", '[[0,0,0], [0,0,0]]')
+                    SettingsDictEntry("nodePositions", '[[0,0,0], [0,0,0]]', 'specify all node positions', 'mesh.html#nodepositions')
                 ])
             ])
         ])
     },
+
     "Mesh::UnstructuredDeformableOfDimension": {
         "template_arguments": [
-            ('TODO', ["1", "2", "3"])
-        ]
+            ('Dimension', ["1", "2", "3"])
+        ],
+        "python_options": SettingsDict([
+            SettingsMesh([
+                SettingsChoice([
+                    SettingsDictEntry("elements", '[[0,0]]', 'list of nodes, each node is [node no, version-at-that-node no] or just node-no then it assumes version no 0', 'mesh.html#elements'),
+                    SettingsDictEntry("nodePositions", '[[0,0]]', 'list of positions of the nodes, each node position is a list with maximum three entries for the components in x,y and z direction', 'mesh.html#id5')
+                ], [
+                    SettingsDictEntry("exelem", "filename.exelem", 'the filename of the exelem file', 'mesh.html#exelem'),
+                    SettingsDictEntry("exnode", "filename.exnode", 'the filename of the exnode file', 'mesh.html#exnode')
+                ])
+            ])
+        ])
     },
+
     "Mesh::CompositeOfDimension": {
         "template_arguments": [
-            ('TODO', ["1", "2", "3"])
-        ]
+            ('Dimension', ["1", "2", "3"])
+        ],
+        "python_options" : SettingsDict([
+            SettingsDictEntry("meshName", '["meshX", "meshY"]', 'a list containing all mesh names of the submeshes', 'mesh.html#compositeofdimension-d')
+        ])
     },
 
 
     "BasisFunction::CompletePolynomialOfDimensionAndOrder": {
         "template_arguments": [
-            ('TODO', ["1", "2", "3"]),
-            ('TODO', ["0", "1", "2"])
+            ('Dimension', ["1", "2", "3"]),
+            ('Order', ["0", "1", "2"])
         ]
     },
     "BasisFunction::Hermite": {},
