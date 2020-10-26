@@ -89,6 +89,36 @@ outputwriter = SettingsDictEntry("OutputWriter", SettingsList([
     )
 ]), 'specifies a list of output writers that can be used to output geometry field variables in various formats', 'output_writer.html#outputwriter')
 
+timestepping_schemes_ode_common = [
+    SettingsDictEntry("endTime", '1', 'run() method performs the simulation for t∈[0,endTime]', 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth'),
+   SettingsChoice([
+       SettingsDictEntry("numberTimeSteps", '10', None, 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth')
+   ], [
+       SettingsDictEntry("timeStepWidth", '0.001', None, 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth')
+   ]),
+   SettingsChoice([], [
+       SettingsDictEntry("logTimeStepWidthAsKey", '"timestep_width"', 'the time step width of this scheme will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#logtimestepwidthaskey-lognumbertimestepsaskey-and-durationlogkey')
+   ]),
+   SettingsChoice([], [
+       SettingsDictEntry("logNumberTimeStepsAsKey", '"timesteps_number"', 'the number of time steps of this scheme will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#logtimestepwidthaskey-lognumbertimestepsaskey-and-durationlogkey')
+   ]),
+   SettingsChoice([], [
+       SettingsDictEntry("durationLogKey", '"duration"', 'the total time that has passed for the computation will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#logtimestepwidthaskey-lognumbertimestepsaskey-and-durationlogkey')
+   ]),
+   SettingsDictEntry("timeStepOutputInterval", '100', 'a positive integer value that specifies the interval in which timesteps are printed to standard output', 'timestepping_schemes_ode.html#timestepoutputinterval'),
+   SettingsDictEntry("initialValues", '[]', 'list of double values to use as initial values. The solution is set to these values upon initialization', 'timestepping_schemes_ode.html#initialvalues'),
+   SettingsDictEntry("dirichletBoundaryConditions", '{}', 'dictionary with degrees of freedom as key and the value as value (i.e. {"dof": value, ...}', 'timestepping_schemes_ode.html#dirichletboundaryconditions-and-inputmeshisglobal'),
+   SettingsDictEntry("inputMeshIsGlobal", 'True', 'the degrees of freedom are interpreted in global numbering, if inputMeshIsGlobal is set to True, or in local numbering of the process, if inputMeshIsGlobal is False', 'timestepping_schemes_ode.html#dirichletboundaryconditions-and-inputmeshisglobal'),
+   SettingsChoice([], [
+       outputwriter
+   ]),
+   SettingsChoice([], [
+       SettingsDictEntry("nAdditionalFieldVariables", '1', 'number of additional field variables that will be created', 'timestepping_schemes_ode.html#nadditionalfieldvariables'),
+       SettingsDictEntry("additionalSlotNames", '["connector_slot_1"]', 'list of strings, names for of connector slots for the additional field variables', 'timestepping_schemes_ode.html#additionalslotnames')
+   ])
+]
+
+
 possible_solver_combinations = {
     "GLOBAL": {
         # template_arguments gets set by cpp_tree.py (to all runnables)
@@ -317,43 +347,88 @@ possible_solver_combinations = {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["discretizableInTime"])
-        ]
+            ('DiscretizableInTime', ["discretizableInTime"])
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("ExplicitEuler", SettingsDict(
+                timestepping_schemes_ode_common
+            ))
+        ])
     },
     "TimeSteppingScheme::ImplicitEuler": {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["discretizableInTime"])
-        ]
+            ('DiscretizableInTime', ["discretizableInTime"])
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("ImplicitEuler", SettingsDict(
+                timestepping_schemes_ode_common + [
+                    solver,
+                    SettingsDictEntry("timeStepWidthRelativeTolerance", '1e-10', 'tolerance for the time step width which controls when the system matrix has to be recomputed', 'timestepping_schemes_ode.html#impliciteuler'),
+                    SettingsChoice([], [
+                        SettingsDictEntry("timeStepWidthRelativeToleranceAsKey", '"relative_tolerance"', 'timeStepWidthRelativeTolerance will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#impliciteuler')
+                    ]),
+                    SettingsChoice([], [
+                        SettingsDictEntry("durationInitTimeStepLogKey", '"duration_init_time_step"', 'duration for the time step initialization  will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#impliciteuler')
+                    ])
+                ]
+            ))
+        ])
     },
     "TimeSteppingScheme::Heun": {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["discretizableInTime"])
+            ('DiscretizableInTime', ["discretizableInTime"])
         ],
         "python_options": SettingsDict([
-            SettingsDictEntry("Heun", SettingsDict([
-                SettingsDictEntry("endTime", '1'),
-                SettingsDictEntry("timeStepWidth", '0.001'),
-                SettingsDictEntry("numberTimeSteps", '10'),
-            ]))
+            SettingsDictEntry("Heun", SettingsDict(
+                timestepping_schemes_ode_common
+            ))
         ])
     },
     "TimeSteppingScheme::HeunAdaptive": {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["discretizableInTime"])
-        ]
+            ('DiscretizableInTime', ["discretizableInTime"])
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("HeunAdaptive", SettingsDict(
+                timestepping_schemes_ode_common + [
+                    SettingsDictEntry("tolerance", '0.1', 'tolerance for the estimated error. It is guaranteed, that the error is always smaller than this value', 'timestepping_schemes_ode.html#tolerance'),
+                    SettingsDictEntry("minTimeStepWidth", '1e-6', 'the minimum timestepwidth to use', 'timestepping_schemes_ode.html#mintimestepwidth'),
+                    SettingsDictEntry("timeStepAdaptOption", '"regular"', 'method for the adaptive time step width computation (regular or modified)', 'timestepping_schemes_ode.html#timestepadaptoption'),
+                    SettingsChoice([], [
+                        SettingsDictEntry("lowestMultiplier", '1000', 'minimum number of timesteps to perform in the time span for the "modified" method', 'timestepping_schemes_ode.html#lowestmultiplier')
+                    ])
+                ]
+            ))
+        ])
     },
     "TimeSteppingScheme::CrankNicolson": {
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["discretizableInTime"])
-        ]
+            ('DiscretizableInTime', ["discretizableInTime"])
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("CrankNicolson", SettingsDict(
+                timestepping_schemes_ode_common + [
+                    solver,
+                    SettingsDictEntry("timeStepWidthRelativeTolerance", '1e-10', 'tolerance for the time step width which controls when the system matrix has to be recomputed', 'timestepping_schemes_ode.html#lowestmultiplier'),
+                    SettingsChoice([], [
+                        SettingsDictEntry("timeStepWidthRelativeToleranceAsKey", '"relative_tolerance"', 'timeStepWidthRelativeTolerance will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#lowestmultiplier')
+                    ]),
+                    SettingsChoice([], [
+                        SettingsDictEntry("durationInitTimeStepLogKey", '"duration_init_time_step"', 'duration for the time step initialization  will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#lowestmultiplier')
+                    ])
+                ]
+            ))
+        ])
     },
+
+
     "TimeSteppingScheme::RepeatedCall": {
         "runnable": True,
         "timeSteppingScheme": True,
