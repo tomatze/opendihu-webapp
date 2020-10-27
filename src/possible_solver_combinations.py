@@ -293,7 +293,7 @@ possible_solver_combinations = {
         "template_arguments": [
             ('TODO', ["FunctionSpace::"]),
             ('TODO', ["timeSteppingScheme"])
-        ]
+        ],
     },
 
 
@@ -480,9 +480,13 @@ possible_solver_combinations = {
 
     "FunctionSpace::FunctionSpace": {
         "template_arguments": [
-            ('TODO', ["Mesh::"]),
-            ('TODO', ["BasisFunction::"])
-        ]
+            ('Mesh', ["Mesh::"]),
+            ('BasisFunction', ["BasisFunction::"])
+        ],
+        "python_options": SettingsDict([
+            # just proxy the mesh (this is used in PrescribedValues)
+            SettingsChildPlaceholder(0)
+        ])
     },
 
 
@@ -708,11 +712,26 @@ possible_solver_combinations = {
                          "timeSteppingScheme": True,
                          "template_arguments_needed": 1,
                          "template_arguments": [
-                             ('TODO', ["FunctionSpace::FunctionSpace"]),
-                             ('TODO', ["1", "2", "3"]),
-                             ('TODO', ["1", "2", "3"])
-                         ]
-                         },
+                             ('FunctionSpace', ["FunctionSpace::FunctionSpace"]),
+                             ('nComponents1', ["1", "2", "3"]),
+                             ('nComponents2', ["1", "2", "3"])
+                         ],
+        "python_options" : SettingsDict([
+            SettingsDictEntry("PrescribedValues", SettingsDict([
+                SettingsChildPlaceholder(0),
+                #SettingsDictEntry("meshName", '"meshX"', 'the mesh to use for the field variables', 'prescribed_values.html#meshname'),
+                SettingsDictEntry("numberTimeSteps", '1', 'number of timesteps to call the callback functions subsequently, this is usually 1 for prescribed values, because it is enough to set the reaction term only once per time step', 'prescribed_values.html#usage'),
+                SettingsDictEntry("timeStepOutputInterval", '10', 'if the time step should be written to console, a value > 1 produces no output', 'prescribed_values.html#usage'),
+                SettingsDictEntry("slotNames", '[]', 'list of names of the connector slots, maximum length is 6 characters per name', 'prescribed_values.html#slotnames'),
+                SettingsDictEntry("fieldVariables1", '[]', 'list of field variables that will get values assigned in every timestep, by the provided callback function', 'prescribed_values.html#usage'),
+                SettingsDictEntry("fieldVariables2", '[]', 'list of field variables that will get values assigned in every timestep, by the provided callback function', 'prescribed_values.html#usage'),
+                SettingsDictEntry("additionalArgument", 'None', 'a custom argument to the fieldVariables callback functions, this will be passed on as the last argument', 'prescribed_values.html#additionalargument'),
+                SettingsChoice([], [
+                    outputwriter
+                ]),
+            ]))
+        ])
+    },
 
 
 
