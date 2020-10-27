@@ -254,21 +254,22 @@ possible_solver_combinations = {
 
     "Control::MultipleInstances": {
         "runnable": True,
-        # TODO can this be handled like a timeSteppingScheme?
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["timeSteppingScheme"])
+            ('TimeSteppingScheme', ["timeSteppingScheme"])
         ],
         "python_options": SettingsDict([
             SettingsDictEntry("MultipleInstances", SettingsDict([
-                SettingsDictEntry("nInstances", '1'),
+                SettingsDictEntry("nInstances", '1', 'the number of instance to create and run in total', 'multiple_instances.html#ninstances'),
                 SettingsDictEntry("instances", SettingsList([
                     SettingsListEntry(SettingsDict([
-                        SettingsDictEntry("ranks", 'list(range(4))'),
+                        SettingsDictEntry("ranks", '[0]', 'list of MPI ranks on which the instance should be computed', 'multiple_instances.html#ranks'),
                         SettingsChildPlaceholder(0)
                     ]))
-                ])),
-                outputwriter
+                ]), 'list of settings for the instances', 'multiple_instances.html#instances'),
+                SettingsChoice([],[
+                    outputwriter
+                ])
             ]))
         ])
     },
@@ -687,18 +688,24 @@ possible_solver_combinations = {
 
     "OutputWriter::OutputSurface": {
         "runnable": True,
-        # TODO can this be handled like a timeSteppingScheme?
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["timeSteppingScheme",
+            ('Nested solver', ["timeSteppingScheme",
                       "SpatialDiscretization::FiniteElementMethod"])
         ],
         "python_options": SettingsDict([
             SettingsDictEntry("OutputSurface", SettingsDict([
-                # TODO
-                # SettingsDictEntry("OutputWriter", SettingsList([
-                # ])),
-                SettingsDictEntry("face", '["1-"]'),
+                outputwriter,
+                SettingsDictEntry("face", '["1-"]', 'the 2D faces of the 3D volume which will be extracted', 'output_surface.html#face'),
+                SettingsDictEntry("samplingPoints", 'None', 'the electrode positions', 'output_surface.html#surface-sampling'),
+                SettingsChoice([], [
+                    SettingsDictEntry("updatePointPositions", 'False', 'the electrode points should be initialize in every timestep (set to False for the static case). This makes a difference if the muscle contracts, then True=fixed electrodes, False=electrodes moving with muscle.', 'output_surface.html#surface-sampling'),
+                    SettingsDictEntry("filename", 'out/sampledPoints.csv', None, 'output_surface.html#surface-sampling'),
+                    SettingsDictEntry("enableCsvFile", 'True', 'if the values at the sampling points should be written to csv files', 'output_surface.html#surface-sampling'),
+                    SettingsDictEntry("enableVtpFile", 'True', 'if the values at the sampling points should be written to vtp files', 'output_surface.html#surface-sampling'),
+                    SettingsDictEntry("xiTolerance", '0.3', 'tolerance for element-local coordinates xi, for finding electrode positions inside the elements. Increase or decrease this numbers if not all electrode points are found', 'output_surface.html#surface-sampling'),
+                    SettingsDictEntry("enableGeometryInCsvFile", 'True', 'if the csv output file should contain geometry of the electrodes in every time step. This increases the file size and only makes sense if the geometry changed throughout time, i.e. when computing with contraction', 'output_surface.html#enablegeometryincsvfile'),
+                ]),
                 SettingsChildPlaceholder(0)
             ]))
         ])
