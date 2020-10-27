@@ -197,13 +197,19 @@ possible_solver_combinations = {
         ]
     },
     "FastMonodomainSolver": {
-        # TODO is this runnable?
         "runnable": True,
-        # TODO can this be handled like a timeSteppingScheme?
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["Control::MultipleInstances"])
-        ]
+            ('Nested Solver', ["Control::MultipleInstances"])
+        ],
+        "python_options" : SettingsDict([
+            SettingsDictEntry("fiberDistributionFile", '"MU_fibre_distribution_3780.txt"', 'this file contains the assignment of fibers to motor units', 'fast_monodomain_solver.html#fiberdistributionfile'),
+            SettingsDictEntry("firingTimesFile", '"MU_firing_times_real.txt"', 'this file specifies when which motor unit fires', 'fast_monodomain_solver.html#firingtimesfile'),
+            SettingsDictEntry("onlyComputeIfHasBeenStimulated", 'True', 'if True: disable computation of the Monodomain equation as long as the fiber has not been stimulated in therefore is in equilibrium', 'fast_monodomain_solver.html#onlycomputeifhasbeenstimulated'),
+            SettingsDictEntry("disableComputationWhenStatesAreCloseToEquilibrium", 'True', 'similar to onlyComputeIfHasBeenStimulated, this checks whether the values have reached the equilibrium and then disables the computation', 'fast_monodomain_solver.html#disablecomputationwhenstatesareclosetoequilibrium'),
+            SettingsDictEntry("valueForStimulatedPoint", '20.0', 'value that will be set for the transmembrane potential Vm when it is stimulated', 'fast_monodomain_solver.html#valueforstimulatedpoint'),
+            SettingsDictEntry("neuromuscularJunctionRelativeSize", '0.0', 'relative range of the position of the neuromuscular junction', 'fast_monodomain_solver.html#neuromuscularjunctionrelativesize')
+        ])
     },
     "SpatialDiscretization::HyperelasticitySolver": {
         "runnable": True,
