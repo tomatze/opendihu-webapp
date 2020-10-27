@@ -215,6 +215,28 @@ hyperelasticity_common = [
     ]),
 ]
 
+# this is used in HyperelasticitySolver and MuscleContractionSolver
+hyperelasticity_solver = SettingsDictEntry("HyperelasticitySolver", SettingsDict(
+        [SettingsDictEntry("durationLogKey", '"duration_mechanics"', 'key to find duration of this solver in the log file', 'hyperelasticity.html#python-settings'),] +
+        hyperelasticity_common +
+        solver_nonlinear
+    ))
+
+# this is used in DynamicHyperelasticitySolver and MuscleContractionSolver
+dynamic_hyperelasticity_solver = SettingsDictEntry("DynamicHyperelasticitySolver", SettingsDict(
+        timestepping_schemes_common + [
+            SettingsDictEntry("endTime", '1', 'run() method performs the simulation for t∈[0,endTime]', 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth'),
+        ] +
+        hyperelasticity_common + [
+            SettingsDictEntry("updateNeumannBoundaryConditionsFunction", 'None', 'function that updates the Neumann BCs while the simulation is running', 'dynamic_hyperelasticity.html#python-settings'),
+            SettingsDictEntry("updateNeumannBoundaryConditionsFunctionCallInterval", '1', 'every which step the update function should be called, 1 means every time step', 'dynamic_hyperelasticity.html#python-settings'),
+            SettingsChoice([],[
+                SettingsDictEntry("dynamic", SettingsDict([outputwriter]), 'additional output writer that writes virtual work terms', 'dynamic_hyperelasticity.html#python-settings')
+            ]),
+        ] +
+        solver_nonlinear
+    ))
+
 
 possible_solver_combinations = {
     "GLOBAL": {
@@ -280,8 +302,28 @@ possible_solver_combinations = {
         "timeSteppingScheme": True,
         "template_arguments_needed": 0,
         "template_arguments": [
-            ('Mesh', ["Mesh::"])
-        ]
+            ('Mesh', ["Mesh::"]),
+            ('Material', [
+             "Equation::"]),
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("MuscleContractionSolver", SettingsDict([
+                SettingsDictEntry("numberTimeSteps", '1', 'number of timesteps to use per call', 'muscle_contraction_solver.html#python-settings'),
+                SettingsDictEntry("timeStepOutputInterval", '100', 'how often the current timestep will be displayed, if this is >100 and numberTimeSteps is 1, nothing will be printed', 'muscle_contraction_solver.html#python-settings'),
+                SettingsDictEntry("Pmax", '1.0', 'maximum PK2 active stress', 'muscle_contraction_solver.html#python-settings'),
+                SettingsChoice([],[
+                    outputwriter
+                ]),
+                SettingsDictEntry("mapGeometryToMeshes", '[]', 'the mesh names of the meshes that will get the geometry transferred', 'muscle_contraction_solver.html#python-settings'),
+                SettingsDictEntry("slotNames", '[]', 'names of the connector slots, maximum 6 characters per name', 'muscle_contraction_solver.html#python-settings'),
+                SettingsDictEntry("dynamic", 'True', 'if the dynamic solid mechanics solver should be used, else it computes the quasi-static problem', 'muscle_contraction_solver.html#python-settings'),
+                SettingsChoice([
+                    dynamic_hyperelasticity_solver
+                ],[
+                    hyperelasticity_solver
+                ]),
+            ]))
+        ])
     },
     "FastMonodomainSolver": {
         "runnable": True,
@@ -311,11 +353,7 @@ possible_solver_combinations = {
             ('nDisplacementComponents', ["Integer"])
         ],
         "python_options": SettingsDict([
-            SettingsDictEntry("HyperelasticitySolver", SettingsDict(
-                [SettingsDictEntry("durationLogKey", '"duration_mechanics"', 'key to find duration of this solver in the log file', 'hyperelasticity.html#python-settings'),] +
-                hyperelasticity_common +
-                solver_nonlinear
-            ))
+            hyperelasticity_solver
         ])
     },
 
@@ -679,19 +717,7 @@ possible_solver_combinations = {
             ('Mesh', ["Mesh::StructuredRegularFixedOfDimension"])
         ],
         "python_options": SettingsDict([
-            SettingsDictEntry("DynamicHyperelasticitySolver", SettingsDict(
-                timestepping_schemes_common + [
-                    SettingsDictEntry("endTime", '1', 'run() method performs the simulation for t∈[0,endTime]', 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth'),
-                ] +
-                hyperelasticity_common + [
-                    SettingsDictEntry("updateNeumannBoundaryConditionsFunction", 'None', 'function that updates the Neumann BCs while the simulation is running', 'dynamic_hyperelasticity.html#python-settings'),
-                    SettingsDictEntry("updateNeumannBoundaryConditionsFunctionCallInterval", '1', 'every which step the update function should be called, 1 means every time step', 'dynamic_hyperelasticity.html#python-settings'),
-                    SettingsChoice([],[
-                        SettingsDictEntry("dynamic", SettingsDict([outputwriter]), 'additional output writer that writes virtual work terms', 'dynamic_hyperelasticity.html#python-settings')
-                    ]),
-                ] +
-                solver_nonlinear
-            ))
+            dynamic_hyperelasticity_solver
         ])
     },
     "TimeSteppingScheme::StaticBidomainSolver": {
