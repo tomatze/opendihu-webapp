@@ -176,7 +176,6 @@ multidomain_solver_common = timestepping_schemes_ode_common + [
 ]
 
 hyperelasticity_common = [
-    SettingsDictEntry("durationLogKey", '"duration_mechanics"', 'key to find duration of this solver in the log file', 'hyperelasticity.html#python-settings'),
     SettingsDictEntry("materialParameters", '[]', 'list of material parameters, must match the number of parameters in the material', 'hyperelasticity.html#materialparameters'),
     SettingsDictEntry("displacementsScalingFactor", '1.0', 'scaling factor for displacements, only set to sth. other than 1 only to increase visual appearance for very small displacements', 'hyperelasticity.html#python-settings'),
     SettingsDictEntry("residualNormLogFilename", '"residual_norm.txt"', 'log file where residual norm values of the nonlinear solver will be written', 'hyperelasticity.html#python-settings'),
@@ -209,10 +208,10 @@ hyperelasticity_common = [
         outputwriter
     ]),
     SettingsChoice([],[
-        SettingsDictEntry("pressure", SettingsDict([outputwriter]))
+        SettingsDictEntry("pressure", SettingsDict([outputwriter]), 'additional output writer that writes also the hydrostatic pressure', 'hyperelasticity.html#python-settings')
     ]),
     SettingsChoice([],[
-        SettingsDictEntry("LoadIncrements", SettingsDict([outputwriter]))
+        SettingsDictEntry("LoadIncrements", SettingsDict([outputwriter]), 'output writer for debugging, outputs files after each load increment, the geometry is not changed but u and v are written', 'hyperelasticity.html#python-settings')
     ]),
 ]
 
@@ -307,11 +306,15 @@ possible_solver_combinations = {
         "template_arguments_needed": 0,
         "template_arguments": [
             ('Material', [
-             "Equation::SolidMechanics::"])
+             "Equation::SolidMechanics::"]),
+            ('Mesh', ["Mesh::StructuredRegularFixedOfDimension"]),
+            ('nDisplacementComponents', ["Integer"])
         ],
         "python_options": SettingsDict([
             SettingsDictEntry("HyperelasticitySolver", SettingsDict(
-                solver_nonlinear + hyperelasticity_common
+                [SettingsDictEntry("durationLogKey", '"duration_mechanics"', 'key to find duration of this solver in the log file', 'hyperelasticity.html#python-settings'),] +
+                hyperelasticity_common +
+                solver_nonlinear
             ))
         ])
     },
@@ -674,7 +677,22 @@ possible_solver_combinations = {
         "template_arguments": [
             ('Equation', ["Equation::"]),
             ('Mesh', ["Mesh::StructuredRegularFixedOfDimension"])
-        ]
+        ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("DynamicHyperelasticitySolver", SettingsDict(
+                timestepping_schemes_common + [
+                    SettingsDictEntry("endTime", '1', 'run() method performs the simulation for t∈[0,endTime]', 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth'),
+                ] +
+                hyperelasticity_common + [
+                    SettingsDictEntry("updateNeumannBoundaryConditionsFunction", 'None', 'function that updates the Neumann BCs while the simulation is running', 'dynamic_hyperelasticity.html#python-settings'),
+                    SettingsDictEntry("updateNeumannBoundaryConditionsFunctionCallInterval", '1', 'every which step the update function should be called, 1 means every time step', 'dynamic_hyperelasticity.html#python-settings'),
+                    SettingsChoice([],[
+                        SettingsDictEntry("dynamic", SettingsDict([outputwriter]), 'additional output writer that writes virtual work terms', 'dynamic_hyperelasticity.html#python-settings')
+                    ]),
+                ] +
+                solver_nonlinear
+            ))
+        ])
     },
     "TimeSteppingScheme::StaticBidomainSolver": {
         "runnable": True,
