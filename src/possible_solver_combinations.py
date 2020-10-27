@@ -55,6 +55,7 @@ from python_settings import SettingsDict, SettingsList, SettingsChildPlaceholder
 # BasisFunction::
 # Quadrature::
 # Equation::
+# Dummy
 
 solver = SettingsSolver([
     SettingsDictEntry("solverType", '"gmres"', 'the KSPType of the solver, i.e. which solver to use', 'solver.html#solvertype'),
@@ -118,7 +119,7 @@ timestepping_schemes_ode_common = timestepping_schemes_common + [
         outputwriter
     ]),
     SettingsChoice([], [
-        SettingsDictEntry("nAdditionalFieldVariables", '1', 'number of additional field variables that will be created', 'timestepping_schemes_ode.html#nadditionalfieldvariables'),
+        SettingsDictEntry("nAdditionalFieldVariables", '0', 'number of additional field variables that will be created', 'timestepping_schemes_ode.html#nadditionalfieldvariables'),
         SettingsDictEntry("additionalSlotNames", '["connector_slot_1"]', 'list of strings, names for of connector slots for the additional field variables', 'timestepping_schemes_ode.html#additionalslotnames')
     ])
 ]
@@ -177,17 +178,20 @@ possible_solver_combinations = {
         ])
     },
 
+    "Dummy": {
+        "timeSteppingScheme" : True
+    },
 
     "Postprocessing::ParallelFiberEstimation": {
         "runnable": True,
         "template_arguments": [
-            ('TODO', ["BasisFunction::"])
+            ('BasisFunction', ["BasisFunction::"])
         ]
     },
     "Postprocessing::StreamlineTracer": {
         "runnable": True,
         "template_arguments": [
-            ('TODO', ["discretizableInTime"])
+            ('DiscretizableInTime', ["discretizableInTime"])
         ]
     },
 
@@ -195,25 +199,25 @@ possible_solver_combinations = {
     "PreciceAdapter::ContractionDirichletBoundaryConditions": {
         "runnable": True,
         "template_arguments": [
-            ('TODO', ["timeSteppingScheme"])
+            ('TimeSteppingScheme', ["timeSteppingScheme"])
         ]
     },
     "PreciceAdapter::ContractionNeumannBoundaryConditions": {
         "runnable": True,
         "template_arguments": [
-            ('TODO', ["timeSteppingScheme"])
+            ('TimeSteppingScheme', ["timeSteppingScheme"])
         ]
     },
     "PreciceAdapter::PartitionedFibers": {
         "runnable": True,
         "template_arguments": [
-            ('TODO', ["timeSteppingScheme"])
+            ('TimeSteppingScheme', ["timeSteppingScheme"])
         ]
     },
     "PreciceAdapter::MuscleContraction": {
         "runnable": True,
         "template_arguments": [
-            ('TODO', ["MuscleContractionSolver"])
+            ('MuscleContractionSolver', ["MuscleContractionSolver"])
         ]
     },
     "MuscleContractionSolver": {
@@ -223,14 +227,14 @@ possible_solver_combinations = {
         "template_arguments": [
             # TODO this should only accept Mesh::StructuredDeformableOfDimension<3>
             # and maybe Mesh::CompositeOfDimension<3>?
-            ('TODO', ["Mesh::"])
+            ('Mesh', ["Mesh::"])
         ]
     },
     "FastMonodomainSolver": {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('Nested Solver', ["Control::MultipleInstances"])
+            ('Nested solver', ["Control::MultipleInstances"])
         ],
         "python_options" : SettingsDict([
             SettingsChildPlaceholder(0),
@@ -248,7 +252,7 @@ possible_solver_combinations = {
         "timeSteppingScheme": True,
         "template_arguments_needed": 0,
         "template_arguments": [
-            ('TODO', [
+            ('Material', [
              "Equation::SolidMechanics::TransverselyIsotropicMooneyRivlinIncompressible3D"])
             # TODO can this handle more template_arguments?
         ]
@@ -288,12 +292,24 @@ possible_solver_combinations = {
     },
     "Control::MapDofs": {
         "runnable": True,
-        # TODO can this be handled like a timeSteppingScheme?
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["FunctionSpace::"]),
-            ('TODO', ["timeSteppingScheme"])
+            ('FunctionSpace', ["FunctionSpace::"]),
+            ('TimeSteppingScheme', ["timeSteppingScheme"])
         ],
+        "python_options": SettingsDict([
+            SettingsDictEntry("MapDofs", SettingsDict([
+                # mesh from FunctionSpace
+                SettingsChildPlaceholder(0),
+                # nested solver
+                SettingsChildPlaceholder(1),
+                SettingsDictEntry("nAdditionalFieldVariables", '0', 'number of additional field variables that are defined by this object. They have 1 component, use the templated function space and mesh given by meshName', 'map_dofs.html#nadditionalfieldvariables'),
+                SettingsDictEntry("additionalslotnames", '[]', 'list of names of the slots for the additional field variables', 'map_dofs.html#additionalslotnames'),
+                # TODO maybe define options in beforeComputation and afterComputation
+                SettingsDictEntry("beforeComputation", 'None', 'transfer/mapping of dofs that will be performed before the computation of the nested solver, can be None if not needed', 'map_dofs.html#beforecomputation-and-aftercomputation'),
+                SettingsDictEntry("afterComputation", 'None', 'transfer/mapping of dofs that will be performed after the computation of the nested solver, can be None if not needed', 'map_dofs.html#beforecomputation-and-aftercomputation'),
+            ]))
+        ])
     },
 
 
