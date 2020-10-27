@@ -373,8 +373,8 @@ class Node:
         for i in range(len(settings_container)):
             entry = settings_container[i]
 
-            # always keep Solvers and Meshes
-            if isinstance(entry, SettingsDictEntry) and (entry.key == '"Solvers"' or entry.key == '"Meshes"'):
+            # always keep Solvers and Meshes and meta
+            if isinstance(entry, SettingsDictEntry) and (entry.key == '"Solvers"' or entry.key == '"Meshes"' or entry.key == '"meta"'):
                 self_settings_container.append(entry)
                 continue
 

@@ -90,32 +90,34 @@ outputwriter = SettingsDictEntry("OutputWriter", SettingsList([
 ]), 'specifies a list of output writers that can be used to output geometry field variables in various formats', 'output_writer.html#outputwriter')
 
 timestepping_schemes_ode_common = [
-    SettingsDictEntry("endTime", '1', 'run() method performs the simulation for t∈[0,endTime]', 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth'),
-   SettingsChoice([
-       SettingsDictEntry("numberTimeSteps", '10', None, 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth')
-   ], [
-       SettingsDictEntry("timeStepWidth", '0.001', None, 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth')
-   ]),
-   SettingsChoice([], [
-       SettingsDictEntry("logTimeStepWidthAsKey", '"timestep_width"', 'the time step width of this scheme will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#logtimestepwidthaskey-lognumbertimestepsaskey-and-durationlogkey')
-   ]),
-   SettingsChoice([], [
-       SettingsDictEntry("logNumberTimeStepsAsKey", '"timesteps_number"', 'the number of time steps of this scheme will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#logtimestepwidthaskey-lognumbertimestepsaskey-and-durationlogkey')
-   ]),
-   SettingsChoice([], [
-       SettingsDictEntry("durationLogKey", '"duration"', 'the total time that has passed for the computation will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#logtimestepwidthaskey-lognumbertimestepsaskey-and-durationlogkey')
-   ]),
-   SettingsDictEntry("timeStepOutputInterval", '100', 'a positive integer value that specifies the interval in which timesteps are printed to standard output', 'timestepping_schemes_ode.html#timestepoutputinterval'),
-   SettingsDictEntry("initialValues", '[]', 'list of double values to use as initial values. The solution is set to these values upon initialization', 'timestepping_schemes_ode.html#initialvalues'),
-   SettingsDictEntry("dirichletBoundaryConditions", '{}', 'dictionary with degrees of freedom as key and the value as value (i.e. {"dof": value, ...}', 'timestepping_schemes_ode.html#dirichletboundaryconditions-and-inputmeshisglobal'),
-   SettingsDictEntry("inputMeshIsGlobal", 'True', 'the degrees of freedom are interpreted in global numbering, if inputMeshIsGlobal is set to True, or in local numbering of the process, if inputMeshIsGlobal is False', 'timestepping_schemes_ode.html#dirichletboundaryconditions-and-inputmeshisglobal'),
-   SettingsChoice([], [
-       outputwriter
-   ]),
-   SettingsChoice([], [
-       SettingsDictEntry("nAdditionalFieldVariables", '1', 'number of additional field variables that will be created', 'timestepping_schemes_ode.html#nadditionalfieldvariables'),
-       SettingsDictEntry("additionalSlotNames", '["connector_slot_1"]', 'list of strings, names for of connector slots for the additional field variables', 'timestepping_schemes_ode.html#additionalslotnames')
-   ])
+     SettingsDictEntry("endTime", '1', 'run() method performs the simulation for t∈[0,endTime]', 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth'),
+    SettingsChoice([
+        SettingsDictEntry("numberTimeSteps", '10', None, 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth')
+    ], [
+        SettingsDictEntry("timeStepWidth", '0.001', None, 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth')
+    ]),
+    SettingsChoice([], [
+        SettingsDictEntry("logTimeStepWidthAsKey", '"timestep_width"', 'the time step width of this scheme will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#logtimestepwidthaskey-lognumbertimestepsaskey-and-durationlogkey')
+    ]),
+    SettingsChoice([], [
+        SettingsDictEntry("logNumberTimeStepsAsKey", '"timesteps_number"', 'the number of time steps of this scheme will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#logtimestepwidthaskey-lognumbertimestepsaskey-and-durationlogkey')
+    ]),
+    SettingsChoice([], [
+        SettingsDictEntry("durationLogKey", '"duration"', 'the total time that has passed for the computation will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#logtimestepwidthaskey-lognumbertimestepsaskey-and-durationlogkey')
+    ]),
+    SettingsDictEntry("timeStepOutputInterval", '100', 'a positive integer value that specifies the interval in which timesteps are printed to standard output', 'timestepping_schemes_ode.html#timestepoutputinterval'),
+    SettingsDictEntry("initialValues", '[]', 'list of double values to use as initial values. The solution is set to these values upon initialization', 'timestepping_schemes_ode.html#initialvalues'),
+    SettingsDictEntry("inputMeshIsGlobal", 'True', 'the degrees of freedom are interpreted in global numbering, if inputMeshIsGlobal is set to True, or in local numbering of the process, if inputMeshIsGlobal is False', 'timestepping_schemes_ode.html#dirichletboundaryconditions-and-inputmeshisglobal'),
+    SettingsDictEntry("dirichletBoundaryConditions", '{}', 'dictionary with degrees of freedom as key and the value as value (i.e. {"dof": value, ...}', 'timestepping_schemes_ode.html#dirichletboundaryconditions-and-inputmeshisglobal'),
+    SettingsDictEntry("dirichletOutputFilename", 'None', 'write Dirichlet Boundary conditions to .vtp file', 'boundary_conditions.html#dirichlet-output-filename'),
+    SettingsDictEntry("checkForNanInf", 'False', 'check if the solution vector contains nan or +/-inf values, if yes, an error is printed. This is a time-consuming check'),
+    SettingsChoice([], [
+        outputwriter
+    ]),
+    SettingsChoice([], [
+        SettingsDictEntry("nAdditionalFieldVariables", '1', 'number of additional field variables that will be created', 'timestepping_schemes_ode.html#nadditionalfieldvariables'),
+        SettingsDictEntry("additionalSlotNames", '["connector_slot_1"]', 'list of strings, names for of connector slots for the additional field variables', 'timestepping_schemes_ode.html#additionalslotnames')
+    ])
 ]
 
 operator_splitting_common = timestepping_schemes_ode_common + [
@@ -387,6 +389,7 @@ possible_solver_combinations = {
                 SettingsDictEntry("statesInitialValues", '"CellML"', 'list with initial values for each state of the CellML model or "CellML" or "undefined"', 'cellml_adapter.html#statesinitialvalues'),
                 SettingsDictEntry("initializeStatesToEquilibrium", 'True', 'if the equilibrium values of the states should be computed before the simulation starts', 'cellml_adapter.html#initializestatestoequilibrium-and-initializestatestoequilibriumtimestepwidth'),
                 SettingsDictEntry("initializeStatesToEquilibriumTimestepWidth", '1e-4', 'timestep width to use to solve the equilibrium equation', 'cellml_adapter.html#initializestatestoequilibrium-and-initializestatestoequilibriumtimestepwidth'),
+                SettingsDictEntry("additionalArgument", 'None', 'each callback function will get this as its last argument', 'cellml_adapter.html#callbacks'),
                 SettingsChoice([],[
                     SettingsDictEntry("setSpecificParametersFunction", 'set_specific_parameters', 'function name', 'cellml_adapter.html#setspecificparametersfunction-and-setspecificparameterscallinterval')
                 ]),
@@ -402,7 +405,8 @@ possible_solver_combinations = {
                 SettingsChoice([],[
                     SettingsDictEntry("setSpecificStatesCallEnableBegin", '0', None, 'cellml_adapter.html#setspecificstatescallenablebegin-setspecificstatescallfrequency-and-setspecificstatesfrequencyjitter'),
                     SettingsDictEntry("setSpecificStatesCallFrequency", '0.1', None, 'cellml_adapter.html#setspecificstatescallenablebegin-setspecificstatescallfrequency-and-setspecificstatesfrequencyjitter'),
-                    SettingsDictEntry("setSpecificStatesFrequencyJitter", '0', None, 'cellml_adapter.html#setspecificstatescallenablebegin-setspecificstatescallfrequency-and-setspecificstatesfrequencyjitter')
+                    SettingsDictEntry("setSpecificStatesFrequencyJitter", '0', None, 'cellml_adapter.html#setspecificstatescallenablebegin-setspecificstatescallfrequency-and-setspecificstatesfrequencyjitter'),
+                    SettingsDictEntry("setSpecificStatesRepeatAfterFirstCall", '0.0', '[ms] simulation time span for which the setSpecificStates callback will be called after a call was triggered')
                 ]),
                 SettingsChoice([], [
                     SettingsDictEntry("handleResultFunction", 'handle_result', 'function name', 'cellml_adapter.html#handleresultfunction-and-handleresultcallinterval')
@@ -435,6 +439,8 @@ possible_solver_combinations = {
                 ]),
                 SettingsDictEntry("stimulationLogFilename", '"out/stimulation.log"', 'file name of an output file that will contain all firing times', 'cellml_adapter.html#stimulationlogfilename'),
                 SettingsDictEntry("optimizationType", '"vc"', 'one of simd, vc, openmp', 'cellml_adapter.html#optimizationtype'),
+                SettingsDictEntry("approximateExponentialFunction", 'True', 'if optimizationType is "vc", whether the exponential function exp(x) should be approximate by (1+x/n)^n with n=1024', 'cellml_adapter.html#optimizationtype'),
+                SettingsDictEntry("maximumNumberOfThreads", '0', 'if optimizationType is "openmp", the maximum number of threads to use. Default value 0 means no restriction', 'cellml_adapter.html#optimizationtype'),
                 SettingsChoice([], [
                     SettingsDictEntry("compilerFlags", '"-fPIC -finstrument-functions -ftree-vectorize -fopt-info-vec-optimized=vectorizer_optimized.log -shared"', 'additional compiler flags for the compilation of the source file', 'cellml_adapter.html#compilerflags')
                 ]),
