@@ -662,8 +662,20 @@ possible_solver_combinations = {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["SpatialDiscretization::FiniteElementMethod"])
-        ]
+            ('FiniteElementMethod', ["SpatialDiscretization::FiniteElementMethod"])
+        ],
+        "python_options" : SettingsDict([
+            SettingsDictEntry("QuasiStaticLinearElasticitySolver", SettingsDict([
+                SettingsDictEntry("fiberDirection", '[0, 0, 1]', 'direction for anisotropy of elasticity formulation', 'quasi_static_linear_elasticity_solver.html#python-settings'),
+                SettingsDictEntry("PotentialFlow", 'None', 'if fiberDirection is not set to a constant direction, a potential flow simulation can be used where the fiber direction is set to the streamlines of the flow through the volume. In this case, set "PotentialFlow" to the settings for the FEM for the potential flow.', 'quasi_static_linear_elasticity_solver.html#python-settings'),
+                SettingsDictEntry("maximumActiveStress", '1.0', 'scaling factor to the active stress, σ_active = activation * anisotropyTensor * maximumActiveStress', 'quasi_static_linear_elasticity_solver.html#python-settings'),
+                SettingsDictEntry("strainScalingCurveWidth", '1.0', 'parameter for strain-stress curve of active stress, has no effect, because strain-stress curve is commented out in the code', 'quasi_static_linear_elasticity_solver.html#python-settings'),
+                SettingsDictEntry("scalingFactor", '1.0', 'scaling factor for displacements, to overrate them, if != 0 it is only for visualization purposes and not physical', 'quasi_static_linear_elasticity_solver.html#python-settings'),
+                SettingsDictEntry("inputMeshIsGlobal", 'True', 'if boundary conditions are specified in global numbering', 'quasi_static_linear_elasticity_solver.html#python-settings'),
+                SettingsDictEntry("slotNames", '[]', 'list of strings, names for the connector slots', 'quasi_static_linear_elasticity_solver.html#slotnames'),
+                SettingsDictEntry("anisotropyTensor", 'anisotropy for active stress. The tensor is given in a local basis where the fiber direction is (1,0,0), one list item = same tensor for all elements, multiple list items = a different tensor for each element. The tensor has to be symmetric', '[1,0,0, 0,0,0, 0,0,0]', 'quasi_static_linear_elasticity_solver.html#python-settings'),
+            ]))
+        ])
     },
     "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverChaste": {
         "runnable": True,
@@ -730,6 +742,15 @@ possible_solver_combinations = {
                 SettingsDictEntry("dirichletBoundaryConditions", '{}', 'a dict with {<dof no>: <value>} entries', 'boundary_conditions.html#dirichlet-boundary-conditions'),
                 SettingsDictEntry("dirichletOutputFilename", 'None', 'write Dirichlet Boundary conditions to .vtp file', 'boundary_conditions.html#dirichlet-output-filename'),
                 SettingsDictEntry("neumannBoundaryConditions", '[]', None, 'boundary_conditions.html#neumann-boundary-conditions'),
+                # this is undocumented:
+                SettingsDictEntry("divideNeumannBoundaryConditionValuesByTotalArea", 'False', 'if the neumann boundary condition vectors should be divided by the total surface area where surface loads are applied, this allows to specify the total force that acts on the surface. If set to False (default), the given traction is a per-surface quantity'),
+                # only used in quasi_static_linear_elasticity_solver
+                SettingsChoice([], [
+                    SettingsDictEntry("bulkModulus", '1.0', 'bulk modulus, K, material parameter for compressibility','quasi_static_linear_elasticity_solver.html#python-settings'),
+                ]),
+                SettingsChoice([], [
+                    SettingsDictEntry("shearModulus", '1.0', 'shear modulus, μ','quasi_static_linear_elasticity_solver.html#python-settings'),
+                ]),
                 SettingsDictEntry(
                     "updatePrescribedValuesFromSolution", 'False', 'if set to true, the values that are initially set in the solution field variable are used as the prescribed values at the dofs in dirichletBoundaryConditions', 'finite_element_method.html#updateprescribedvaluesfromsolution'),
                 SettingsDictEntry("inputMeshIsGlobal", 'True', 'together with rightHandSide it specifies whether the given values are interpreted as local values or global values in the context of a parallel execution on multiple processes', 'finite_element_method.html#inputmeshisglobal'),
