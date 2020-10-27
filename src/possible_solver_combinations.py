@@ -89,8 +89,7 @@ outputwriter = SettingsDictEntry("OutputWriter", SettingsList([
     )
 ]), 'specifies a list of output writers that can be used to output geometry field variables in various formats', 'output_writer.html#outputwriter')
 
-timestepping_schemes_ode_common = [
-     SettingsDictEntry("endTime", '1', 'run() method performs the simulation for t∈[0,endTime]', 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth'),
+timestepping_schemes_common = [
     SettingsChoice([
         SettingsDictEntry("numberTimeSteps", '10', None, 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth')
     ], [
@@ -106,6 +105,10 @@ timestepping_schemes_ode_common = [
         SettingsDictEntry("durationLogKey", '"duration"', 'the total time that has passed for the computation will be stored under this key in logs/log.csv', 'timestepping_schemes_ode.html#logtimestepwidthaskey-lognumbertimestepsaskey-and-durationlogkey')
     ]),
     SettingsDictEntry("timeStepOutputInterval", '100', 'a positive integer value that specifies the interval in which timesteps are printed to standard output', 'timestepping_schemes_ode.html#timestepoutputinterval'),
+]
+
+timestepping_schemes_ode_common = timestepping_schemes_common + [
+    SettingsDictEntry("endTime", '1', 'run() method performs the simulation for t∈[0,endTime]', 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth'),
     SettingsDictEntry("initialValues", '[]', 'list of double values to use as initial values. The solution is set to these values upon initialization', 'timestepping_schemes_ode.html#initialvalues'),
     SettingsDictEntry("inputMeshIsGlobal", 'True', 'the degrees of freedom are interpreted in global numbering, if inputMeshIsGlobal is set to True, or in local numbering of the process, if inputMeshIsGlobal is False', 'timestepping_schemes_ode.html#dirichletboundaryconditions-and-inputmeshisglobal'),
     SettingsDictEntry("dirichletBoundaryConditions", '{}', 'dictionary with degrees of freedom as key and the value as value (i.e. {"dof": value, ...}', 'timestepping_schemes_ode.html#dirichletboundaryconditions-and-inputmeshisglobal'),
@@ -577,14 +580,14 @@ possible_solver_combinations = {
         "timeSteppingScheme": True,
         "template_arguments": [
             # TODO does this really accept any timeSteppingScheme
-            ('TODO', ["timeSteppingScheme"])
+            ('TimeSteppingScheme', ["timeSteppingScheme"])
         ]
     },
     "TimeSteppingScheme::RepeatedCallStatic": {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["SpatialDiscretization::FiniteElementMethod"])
+            ('FiniteElementMethod', ["SpatialDiscretization::FiniteElementMethod"])
         ]
     },
     # specalizedSolvers:
@@ -593,18 +596,32 @@ possible_solver_combinations = {
         "timeSteppingScheme": True,
         "template_arguments_needed": 0,
         "template_arguments": [
-            ('TODO', ["Equation::"]),
+            ('Equation', ["Equation::"]),
             # TODO this should only accept Mesh::StructuredDeformableOfDimension<3>
-            ('TODO', ["Mesh::StructuredRegularFixedOfDimension"])
+            ('Mesh', ["Mesh::StructuredRegularFixedOfDimension"])
         ]
     },
     "TimeSteppingScheme::StaticBidomainSolver": {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["SpatialDiscretization::FiniteElementMethod"]),
-            ('TODO', ["SpatialDiscretization::FiniteElementMethod"])
-        ]
+            ('FiniteElementMethod', ["SpatialDiscretization::FiniteElementMethod"]),
+            ('FiniteElementMethod', ["SpatialDiscretization::FiniteElementMethod"])
+        ],
+        "python_options" : SettingsDict([
+            SettingsDictEntry("StaticBidomainSolver", SettingsDict(
+                timestepping_schemes_common + [
+                SettingsDictEntry("solverName", 'activationSolver', None, 'static_bidomain_solver.html#python-settings'),
+                SettingsDictEntry("initialGuessNonzero", 'True', None, 'static_bidomain_solver.html#python-settings'),
+                SettingsDictEntry("slotNames", '[]', 'list of strings, names for the connector slots', 'static_bidomain_solver.html#slotnames'),
+                SettingsDictEntry("PotentialFlow", SettingsDict([
+                    SettingsChildPlaceholder(0)
+                ])),
+                SettingsDictEntry("Activation", SettingsDict([
+                    SettingsChildPlaceholder(1)
+                ])),
+            ]))
+        ])
     },
     "TimeSteppingScheme::MultidomainSolver": {
         "runnable": True,
@@ -666,6 +683,7 @@ possible_solver_combinations = {
         ],
         "python_options" : SettingsDict([
             SettingsDictEntry("QuasiStaticLinearElasticitySolver", SettingsDict([
+                SettingsChildPlaceholder(0),
                 SettingsDictEntry("fiberDirection", '[0, 0, 1]', 'direction for anisotropy of elasticity formulation', 'quasi_static_linear_elasticity_solver.html#python-settings'),
                 SettingsDictEntry("PotentialFlow", 'None', 'if fiberDirection is not set to a constant direction, a potential flow simulation can be used where the fiber direction is set to the streamlines of the flow through the volume. In this case, set "PotentialFlow" to the settings for the FEM for the potential flow.', 'quasi_static_linear_elasticity_solver.html#python-settings'),
                 SettingsDictEntry("maximumActiveStress", '1.0', 'scaling factor to the active stress, σ_active = activation * anisotropyTensor * maximumActiveStress', 'quasi_static_linear_elasticity_solver.html#python-settings'),
@@ -681,7 +699,7 @@ possible_solver_combinations = {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["Integer"])
+            ('Integer', ["Integer"])
         ]
     },
 
@@ -756,6 +774,10 @@ possible_solver_combinations = {
                 SettingsDictEntry("inputMeshIsGlobal", 'True', 'together with rightHandSide it specifies whether the given values are interpreted as local values or global values in the context of a parallel execution on multiple processes', 'finite_element_method.html#inputmeshisglobal'),
                 SettingsChoice([], [
                     SettingsDictEntry("diffusionTensor", '[]', 'for anisotropic diffusion, the diffusion tensor can be given as a list of double valus in row-major order', 'finite_element_method.html#diffusiontensor')
+                ]),
+                # undocumented in FiniteElementMethod
+                SettingsChoice([], [
+                    SettingsDictEntry("extracellularDiffusionTensor", '[]', 'sigma_e, one list item = same tensor for all elements, multiple list items = a different tensor for each element', 'static_bidomain_solver.html#python-settings')
                 ]),
                 solver,
                 SettingsChoice([], [
