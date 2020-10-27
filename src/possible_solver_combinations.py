@@ -175,6 +175,47 @@ multidomain_solver_common = timestepping_schemes_ode_common + [
     SettingsDictEntry("recreateLinearSolverInterval", '0', 'how often the Petsc KSP object (linear solver) should be deleted and recreated. This is to remedy memory leaks in Petsc\'s implementation of some solvers. 0 means disabled.', 'multidomain_solver.html#python-settings')
 ]
 
+hyperelasticity_common = [
+    SettingsDictEntry("durationLogKey", '"duration_mechanics"', 'key to find duration of this solver in the log file', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("materialParameters", '[]', 'list of material parameters, must match the number of parameters in the material', 'hyperelasticity.html#materialparameters'),
+    SettingsDictEntry("displacementsScalingFactor", '1.0', 'scaling factor for displacements, only set to sth. other than 1 only to increase visual appearance for very small displacements', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("residualNormLogFilename", '"residual_norm.txt"', 'log file where residual norm values of the nonlinear solver will be written', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("useAnalyticJacobian", 'True', 'whether to use the analytically computed jacobian matrix in the nonlinear solver (fast)', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("useNumericJacobian", 'True', 'whether to use the numerically computed jacobian matrix in the nonlinear solver (slow), only works with non-nested matrices, if both numeric and analytic are enable, it uses the analytic for the preconditioner and the numeric as normal jacobian', 'hyperelasticity.html#python-settings'),
+    # undocumented
+    SettingsDictEntry("nNonlinearSolveCalls", '1', 'how often the nonlinear solve should be called'),
+    # undocumented
+    SettingsDictEntry("loadFactorGiveUpThreshold", '1e-5', 'a threshold for the load factor, when to abort the solve of the current time step. The load factors are adjusted automatically if the nonlinear solver diverged. If the load factors get too small, it aborts the solve'),
+    SettingsDictEntry("dumpDenseMatlabVariables", 'False', 'whether to have extra output of matlab vectors, x,r, jacobian matrix (very slow)', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("meshName", '"meshX"', 'mesh with quadratic Lagrange ansatz functions', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("inputMeshIsGlobal", 'True', 'boundary conditions are specified in global numberings, whereas the mesh is given in local numberings', 'hyperelasticity.html#python-settings'),
+    SettingsChoice([
+        SettingsDictEntry("fiberMeshNames", '[]', 'fiber meshes that will be used to determine the fiber direction', 'hyperelasticity.html#python-settings')
+    ], [
+        SettingsDictEntry("fiberDirection", '[0, 0, 1]', 'if fiberMeshNames is empty, directly set the constant fiber direction, in element coordinate system', 'hyperelasticity.html#python-settings')
+    ]),
+    SettingsDictEntry("loadFactors", '[]', 'if []: no load factors are used', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("nNonlinearSolveCalls", '1', 'how often the nonlinear solve should be called', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("dirichletBoundaryConditions", '{}', 'the initial Dirichlet boundary conditions that define values for displacements u', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("neumannBoundaryConditions", '[]', 'neumann boundary conditions that define traction forces on surfaces of elements', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("divideNeumannBoundaryConditionValuesByTotalArea", 'False', 'if the given Neumann boundary condition values under "neumannBoundaryConditions" are total forces instead of surface loads and therefore should be scaled by the surface area of all elements where Neumann BC are applied', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("updateDirichletBoundaryConditionsFunction", 'None', 'function that updates the dirichlet BCs while the simulation is running', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("updateDirichletBoundaryConditionsFunctionCallInterval", '1', 'every which step the update function should be called, 1 means every time step', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("initialValuesDisplacements", '[[0.0,0.0,0.0] for _ in range(mx*my*mz)]', 'initial values for the displacements, vector of values for every node [[node1-x,y,z], [node2-x,y,z], ...]', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("initialValuesVelocities", '[[0.0,0.0,0.0] for _ in range(mx*my*mz)]', 'initial values for the velocities, vector of values for every node [[node1-x,y,z], [node2-x,y,z], ...]', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("extrapolateInitialGuess", 'True', 'if the initial values for the dynamic nonlinear problem should be computed by extrapolating the previous displacements and velocities', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("constantBodyForce", '[0.0, 0.0, 0.0]', 'a constant force that acts on the whole body, e.g. for gravity', 'hyperelasticity.html#python-settings'),
+    SettingsChoice([],[
+        outputwriter
+    ]),
+    SettingsChoice([],[
+        SettingsDictEntry("pressure", SettingsDict([outputwriter]))
+    ]),
+    SettingsChoice([],[
+        SettingsDictEntry("LoadIncrements", SettingsDict([outputwriter]))
+    ]),
+]
+
 
 possible_solver_combinations = {
     "GLOBAL": {
@@ -270,46 +311,7 @@ possible_solver_combinations = {
         ],
         "python_options": SettingsDict([
             SettingsDictEntry("HyperelasticitySolver", SettingsDict(
-            solver_nonlinear + [
-                SettingsDictEntry("durationLogKey", '"duration_mechanics"', 'key to find duration of this solver in the log file', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("materialParameters", '[]', 'list of material parameters, must match the number of parameters in the material', 'hyperelasticity.html#materialparameters'),
-                SettingsDictEntry("displacementsScalingFactor", '1.0', 'scaling factor for displacements, only set to sth. other than 1 only to increase visual appearance for very small displacements', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("residualNormLogFilename", '"residual_norm.txt"', 'log file where residual norm values of the nonlinear solver will be written', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("useAnalyticJacobian", 'True', 'whether to use the analytically computed jacobian matrix in the nonlinear solver (fast)', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("useNumericJacobian", 'True', 'whether to use the numerically computed jacobian matrix in the nonlinear solver (slow), only works with non-nested matrices, if both numeric and analytic are enable, it uses the analytic for the preconditioner and the numeric as normal jacobian', 'hyperelasticity.html#python-settings'),
-                # undocumented
-                SettingsDictEntry("nNonlinearSolveCalls", '1', 'how often the nonlinear solve should be called'),
-                # undocumented
-                SettingsDictEntry("loadFactorGiveUpThreshold", '1e-5', 'a threshold for the load factor, when to abort the solve of the current time step. The load factors are adjusted automatically if the nonlinear solver diverged. If the load factors get too small, it aborts the solve'),
-                SettingsDictEntry("dumpDenseMatlabVariables", 'False', 'whether to have extra output of matlab vectors, x,r, jacobian matrix (very slow)', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("meshName", '"meshX"', 'mesh with quadratic Lagrange ansatz functions', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("inputMeshIsGlobal", 'True', 'boundary conditions are specified in global numberings, whereas the mesh is given in local numberings', 'hyperelasticity.html#python-settings'),
-                SettingsChoice([
-                    SettingsDictEntry("fiberMeshNames", '[]', 'fiber meshes that will be used to determine the fiber direction', 'hyperelasticity.html#python-settings')
-                ], [
-                    SettingsDictEntry("fiberDirection", '[0, 0, 1]', 'if fiberMeshNames is empty, directly set the constant fiber direction, in element coordinate system', 'hyperelasticity.html#python-settings')
-                ]),
-                SettingsDictEntry("loadFactors", '[]', 'if []: no load factors are used', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("nNonlinearSolveCalls", '1', 'how often the nonlinear solve should be called', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("dirichletBoundaryConditions", '{}', 'the initial Dirichlet boundary conditions that define values for displacements u', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("neumannBoundaryConditions", '[]', 'neumann boundary conditions that define traction forces on surfaces of elements', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("divideNeumannBoundaryConditionValuesByTotalArea", 'False', 'if the given Neumann boundary condition values under "neumannBoundaryConditions" are total forces instead of surface loads and therefore should be scaled by the surface area of all elements where Neumann BC are applied', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("updateDirichletBoundaryConditionsFunction", 'None', 'function that updates the dirichlet BCs while the simulation is running', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("updateDirichletBoundaryConditionsFunctionCallInterval", '1', 'every which step the update function should be called, 1 means every time step', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("initialValuesDisplacements", '[[0.0,0.0,0.0] for _ in range(mx*my*mz)]', 'initial values for the displacements, vector of values for every node [[node1-x,y,z], [node2-x,y,z], ...]', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("initialValuesVelocities", '[[0.0,0.0,0.0] for _ in range(mx*my*mz)]', 'initial values for the velocities, vector of values for every node [[node1-x,y,z], [node2-x,y,z], ...]', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("extrapolateInitialGuess", 'True', 'if the initial values for the dynamic nonlinear problem should be computed by extrapolating the previous displacements and velocities', 'hyperelasticity.html#python-settings'),
-                SettingsDictEntry("constantBodyForce", '[0.0, 0.0, 0.0]', 'a constant force that acts on the whole body, e.g. for gravity', 'hyperelasticity.html#python-settings'),
-                SettingsChoice([],[
-                    outputwriter
-                ]),
-                SettingsChoice([],[
-                    SettingsDictEntry("pressure", SettingsDict([outputwriter]))
-                ]),
-                SettingsChoice([],[
-                    SettingsDictEntry("LoadIncrements", SettingsDict([outputwriter]))
-                ]),
-            ]
+                solver_nonlinear + hyperelasticity_common
             ))
         ])
     },
