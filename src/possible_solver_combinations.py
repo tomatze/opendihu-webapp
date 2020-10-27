@@ -90,7 +90,6 @@ outputwriter = SettingsDictEntry("OutputWriter", SettingsList([
 ]), 'specifies a list of output writers that can be used to output geometry field variables in various formats', 'output_writer.html#outputwriter')
 
 timestepping_schemes_ode_common = [
-    SettingsChildPlaceholder(0),
     SettingsDictEntry("endTime", '1', 'run() method performs the simulation for t∈[0,endTime]', 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth'),
    SettingsChoice([
        SettingsDictEntry("numberTimeSteps", '10', None, 'timestepping_schemes_ode.html#endtime-numbertimesteps-and-timestepwidth')
@@ -129,6 +128,32 @@ operator_splitting_common = timestepping_schemes_ode_common + [
         SettingsChildPlaceholder(1)
     ]))
 ]
+
+multidomain_solver_common = timestepping_schemes_ode_common + [
+    SettingsDictEntry("nCompartments", '1', 'number of compartments', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("compartmentRelativeFactors", '[]', 'list of lists of (the factors for all dofs), if "inputIsGlobal": True, this contains the global dofs', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("inputIsGlobal", 'True', 'if values and dofs correspond to the global numbering', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("am", '500.0', 'am parameter for every motor unit (ration of surface to volume of fibers)', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("cm", '0.58', 'cm parameter for every motor unit (capacitance of the cellular membrane)', 'multidomain_solver.html#python-settings'),
+    # TODO maybe add a special SettingsSolver()
+    SettingsDictEntry("solverName", '"multidomainLinearSolver"', 'reference to the solver used for the global linear system of the multidomain eq.', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("alternativeSolverName", '"multidomainAlternativeLinearSolver"', 'reference to the alternative solver, which is used when the normal solver diverges', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("subSolverType", '"gamg"', 'sub solver when block jacobi preconditioner is used', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("subPreconditionerType", '"none"', 'sub preconditioner when block jacobi preconditioner is used', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("gamgType", '"classical"', 'one of agg, geo, or classical', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("cycleType", '"cycleV"', 'either cycleV or cycleW', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("nLevels", '25', None, 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("hypreOptions", '"-pc_hypre_boomeramg_strong_threshold 0.7"', 'additional options if a hypre preconditioner is selected', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("theta", '0.5', 'weighting factor of implicit term in Crank-Nicolson scheme, 0.5 gives the classic, 2nd-order Crank-Nicolson scheme, 1.0 gives implicit euler', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("useLumpedMassMatrix", 'True', 'which formulation to use, the formulation with lumped mass matrix (True) is more stable but approximative, the other formulation (False) is exact but needs more iterations', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("useSymmetricPreconditionerMatrix", 'True', 'if the diagonal blocks of the system matrix should be used as preconditioner matrix', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("initialGuessNonzero", 'True', 'if the initial guess for the 3D system should be set as the solution of the previous timestep, this only makes sense for iterative solvers', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("enableFatComputation", 'True', 'disabling the computation of the fat layer is only for debugging and speeds up computation. If set to False, the respective matrix is set to the identity', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("showLinearSolverOutput", 'True', 'if convergence information of the linear solver in every timestep should be printed, this is a lot of output for fast computations', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("updateSystemMatrixEveryTimestep", 'False', 'if this multidomain solver will update the system matrix in every first timestep, us this only if the geometry changed, e.g. by contraction', 'multidomain_solver.html#python-settings'),
+    SettingsDictEntry("recreateLinearSolverInterval", '0', 'how often the Petsc KSP object (linear solver) should be deleted and recreated. This is to remedy memory leaks in Petsc\'s implementation of some solvers. 0 means disabled.', 'multidomain_solver.html#python-settings')
+]
+
 
 possible_solver_combinations = {
     "GLOBAL": {
@@ -203,6 +228,7 @@ possible_solver_combinations = {
             ('Nested Solver', ["Control::MultipleInstances"])
         ],
         "python_options" : SettingsDict([
+            SettingsChildPlaceholder(0),
             SettingsDictEntry("fiberDistributionFile", '"MU_fibre_distribution_3780.txt"', 'this file contains the assignment of fibers to motor units', 'fast_monodomain_solver.html#fiberdistributionfile'),
             SettingsDictEntry("firingTimesFile", '"MU_firing_times_real.txt"', 'this file specifies when which motor unit fires', 'fast_monodomain_solver.html#firingtimesfile'),
             SettingsDictEntry("onlyComputeIfHasBeenStimulated", 'True', 'if True: disable computation of the Monodomain equation as long as the fiber has not been stimulated in therefore is in equilibrium', 'fast_monodomain_solver.html#onlycomputeifhasbeenstimulated'),
@@ -458,7 +484,7 @@ possible_solver_combinations = {
         ],
         "python_options": SettingsDict([
             SettingsDictEntry("ExplicitEuler", SettingsDict(
-                timestepping_schemes_ode_common
+                timestepping_schemes_ode_common + [SettingsChildPlaceholder(0)]
             ))
         ])
     },
@@ -471,6 +497,7 @@ possible_solver_combinations = {
         "python_options": SettingsDict([
             SettingsDictEntry("ImplicitEuler", SettingsDict(
                 timestepping_schemes_ode_common + [
+                    SettingsChildPlaceholder(0),
                     solver,
                     SettingsDictEntry("timeStepWidthRelativeTolerance", '1e-10', 'tolerance for the time step width which controls when the system matrix has to be recomputed', 'timestepping_schemes_ode.html#impliciteuler'),
                     SettingsChoice([], [
@@ -491,7 +518,7 @@ possible_solver_combinations = {
         ],
         "python_options": SettingsDict([
             SettingsDictEntry("Heun", SettingsDict(
-                timestepping_schemes_ode_common
+                timestepping_schemes_ode_common + [SettingsChildPlaceholder(0)]
             ))
         ])
     },
@@ -504,6 +531,7 @@ possible_solver_combinations = {
         "python_options": SettingsDict([
             SettingsDictEntry("HeunAdaptive", SettingsDict(
                 timestepping_schemes_ode_common + [
+                    SettingsChildPlaceholder(0),
                     SettingsDictEntry("tolerance", '0.1', 'tolerance for the estimated error. It is guaranteed, that the error is always smaller than this value', 'timestepping_schemes_ode.html#tolerance'),
                     SettingsDictEntry("minTimeStepWidth", '1e-6', 'the minimum timestepwidth to use', 'timestepping_schemes_ode.html#mintimestepwidth'),
                     SettingsDictEntry("timeStepAdaptOption", '"regular"', 'method for the adaptive time step width computation (regular or modified)', 'timestepping_schemes_ode.html#timestepadaptoption'),
@@ -522,6 +550,7 @@ possible_solver_combinations = {
         "python_options": SettingsDict([
             SettingsDictEntry("CrankNicolson", SettingsDict(
                 timestepping_schemes_ode_common + [
+                    SettingsChildPlaceholder(0),
                     solver,
                     SettingsDictEntry("timeStepWidthRelativeTolerance", '1e-10', 'tolerance for the time step width which controls when the system matrix has to be recomputed', 'timestepping_schemes_ode.html#lowestmultiplier'),
                     SettingsChoice([], [
@@ -574,31 +603,44 @@ possible_solver_combinations = {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["SpatialDiscretization::FiniteElementMethod"]),
-            ('TODO', ["SpatialDiscretization::FiniteElementMethod"])
-        ]
+            ('FiniteElementMethod', ["SpatialDiscretization::FiniteElementMethod"]),
+            ('FiniteElementMethod', ["SpatialDiscretization::FiniteElementMethod"])
+        ],
+        "python_options" : SettingsDict([
+            SettingsDictEntry("MultidomainSolver", SettingsDict(
+                multidomain_solver_common + [
+                    SettingsDictEntry("PotentialFlow", SettingsDict([
+                        SettingsChildPlaceholder(0)
+                    ])),
+                    SettingsDictEntry("Activation", SettingsDict([
+                        SettingsChildPlaceholder(1)
+                    ])),
+                ]
+            ))
+        ])
     },
     "TimeSteppingScheme::MultidomainWithFatSolver": {
         "runnable": True,
         "timeSteppingScheme": True,
         "template_arguments": [
-            ('TODO', ["SpatialDiscretization::FiniteElementMethod"]),
-            ('TODO', ["SpatialDiscretization::FiniteElementMethod"]),
-            ('TODO', ["SpatialDiscretization::FiniteElementMethod"])
+            ('FiniteElementMethod', ["SpatialDiscretization::FiniteElementMethod"]),
+            ('FiniteElementMethod', ["SpatialDiscretization::FiniteElementMethod"]),
+            ('FiniteElementMethod', ["SpatialDiscretization::FiniteElementMethod"])
         ],
         "python_options": SettingsDict([
-            # TODO
-            SettingsDictEntry("MultidomainSolver", SettingsDict([
-                SettingsDictEntry("PotentialFlow", SettingsDict([
-                    SettingsChildPlaceholder(0)
-                ])),
-                SettingsDictEntry("Activation", SettingsDict([
-                    SettingsChildPlaceholder(1)
-                ])),
-                SettingsDictEntry("Fat", SettingsDict([
-                    SettingsChildPlaceholder(2)
-                ]))
-            ]))
+            SettingsDictEntry("MultidomainSolver", SettingsDict(
+                multidomain_solver_common + [
+                    SettingsDictEntry("PotentialFlow", SettingsDict([
+                        SettingsChildPlaceholder(0)
+                    ])),
+                    SettingsDictEntry("Activation", SettingsDict([
+                        SettingsChildPlaceholder(1)
+                    ])),
+                    SettingsDictEntry("Fat", SettingsDict([
+                        SettingsChildPlaceholder(2)
+                    ]))
+                ]
+            ))
         ])
     },
     "TimeSteppingScheme::QuasiStaticNonlinearElasticitySolverFebio": {
