@@ -175,6 +175,7 @@ class Node:
     def add_missing_default_python_settings(self, settings_global_dict, recurse_childs=True, self_settings_container=None, settings_container_default=None):
         # counter for added settings
         changes = 0
+        recurse_childs_at_the_end = False
 
         # init stuff and recurse childs if we are on the outer level of a node
         if self_settings_container == None and settings_container_default == None:
@@ -191,16 +192,8 @@ class Node:
 
             # recurse childs
             if recurse_childs:
-                childs_recurse = []
-                for child in self.childs.get_real_childs():
-                    # ignore childs that have an Integer as name
-                    try:
-                        int(child.name)
-                    except:
-                        childs_recurse.append(child)
-                for child in childs_recurse:
-                    changes = changes + child.add_missing_default_python_settings(
-                        settings_global_dict=settings_global_dict, recurse_childs=recurse_childs)
+                self.childs_with_placeholders = []
+                recurse_childs_at_the_end = True
 
         # handle SettingsList
         if isinstance(self_settings_container, SettingsList) and isinstance(settings_container_default, SettingsList):
@@ -249,6 +242,7 @@ class Node:
             # add missing default settings to this level (NOT recursive)
             for entry in settings_container_default:
                 if isinstance(entry, SettingsChildPlaceholder):
+                    self.childs_with_placeholders.append(self.childs.get_childs()[entry.childnumber])
                     placeholder_already_added = False
                     for e in self_settings_container:
                         if isinstance(e, SettingsChildPlaceholder) and e.childnumber == entry.childnumber:
@@ -322,6 +316,22 @@ class Node:
                             entry.key)
                         changes = changes + self.add_missing_default_python_settings(
                             self_settings_container=entry.value, recurse_childs=recurse_childs, settings_container_default=settings_container_default_recurse, settings_global_dict=settings_global_dict)
+
+        if recurse_childs_at_the_end:
+            # only recurse childs, for that we have seen or set a child_placeholders
+            # if e.g. a dict in which a SettingsChildPlaceholder should be is set to an external variable,
+            # we do not want to add those settings again to the childnode
+            childs_recurse = []
+            for child in self.childs_with_placeholders:
+                # ignore childs that have an Integer as name
+                try:
+                    int(child.name)
+                except:
+                    childs_recurse.append(child)
+            for child in childs_recurse:
+                changes = changes + child.add_missing_default_python_settings(
+                    settings_global_dict=settings_global_dict, recurse_childs=recurse_childs)
+
         # except:
         #    printe('something went wrong while adding missing python-settings')
 
