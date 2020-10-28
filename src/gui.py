@@ -7,7 +7,7 @@ from root_node import RootNode
 from node import PlaceholderNode
 import possible_solver_combinations
 from helpers import Message, Error, Info, Warning
-from python_settings import PythonSettings
+from python_settings import PythonSettings, SettingsList, SettingsDict, SettingsDictEntry, SettingsChildPlaceholder, SettingsListEntry
 from cpp_tree import CPPTree
 from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk
 import sys
@@ -21,10 +21,20 @@ class NodeLine(GObject.GObject):
         self.node = node
         self.depth = depth
 
+class SettingsLine(GObject.GObject):
+    def __init__(self, settings, depth):
+        GObject.GObject.__init__(self)
+        self.settings = settings
+        self.depth = depth
+
 
 class ListBoxRowWithNode(Gtk.ListBoxRow):
     def add_node(self, node):
         self.node = node
+
+class ListBoxRowWithSettings(Gtk.ListBoxRow):
+    def add_node(self, settings):
+        self.settings = settings
 
 
 class DiscardNodeChangesDialog(Gtk.Dialog):
@@ -197,6 +207,10 @@ class MainWindow(Gtk.ApplicationWindow):
             self.redraw_treeview_cpp_recursive(child, depth + 1)
 
     def redraw_treeview_python(self):
+        self.redraw_treeview_python_code()
+        self.redraw_treeview_python_list()
+
+    def redraw_treeview_python_code(self):
         try:
             row = self.cpp_treeview_listbox.get_selected_row()
             self.cpp_treeview_current_row = row
@@ -206,6 +220,20 @@ class MainWindow(Gtk.ApplicationWindow):
             text = ''
             self.cpp_treeview_current_row = None
         self.python_treeview_code.get_buffer().set_text(text)
+
+    def redraw_treeview_python_list(self):
+        self.python_treeview_store.remove_all()
+        self.redraw_treeview_python_list_recursive(
+            self.cpp_tree.undo_stack.get_current_root().settings_dict, 0)
+
+    def redraw_treeview_python_list_recursive(self, settings, depth):
+        if isinstance(settings, SettingsList) or isinstance(settings, SettingsDict):
+            for e in settings:
+                self.redraw_treeview_python_list_recursive(e, depth)
+        if isinstance(settings, SettingsDictEntry) or isinstance(settings, SettingsListEntry):
+            self.python_treeview_store.append(SettingsLine(settings, depth))
+            if not isinstance(settings.value, str):
+                self.redraw_treeview_python_list_recursive(settings.value, depth + 1)
 
     def open_file(self, type):
         if type == 'cpp':
@@ -380,6 +408,41 @@ class MainWindow(Gtk.ApplicationWindow):
         self.log_append_message(ret)
         self.redraw_all()
 
+    def python_treeview_listbox_create_widget(self, list_settings):
+        settings = list_settings.settings
+        depth = list_settings.depth
+        grid = Gtk.Grid()
+        for _ in range(depth):
+            grid.add(Gtk.Label(label='  '))
+
+        if isinstance(settings, SettingsDict):
+            grid.add(Gtk.Label(label='dict:'))
+        if isinstance(settings, SettingsList):
+            grid.add(Gtk.Label(label='list:'))
+        elif isinstance(settings, SettingsDictEntry):
+            v = ''
+            if isinstance(settings.value, str):
+                v = settings.value
+            elif isinstance(settings.value, SettingsDict):
+                v = '{..}'
+            elif isinstance(settings.value, SettingsList):
+                v = '[..]'
+            grid.add(Gtk.Label(label=settings.key + ' : ' + v))
+        elif isinstance(settings, SettingsListEntry):
+            v = ''
+            if isinstance(settings.value, str):
+                v = settings.value
+            elif isinstance(settings.value, SettingsDict):
+                v = '{..}'
+            elif isinstance(settings.value, SettingsList):
+                v = '[..]'
+            grid.add(Gtk.Label(label=v))
+        grid.show_all()
+        row = ListBoxRowWithSettings()
+        row.settings = settings
+        row.add(grid)
+        return row
+
     # returns True if there are unapplied changes in python_treeview_code, that should not be discarded
     # returns Fals otherwise
     def check_python_treeview_for_unapplied_code(self):
@@ -425,7 +488,7 @@ class MainWindow(Gtk.ApplicationWindow):
             return
         ret = self.cpp_tree.add_missing_default_python_settings()
         self.log_append_message(ret)
-        self.redraw_python()
+        self.redraw_all()
 
     def on_button_apply_python_code(self, _):
         if self.check_python_treeview_for_unapplied_code():
@@ -436,7 +499,7 @@ class MainWindow(Gtk.ApplicationWindow):
         rets = self.cpp_tree.parse_python_settings(text)
         self.log_append_message(rets)
         if not isinstance(rets, Error):
-            self.redraw_python()
+            self.redraw_all()
 
     def on_button_apply_cpp_code(self, _):
         if self.check_python_treeview_for_unapplied_code():
@@ -717,13 +780,13 @@ class MainWindow(Gtk.ApplicationWindow):
         self.tabs_cpp_treeview.append_page(
             self.scroll_cpp_treeview, Gtk.Label(label='C++'))
 
-        # python tree view
-        self.python_treeview_tabs = Gtk.Notebook()
+        # python treeview code
+        self.tabs_python_treeview = Gtk.Notebook()
         self.grid_treeview.attach_next_to(
-            self.python_treeview_tabs, self.tabs_cpp_treeview, Gtk.PositionType.RIGHT, 1, 1)
+            self.tabs_python_treeview, self.tabs_cpp_treeview, Gtk.PositionType.RIGHT, 1, 1)
         self.python_treeview_grid = Gtk.Grid()
-        self.python_treeview_tabs.append_page(
-            self.python_treeview_grid, Gtk.Label(label='Python'))
+        self.tabs_python_treeview.append_page(
+            self.python_treeview_grid, Gtk.Label(label='Python-Code'))
         self.python_treeview_scroll = Gtk.ScrolledWindow()
         self.python_treeview_grid.add(self.python_treeview_scroll)
 
@@ -749,6 +812,32 @@ class MainWindow(Gtk.ApplicationWindow):
             "clicked", self.on_python_treeview_button_add_defaults)
         self.python_treeview_buttons.add(
             self.python_treeview_button_add_defaults)
+
+
+        # python treeview list-tab
+        self.python_treeview_store = Gio.ListStore()
+        self.python_treeview_listbox = Gtk.ListBox()
+        self.python_treeview_listbox.set_vexpand(True)
+        self.python_treeview_listbox.set_hexpand(True)
+        self.python_treeview_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.python_treeview_listbox.bind_model(
+            self.python_treeview_store, self.python_treeview_listbox_create_widget)
+
+        self.python_treeview_listbox.set_activate_on_single_click(False)
+
+        def python_row_double_clicked(_, row):
+            pass
+        self.python_treeview_listbox.connect('row-activated', python_row_double_clicked)
+
+        def python_row_clicked(_, row):
+            pass
+        self.python_treeview_listbox.connect('row-selected', python_row_clicked)
+
+        self.scroll_python_treeview = Gtk.ScrolledWindow()
+        self.scroll_python_treeview.add(self.python_treeview_listbox)
+        self.tabs_python_treeview.append_page(
+            self.scroll_python_treeview, Gtk.Label(label='Python-List'))
+
 
 
 class MainApplication(Gtk.Application):

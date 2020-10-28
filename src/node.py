@@ -373,7 +373,7 @@ class Node:
                 self.settings_dict = SettingsDict()
             self_settings_container = self.settings_dict
         if settings_container_default == None:
-            settings_container_default = self.get_default_python_settings_dict()
+             settings_container_default = self.get_default_python_settings_dict()
 
         # create a list with all child_placeholders at this level
         child_placeholders = []
@@ -436,7 +436,7 @@ class Node:
                     # if the value is a SettingsContainer -> recurse
                     if isinstance(entry.value, SettingsContainer):
                         # create a new entry
-                        settings_container_default_recurse = None
+                        settings_container_default_recurse = []
                         if isinstance(entry, SettingsDictEntry):
                             new_entry = SettingsDictEntry()
                             new_entry.key = entry.key
@@ -445,7 +445,6 @@ class Node:
                         else:
                             new_entry = SettingsListEntry()
                             # TODO here we assume that there is only one SettingsListEntry in python_options we just use the first one
-                            settings_container_default_recurse = None
                             try:
                                 settings_container_default_recurse = settings_container_default.get_first_SettingsListEntry().value
                             except: pass
@@ -490,11 +489,11 @@ class Node:
                             rest.append(entry)
                         elif keep_entries_that_have_no_default:
                             warnings.append(
-                                Warning(entry.key + ' is an unknown setting -> added it anyway'))
+                                Warning(entry.key + ' is an unknown setting -> added it to ' + str(self.name) + ' anyway'))
                             self_settings_container.append(entry)
                         else:
                             warnings.append(
-                                Warning(entry.key + ' is an unknown setting -> it was NOT added'))
+                                Warning(entry.key + ' is an unknown setting -> it was NOT added to ' + str(self.name)))
 
             elif isinstance(entry, SettingsChildPlaceholder):
                 # don't add placeholders found in SettingsDict
