@@ -1,5 +1,6 @@
 import re
 import copy
+import traceback
 
 from helpers import printe, indent, Error, Info, Warning
 import possible_solver_combinations
@@ -78,6 +79,12 @@ class CPPTree:
         # add template_arguments for GLOBAL (runnables)
         self.combinations['GLOBAL']["template_arguments"] = [
             ("Runnable", self.runnables)]
+
+        # iterate over python_options and fix lazy definitions like '{}' and '[1, 2, 3]' replace them with SettingsDict() and SettingsList(SettingsListEntry(..),..)
+        for _key, value in self.combinations.items():
+            if not "python_options" in value:
+                continue
+            value["python_options"] = SettingsDict(value["python_options"].repr(0, hide_placeholders=False))
 
         self.undo_stack = UndoStack()
 
@@ -234,6 +241,7 @@ class CPPTree:
         try:
             return n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=recurse_childs)
         except:
+            traceback.print_exc()
             self.undo_stack.undo()
             self.undo_stack.remove_future()
             return Error('failed to add PythonSettings object to ' + str(n.name) + ' (most likely a bug)')

@@ -45,7 +45,7 @@ class SettingsConditional():
         self.if_block = None
         self.else_block = None
 
-    def repr(self, depth):
+    def repr(self, depth, hide_placeholders=True):
         depth = depth - 1
         if isinstance(self.if_block, str):
             value1 = self.if_block
@@ -321,7 +321,7 @@ class SettingsDict(SettingsContainer):
                 if isinstance(entrie.value, str):
                     value = entrie.value
                 else:
-                    value = entrie.value.repr(depth + 1)
+                    value = entrie.value.repr(depth + 1, hide_placeholders=hide_placeholders)
                 optional_comma = ','
                 if i == len(self) - 1:
                     optional_comma = ''
@@ -346,7 +346,7 @@ class SettingsDict(SettingsContainer):
                     if isinstance(e.value, str):
                         value = e.value
                     else:
-                        value = e.value.repr(depth + 1)
+                        value = e.value.repr(depth + 1, hide_placeholders=hide_placeholders)
                     entrie_r = entrie_r + indentation * (depth + 1) + e.key + ' : ' + value + ',\n'
                 entrie_r = entrie_r[:-1]
             elif isinstance(entrie, SettingsComment):
@@ -399,7 +399,7 @@ class SettingsList(SettingsContainer):
     def __repr__(self):
         return self.repr(0)
 
-    def repr(self, depth):
+    def repr(self, depth, hide_placeholders=True):
         if len(self) == 0:
             return '[]'
         indentation = '  '

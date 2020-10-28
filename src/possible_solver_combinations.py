@@ -333,9 +333,6 @@ possible_solver_combinations = {
         ],
         "python_options" : SettingsDict([
             SettingsChildPlaceholder(0),
-            #SettingsDictEntry("sadasdasd", SettingsDict([
-            #    SettingsDictEntry("fiberDistributionFile", '"MU_fibre_distribution_3780.txt"', 'this file contains the assignment of fibers to motor units', 'fast_monodomain_solver.html#fiberdistributionfile'),
-            #]))
             SettingsDictEntry("fiberDistributionFile", '"MU_fibre_distribution_3780.txt"', 'this file contains the assignment of fibers to motor units', 'fast_monodomain_solver.html#fiberdistributionfile'),
             SettingsDictEntry("firingTimesFile", '"MU_firing_times_real.txt"', 'this file specifies when which motor unit fires', 'fast_monodomain_solver.html#firingtimesfile'),
             SettingsDictEntry("onlyComputeIfHasBeenStimulated", 'True', 'if True: disable computation of the Monodomain equation as long as the fiber has not been stimulated in therefore is in equilibrium', 'fast_monodomain_solver.html#onlycomputeifhasbeenstimulated'),

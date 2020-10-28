@@ -205,7 +205,7 @@ class Node:
         # handle SettingsList
         if isinstance(self_settings_container, SettingsList) and isinstance(settings_container_default, SettingsList):
             # add default_entry if missing
-            if len(self_settings_container) == 0:
+            if len(self_settings_container) == 0 and len(settings_container_default) > 0:
                 default_entry = copy.deepcopy(settings_container_default[0])
                 if not isinstance(default_entry.value, str):
                     default_entry.value = type(default_entry.value)()
@@ -374,7 +374,7 @@ class Node:
             entry = settings_container[i]
 
             # always keep Solvers and Meshes and meta
-            if isinstance(entry, SettingsDictEntry) and (entry.key == '"Solvers"' or entry.key == '"Meshes"' or entry.key == '"meta"'):
+            if isinstance(entry, SettingsDictEntry) and (entry.key == '"Solvers"' or entry.key == '"Meshes"' or entry.key == '"meta"' or entry.key == '"MappingsBetweenMeshes"'):
                 self_settings_container.append(entry)
                 continue
 
