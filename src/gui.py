@@ -200,6 +200,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.cpp_treeview_store.remove_all()
         self.redraw_treeview_cpp_recursive(
             self.cpp_tree.undo_stack.get_current_root(), 0)
+        self.cpp_treeview_listbox.select_row(self.cpp_treeview_listbox.get_row_at_index(0))
 
     def redraw_treeview_cpp_recursive(self, node, depth):
         self.cpp_treeview_store.append(NodeLine(node, depth))
@@ -223,8 +224,11 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def redraw_treeview_python_list(self):
         self.python_treeview_store.remove_all()
-        self.redraw_treeview_python_list_recursive(
-            self.cpp_tree.undo_stack.get_current_root().settings_dict, 0)
+        try:
+            node = self.cpp_treeview_listbox.get_selected_row().node
+            self.redraw_treeview_python_list_recursive(node.settings_dict, 0)
+            self.python_treeview_listbox.select_row(self.python_treeview_listbox.get_row_at_index(0))
+        except: pass
 
     def redraw_treeview_python_list_recursive(self, settings, depth):
         if isinstance(settings, SettingsList) or isinstance(settings, SettingsDict):
@@ -488,7 +492,7 @@ class MainWindow(Gtk.ApplicationWindow):
             return
         ret = self.cpp_tree.add_missing_default_python_settings()
         self.log_append_message(ret)
-        self.redraw_all()
+        self.redraw_python()
 
     def on_button_apply_python_code(self, _):
         if self.check_python_treeview_for_unapplied_code():
@@ -499,7 +503,7 @@ class MainWindow(Gtk.ApplicationWindow):
         rets = self.cpp_tree.parse_python_settings(text)
         self.log_append_message(rets)
         if not isinstance(rets, Error):
-            self.redraw_all()
+            self.redraw_python()
 
     def on_button_apply_cpp_code(self, _):
         if self.check_python_treeview_for_unapplied_code():
