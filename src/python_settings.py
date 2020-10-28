@@ -145,6 +145,10 @@ class SettingsDict(SettingsContainer):
             # print(mode_stack)
             #print(token.tok_name[token_type] + token_value)
             if token_type == token.NL or token_type == token.NEWLINE:
+                # in the edgecase where there is no comma after a value -> store the value
+                if len(token_buffer) > 0:
+                    stack[-1][-1].value = tokens_to_string(token_buffer)
+                    token_buffer = []
                 # don't append comments to SettingsDictEntry or SettingsListEntry after newline
                 append_comment = False
                 # handle empty lines
@@ -326,6 +330,25 @@ class SettingsDict(SettingsContainer):
                     value + optional_comma + comments
             elif hide_placeholders and isinstance(entrie, SettingsChildPlaceholder):
                 continue
+            elif isinstance(entrie, SettingsChoice) or isinstance(entrie, SettingsMesh) or isinstance(entrie, SettingsSolver):
+                # repr everything in SettingsChoice SettingsMesh and SettingsSolver (only for testing, this should not happen normally)
+                entrie_r = ''
+                if isinstance(entrie, SettingsChoice):
+                    es = entrie.defaults + entrie.alternatives
+                else:
+                    es = entrie
+                    # resolve choices in meshes and solvers:
+                    for e in es:
+                        if isinstance(e, SettingsChoice):
+                            es.extend(e.defaults + e.alternatives)
+                            es.remove(e)
+                for e in es:
+                    if isinstance(e.value, str):
+                        value = e.value
+                    else:
+                        value = e.value.repr(depth + 1)
+                    entrie_r = entrie_r + indentation * (depth + 1) + e.key + ' : ' + value + ',\n'
+                entrie_r = entrie_r[:-1]
             elif isinstance(entrie, SettingsComment):
                 # SettingsChildPlaceholder gets handled here if hide_placeholders==False
                 entrie_r = indentation * (depth + 1) + entrie.comment

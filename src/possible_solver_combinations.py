@@ -333,12 +333,15 @@ possible_solver_combinations = {
         ],
         "python_options" : SettingsDict([
             SettingsChildPlaceholder(0),
+            #SettingsDictEntry("sadasdasd", SettingsDict([
+            #    SettingsDictEntry("fiberDistributionFile", '"MU_fibre_distribution_3780.txt"', 'this file contains the assignment of fibers to motor units', 'fast_monodomain_solver.html#fiberdistributionfile'),
+            #]))
             SettingsDictEntry("fiberDistributionFile", '"MU_fibre_distribution_3780.txt"', 'this file contains the assignment of fibers to motor units', 'fast_monodomain_solver.html#fiberdistributionfile'),
             SettingsDictEntry("firingTimesFile", '"MU_firing_times_real.txt"', 'this file specifies when which motor unit fires', 'fast_monodomain_solver.html#firingtimesfile'),
             SettingsDictEntry("onlyComputeIfHasBeenStimulated", 'True', 'if True: disable computation of the Monodomain equation as long as the fiber has not been stimulated in therefore is in equilibrium', 'fast_monodomain_solver.html#onlycomputeifhasbeenstimulated'),
             SettingsDictEntry("disableComputationWhenStatesAreCloseToEquilibrium", 'True', 'similar to onlyComputeIfHasBeenStimulated, this checks whether the values have reached the equilibrium and then disables the computation', 'fast_monodomain_solver.html#disablecomputationwhenstatesareclosetoequilibrium'),
             SettingsDictEntry("valueForStimulatedPoint", '20.0', 'value that will be set for the transmembrane potential Vm when it is stimulated', 'fast_monodomain_solver.html#valueforstimulatedpoint'),
-            SettingsDictEntry("neuromuscularJunctionRelativeSize", '0.0', 'relative range of the position of the neuromuscular junction', 'fast_monodomain_solver.html#neuromuscularjunctionrelativesize')
+            SettingsDictEntry("neuromuscularJunctionRelativeSize", '0.0', 'relative range of the position of the neuromuscular junction', 'fast_monodomain_solver.html#neuromuscularjunctionrelativesize'),
         ])
     },
     "SpatialDiscretization::HyperelasticitySolver": {
@@ -512,7 +515,7 @@ possible_solver_combinations = {
                     SettingsDictEntry("setSpecificParametersFunction", 'set_specific_parameters', 'function name', 'cellml_adapter.html#setspecificparametersfunction-and-setspecificparameterscallinterval')
                 ]),
                 SettingsChoice([],[
-                    SettingsDictEntry("setSpecificParametersFunction", '0', None, 'cellml_adapter.html#setspecificparametersfunction-and-setspecificparameterscallinterval')
+                    SettingsDictEntry("setSpecificParametersCallInterval", '0', None, 'cellml_adapter.html#setspecificparametersfunction-and-setspecificparameterscallinterval')
                 ]),
                 SettingsChoice([],[
                     SettingsDictEntry("setSpecificStatesFunction", 'set_specific_states', 'function name', 'cellml_adapter.html#setspecificstatesfunction-and-setspecificstatescallinterval')

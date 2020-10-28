@@ -3,12 +3,13 @@
 import unittest
 
 from cpp_tree import CPPTree
+from python_settings import SettingsDict
 from helpers import Error
 
 
 class TestParser(unittest.TestCase):
 
-    example_root = "../opendihu-clean/examples/"
+    example_root = "../../opendihu-clean/examples/"
     example_paths = [
         "diffusion/anisotropic_diffusion/src/anisotropic_diffusion2d.cpp",
         "diffusion/anisotropic_diffusion/src/anisotropic_diffusion3d.cpp",
@@ -105,9 +106,7 @@ class TestParser(unittest.TestCase):
         "poisson/poisson1d/src/poisson_example_1d.cpp",
         "poisson/poisson2d/src/poisson_example_2d.cpp",
         "solid_mechanics/chaste/src/3d_muscle.cpp",
-        # IGNORE
-        # "solid_mechanics/chaste/src/solving_elasticity_problems_tutorial.cpp",
-        "solid_mechanics/dynamic_mooney_rivlin/gelatine1/src/dynamic.cpp",
+        # IGNORE "solid_mechanics/chaste/src/solving_elasticity_problems_tutorial.cpp", "solid_mechanics/dynamic_mooney_rivlin/gelatine1/src/dynamic.cpp",
         "solid_mechanics/dynamic_mooney_rivlin/gelatine2/src/dynamic.cpp",
         "solid_mechanics/dynamic_mooney_rivlin/muscle/src/dynamic_transversely_isotropic.cpp",
         "solid_mechanics/dynamic_mooney_rivlin/muscle_with_fat/src/muscle_with_fat.cpp",
@@ -174,6 +173,24 @@ class TestParser(unittest.TestCase):
             example2.parse_cpp_src(src2)
             self.assertEqual(example1.undo_stack.get_current_root().childs.get_real_childs()[0].compare_cpp(
                 example2.undo_stack.get_current_root().childs.get_real_childs()[0]), True, msg=path)
+
+class TestPythonParser(unittest.TestCase):
+    def test_default_python_settings_syntax(self):
+        example = CPPTree()
+        example.load_empty_simulation()
+        for key, value in example.combinations.items():
+            if not "python_options" in value:
+                continue
+            print("checking: " + key)
+            python_options_dict_1 = value["python_options"]
+            python_options_str_1 = str(python_options_dict_1)
+            print(python_options_str_1)
+            python_options_dict_2 = SettingsDict(python_options_str_1)
+            python_options_str_2 = str(python_options_dict_2)
+            #if key == 'TimeSteppingScheme::DynamicHyperelasticitySolver':
+            #    print(python_options_str_2)
+            print(python_options_str_2)
+
 
 
 if __name__ == '__main__':
