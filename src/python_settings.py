@@ -50,11 +50,11 @@ class SettingsConditional():
         if isinstance(self.if_block, str):
             value1 = self.if_block
         else:
-            value1 = self.if_block.repr(depth + 1)
+            value1 = self.if_block.repr(depth + 1, hide_placeholders=hide_placeholders)
         if isinstance(self.else_block, str):
             value2 = self.else_block
         else:
-            value2 = self.else_block.repr(depth + 1)
+            value2 = self.else_block.repr(depth + 1, hide_placeholders=hide_placeholders)
         return value1 + ' if ' + self.condition + ' else ' + value2
 
 
@@ -413,7 +413,7 @@ class SettingsList(SettingsContainer):
                 if isinstance(entrie.value, str):
                     value = entrie.value
                 else:
-                    value = entrie.value.repr(depth + 1)
+                    value = entrie.value.repr(depth + 1, hide_placeholders=hide_placeholders)
                 optional_comma = ','
                 comprehension = ''
                 if i == len(self) - 1:
