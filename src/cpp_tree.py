@@ -80,11 +80,37 @@ class CPPTree:
         self.combinations['GLOBAL']["template_arguments"] = [
             ("Runnable", self.runnables)]
 
+        def fix_lazy_recursive(settings_container):
+            for entry in settings_container:
+                if isinstance(entry, SettingsDictEntry) or isinstance(entry, SettingsListEntry):
+                    if isinstance(entry.value, str):
+                        if entry.value.startswith('{') and entry.value.endswith('}'):
+                            entry.value = SettingsDict(entry.value)
+                            print(entry.value)
+                        elif entry.value.startswith('[') and entry.value.endswith(']'):
+                            entry.value = SettingsList(entry.value)
+                            print(entry.value)
+                        else:
+                            continue
+                    else:
+                        fix_lazy_recursive(entry.value)
+                elif isinstance(entry, SettingsChildPlaceholder):
+                    continue
+                elif isinstance(entry, SettingsMesh) or isinstance(entry, SettingsDict):
+                    fix_lazy_recursive(entry)
+                elif isinstance(entry, SettingsChoice):
+                    fix_lazy_recursive(entry.defaults)
+                    fix_lazy_recursive(entry.alternatives)
+                else:
+                    fix_lazy_recursive(entry.value)
         # iterate over python_options and fix lazy definitions like '{}' and '[1, 2, 3]' replace them with SettingsDict() and SettingsList(SettingsListEntry(..),..)
         for _key, value in self.combinations.items():
             if not "python_options" in value:
                 continue
-            value["python_options"] = SettingsDict(value["python_options"].repr(0, hide_placeholders=False))
+            #value["python_options"] = SettingsDict(value["python_options"].repr(0, hide_placeholders=False))
+            python_options = value["python_options"]
+            fix_lazy_recursive(python_options)
+            #print(python_options)
 
         self.undo_stack = UndoStack()
 

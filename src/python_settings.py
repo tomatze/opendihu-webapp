@@ -390,11 +390,18 @@ class SettingsList(SettingsContainer):
     def __init__(self, entries=None):
         self.list_comprehension = None
         if entries:
-            for entry in entries:
-                # if we only pass strings, we don't have to encapsualte them manually
-                if isinstance(entry, str):
-                    entry = SettingsListEntry(entry)
-                self.append(entry)
+            if isinstance(entries, str):
+                # wrap list-str in dict and parse it
+                l = SettingsDict('{ "a" : ' + entries + ' }')[0].value
+                self.list_comprehension = l.list_comprehension
+                for e in l:
+                    self.append(e)
+            elif isinstance(entries, list):
+                for entry in entries:
+                    # if we only pass strings, we don't have to encapsualte them manually
+                    if isinstance(entry, str):
+                        entry = SettingsListEntry(entry)
+                    self.append(entry)
 
     def __repr__(self):
         return self.repr(0)

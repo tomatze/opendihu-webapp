@@ -204,13 +204,15 @@ class Node:
 
         # handle SettingsList
         if isinstance(self_settings_container, SettingsList) and isinstance(settings_container_default, SettingsList):
-            # add default_entry if missing
+            # if list is empty -> add all list entries + list_comprehension
             if len(self_settings_container) == 0 and len(settings_container_default) > 0:
-                default_entry = copy.deepcopy(settings_container_default[0])
-                if not isinstance(default_entry.value, str):
-                    default_entry.value = type(default_entry.value)()
-                self_settings_container.append(default_entry)
-            # recurse
+                self_settings_container.list_comprehension = settings_container_default.list_comprehension
+                for settings_container_default_entry in settings_container_default:
+                    default_entry = copy.deepcopy(settings_container_default_entry)
+                    if not isinstance(default_entry.value, str):
+                        default_entry.value = type(default_entry.value)()
+                    self_settings_container.append(default_entry)
+            ## recurse
             # if we have multiple entries just use settings_container_default[0] for all of them
             for entry in self_settings_container:
                 if isinstance(entry, SettingsListEntry):
