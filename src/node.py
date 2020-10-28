@@ -488,6 +488,7 @@ class Node:
                         if is_called_on_child:
                             rest.append(entry)
                         elif keep_entries_that_have_no_default:
+                            entry.is_unknown = True
                             warnings.append(
                                 Warning(entry.key + ' is an unknown setting -> added it to ' + str(self.name) + ' anyway'))
                             self_settings_container.append(entry)

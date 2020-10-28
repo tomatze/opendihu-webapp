@@ -425,6 +425,10 @@ class MainWindow(Gtk.ApplicationWindow):
         for _ in range(depth):
             grid.add(Gtk.Label(label='  '))
 
+        try:
+            if settings.comments:
+                grid.set_tooltip_text(str(settings.comments))
+        except: pass
         if isinstance(settings, SettingsDict):
             grid.add(Gtk.Label(label='dict:'))
         if isinstance(settings, SettingsList):
@@ -438,6 +442,11 @@ class MainWindow(Gtk.ApplicationWindow):
             elif isinstance(settings.value, SettingsList):
                 v = '[..]'
             grid.add(Gtk.Label(label=settings.key + ' : ' + v))
+            if settings.is_unknown:
+                color = Gdk.RGBA(1, 1, 0, .5)
+                grid.override_background_color(Gtk.StateType.NORMAL, color)
+                grid.set_tooltip_text(settings.key + ' is an unknown setting in this context')
+
         elif isinstance(settings, SettingsListEntry):
             v = ''
             if isinstance(settings.value, str):
@@ -455,7 +464,6 @@ class MainWindow(Gtk.ApplicationWindow):
             if not webmode and not doc_link == None:
                 grid.add(Gtk.Label(label=' '))
                 button_open_doc = Gtk.Button()
-                #button_open_doc = Gtk.LinkButton()
                 button_open_doc.set_tooltip_text('open web-documentation')
                 icon = Gio.ThemedIcon(name="help-about")
                 image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
@@ -478,6 +486,8 @@ class MainWindow(Gtk.ApplicationWindow):
             image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
             button_delete_settings.add(image)
             def on_button_delete_settings(_):
+                if self.check_python_treeview_for_unapplied_code():
+                    return
                 self.cpp_tree.undo_stack.duplicate_current_state()
                 parent.remove(settings)
                 self.log_append_message(Info('removed ' + GObject.markup_escape_text(str(type(settings))) + ' from python-options'))
