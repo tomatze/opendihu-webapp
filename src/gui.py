@@ -11,6 +11,8 @@ from python_settings import PythonSettings, SettingsList, SettingsDict, Settings
 from cpp_tree import CPPTree
 from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk
 import sys
+import subprocess
+import os
 
 
 # stores a node + its depth to view it in a ListBox
@@ -22,10 +24,11 @@ class NodeLine(GObject.GObject):
         self.depth = depth
 
 class SettingsLine(GObject.GObject):
-    def __init__(self, settings, depth):
+    def __init__(self, settings, depth, parent):
         GObject.GObject.__init__(self)
         self.settings = settings
         self.depth = depth
+        self.parent = parent
 
 
 class ListBoxRowWithNode(Gtk.ListBoxRow):
@@ -230,14 +233,16 @@ class MainWindow(Gtk.ApplicationWindow):
             self.python_treeview_listbox.select_row(self.python_treeview_listbox.get_row_at_index(0))
         except: pass
 
-    def redraw_treeview_python_list_recursive(self, settings, depth):
+    def redraw_treeview_python_list_recursive(self, settings, depth, parent=None):
         if isinstance(settings, SettingsList) or isinstance(settings, SettingsDict):
             for e in settings:
-                self.redraw_treeview_python_list_recursive(e, depth)
-        if isinstance(settings, SettingsDictEntry) or isinstance(settings, SettingsListEntry):
-            self.python_treeview_store.append(SettingsLine(settings, depth))
+                self.redraw_treeview_python_list_recursive(e, depth, parent=settings)
+        elif isinstance(settings, SettingsDictEntry) or isinstance(settings, SettingsListEntry):
+            self.python_treeview_store.append(SettingsLine(settings, depth, parent=parent))
             if not isinstance(settings.value, str):
-                self.redraw_treeview_python_list_recursive(settings.value, depth + 1)
+                self.redraw_treeview_python_list_recursive(settings.value, depth + 1, parent=settings)
+        elif isinstance(settings, SettingsChildPlaceholder):
+            self.python_treeview_store.append(SettingsLine(settings, depth, parent=parent))
 
     def open_file(self, type):
         if type == 'cpp':
@@ -415,6 +420,7 @@ class MainWindow(Gtk.ApplicationWindow):
     def python_treeview_listbox_create_widget(self, list_settings):
         settings = list_settings.settings
         depth = list_settings.depth
+        parent = list_settings.parent
         grid = Gtk.Grid()
         for _ in range(depth):
             grid.add(Gtk.Label(label='  '))
@@ -441,6 +447,45 @@ class MainWindow(Gtk.ApplicationWindow):
             elif isinstance(settings.value, SettingsList):
                 v = '[..]'
             grid.add(Gtk.Label(label=v))
+        elif isinstance(settings, SettingsChildPlaceholder):
+            grid.add(Gtk.Label(label=settings.comment))
+
+        try:
+            doc_link = settings.doc_link
+            if not webmode and not doc_link == None:
+                grid.add(Gtk.Label(label=' '))
+                button_open_doc = Gtk.Button()
+                #button_open_doc = Gtk.LinkButton()
+                button_open_doc.set_tooltip_text('open web-documentation')
+                icon = Gio.ThemedIcon(name="help-about")
+                image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
+                button_open_doc.add(image)
+                def on_button_open_doc(_):
+                    if sys.platform=='darwin':
+                        subprocess.Popen(['open', doc_link])
+                    elif sys.platform == 'win32':
+                        os.startfile(doc_link)
+                    else:
+                        subprocess.Popen(['xdg-open', doc_link])
+                button_open_doc.connect("clicked", on_button_open_doc)
+                grid.add(button_open_doc)
+        except: pass
+
+        if not isinstance(settings, SettingsChildPlaceholder):
+            grid.add(Gtk.Label(label=' '))
+            button_delete_settings = Gtk.Button()
+            icon = Gio.ThemedIcon(name="edit-delete-symbolic")
+            image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
+            button_delete_settings.add(image)
+            def on_button_delete_settings(_):
+                self.cpp_tree.undo_stack.duplicate_current_state()
+                parent.remove(settings)
+                self.log_append_message(Info('removed ' + GObject.markup_escape_text(str(type(settings))) + ' from python-options'))
+                self.redraw_python()
+                self.on_python_treeview_button_apply(None)
+            button_delete_settings.connect("clicked", on_button_delete_settings)
+            grid.add(button_delete_settings)
+
         grid.show_all()
         row = ListBoxRowWithSettings()
         row.settings = settings

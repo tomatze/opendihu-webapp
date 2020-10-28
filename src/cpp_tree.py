@@ -83,6 +83,9 @@ class CPPTree:
         def fix_lazy_recursive(settings_container):
             for entry in settings_container:
                 if isinstance(entry, SettingsDictEntry) or isinstance(entry, SettingsListEntry):
+                    # while we are at it, we can complete the urls in the SettingsListEntrys
+                    if isinstance(entry, SettingsDictEntry) and entry.doc_link:
+                        entry.doc_link = 'https://opendihu.readthedocs.io/en/latest/settings/' + entry.doc_link
                     if isinstance(entry.value, str):
                         if entry.value.startswith('{') and entry.value.endswith('}'):
                             entry.value = SettingsDict(entry.value)
