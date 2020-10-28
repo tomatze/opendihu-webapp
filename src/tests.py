@@ -181,15 +181,13 @@ class TestPythonParser(unittest.TestCase):
         for key, value in example.combinations.items():
             if not "python_options" in value:
                 continue
-            print("checking: " + key)
+            #print("syntax checking: " + key)
             python_options_dict_1 = value["python_options"]
             python_options_str_1 = str(python_options_dict_1)
-            print(python_options_str_1)
+            #print(python_options_str_1)
             python_options_dict_2 = SettingsDict(python_options_str_1)
             python_options_str_2 = str(python_options_dict_2)
-            #if key == 'TimeSteppingScheme::DynamicHyperelasticitySolver':
-            #    print(python_options_str_2)
-            print(python_options_str_2)
+            #print(python_options_str_2)
 
 
 
