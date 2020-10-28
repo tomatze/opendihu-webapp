@@ -217,7 +217,10 @@ class Node:
             for entry in self_settings_container:
                 if isinstance(entry, SettingsListEntry):
                     if not isinstance(entry.value, str):
-                        settings_container_default_recurse = settings_container_default[0].value
+                        settings_container_default_recurse = None
+                        try:
+                            settings_container_default_recurse = settings_container_default[0].value
+                        except: pass
                         changes = changes + self.add_missing_default_python_settings(self_settings_container=entry.value, recurse_childs=recurse_childs,
                                                                                      settings_container_default=settings_container_default_recurse, settings_global_dict=settings_global_dict,)
         # handle SettingsDict
@@ -282,7 +285,7 @@ class Node:
                         dict = settings_global_dict.get_value(entry.global_key)
                         if not isinstance(dict, SettingsDict):
                             printe(
-                                'we have to add to global,but global is not a dict')
+                                'we have to add to global, but global is not a dict (propably it is a variable, we cannot add to)')
                             continue
                         # get the name e.g. mesh0
                         if self_settings_container.has_key(entry.name_key):
@@ -374,6 +377,10 @@ class Node:
 
         for i in range(len(settings_container)):
             entry = settings_container[i]
+            #try:
+            #    print(type(entry.value))
+            #    print(entry.value)
+            #except: pass
 
             # always keep Solvers and Meshes and meta
             if isinstance(entry, SettingsDictEntry) and (entry.key == '"Solvers"' or entry.key == '"Meshes"' or entry.key == '"meta"' or entry.key == '"MappingsBetweenMeshes"'):
@@ -414,7 +421,7 @@ class Node:
                     settings_container_default = settings_container_default_resolved
 
                 # check if the entry is a SettingsListEntry or if it is a SettingsDictEntry and its key is in the defaults
-                if isinstance(entry, SettingsListEntry) or settings_container_default.has_key(entry.key):
+                if isinstance(entry, SettingsListEntry) or (isinstance(settings_container_default, SettingsDict) and settings_container_default.has_key(entry.key)):
                     # key exists in defaults
                     # if the value is a SettingsContainer -> recurse
                     if isinstance(entry.value, SettingsContainer):
@@ -428,7 +435,10 @@ class Node:
                         else:
                             new_entry = SettingsListEntry()
                             # TODO here we assume that there is only one SettingsListEntry in python_options we just use the first one
-                            settings_container_default_recurse = settings_container_default.get_first_SettingsListEntry().value
+                            settings_container_default_recurse = None
+                            try:
+                                settings_container_default_recurse = settings_container_default.get_first_SettingsListEntry().value
+                            except: pass
                         new_entry.comments = entry.comments
 
                         # add an empty list or dict to the new entry

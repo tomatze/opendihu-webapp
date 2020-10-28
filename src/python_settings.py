@@ -146,9 +146,10 @@ class SettingsDict(SettingsContainer):
             #print(token.tok_name[token_type] + token_value)
             if token_type == token.NL or token_type == token.NEWLINE:
                 # in the edgecase where there is no comma after a value -> store the value
-                if len(token_buffer) > 0:
-                    stack[-1][-1].value = tokens_to_string(token_buffer)
-                    token_buffer = []
+                #if len(token_buffer) > 0:
+                #    if not mode_stack[-1] == "list_comprehension":
+                #        stack[-1][-1].value = tokens_to_string(token_buffer)
+                #        token_buffer = []
                 # don't append comments to SettingsDictEntry or SettingsListEntry after newline
                 append_comment = False
                 # handle empty lines
@@ -220,8 +221,9 @@ class SettingsDict(SettingsContainer):
             elif token_type == token.RSQB:
                 if mode_stack[-1] == "list_comprehension":
                     if nested_counter == 1:
+                        #if token_buffer:
                         stack[-1].list_comprehension = tokens_to_string(
-                            token_buffer)
+                        token_buffer)
                         token_buffer = []
                         nested_counter = 0
                         stack.pop()
@@ -472,4 +474,5 @@ class PythonSettings():
 
 # helper function wrapping pythons untokenize-function to improve readability of the returned string
 def tokens_to_string(tokens):
+    #print(tokens)
     return untokenize(tokens).splitlines()[-1].strip()

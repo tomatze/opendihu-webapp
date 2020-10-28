@@ -86,10 +86,10 @@ class CPPTree:
                     if isinstance(entry.value, str):
                         if entry.value.startswith('{') and entry.value.endswith('}'):
                             entry.value = SettingsDict(entry.value)
-                            print(entry.value)
+                            #print(entry.value)
                         elif entry.value.startswith('[') and entry.value.endswith(']'):
                             entry.value = SettingsList(entry.value)
-                            print(entry.value)
+                            #print(entry.value)
                         else:
                             continue
                     else:
@@ -262,14 +262,15 @@ class CPPTree:
         except:
             self.undo_stack.undo()
             self.undo_stack.remove_future()
+            traceback.print_exc()
             return Error('failed to create a PythonSettings object from code (propably a syntax-error)')
 
         try:
             return n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=recurse_childs)
         except:
-            traceback.print_exc()
             self.undo_stack.undo()
             self.undo_stack.remove_future()
+            traceback.print_exc()
             return Error('failed to add PythonSettings object to ' + str(n.name) + ' (most likely a bug)')
 
     # get the trees PythonSettings object, which holds the global python_settings and its prefix+postfix
