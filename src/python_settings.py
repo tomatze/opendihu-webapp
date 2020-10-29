@@ -361,14 +361,24 @@ class SettingsDict(SettingsContainer):
         return '{' + r + '\n' + indentation * depth + '}'
 
     def has_key(self, key):
-        return any(isinstance(entry, SettingsDictEntry) and key == entry.key for entry in self)
+        conditionals_resolved = self.__get_resolved_Conditionals()
+        return any(isinstance(entry, SettingsDictEntry) and key == entry.key for entry in self + conditionals_resolved)
 
     def get_value(self, key):
-        for entry in self:
+        conditionals_resolved = self.__get_resolved_Conditionals()
+        for entry in self + conditionals_resolved:
             if isinstance(entry, SettingsDictEntry) and entry.key == key:
                 return entry.value
         return
 
+    def __get_resolved_Conditionals(self):
+        conditionals_resolved = []
+        for entry in self:
+            if isinstance(entry, SettingsConditional):
+                # this only resolves stuff in if_block not in else_block
+                for e in entry.if_block:
+                    conditionals_resolved.append(e)
+        return conditionals_resolved
 
 class SettingsMesh(SettingsDict):
     def __init__(self, options):
@@ -445,6 +455,16 @@ class SettingsList(SettingsContainer):
             if isinstance(entry, SettingsListEntry):
                 return entry
         return
+
+    # get the i'th SettingsListEntry
+    def get_settings_list_entry(self, i):
+        j = 0
+        for entry in self:
+            if isinstance(entry, SettingsListEntry):
+                if i == j:
+                    return entry
+                j = j + 1
+        return None
 
 
 # this holds a complete settings.py by parsing its config-dict and storing the rest of the file in prefix and postfix

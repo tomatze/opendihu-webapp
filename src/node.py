@@ -95,7 +95,7 @@ class Node:
 
         self.parent = None
 
-        self.settings_dict = None
+        self.settings_dict = SettingsDict()
         self.settings_container_default = None
 
     def get_int_replacement(self, integer):
@@ -190,9 +190,9 @@ class Node:
                 self.settings_dict = SettingsDict()
             self_settings_container = self.settings_dict
 
+            self.childs_with_placeholders = []
             # recurse childs
             if recurse_childs:
-                self.childs_with_placeholders = []
                 recurse_childs_at_the_end = True
 
         # handle SettingsList
@@ -337,9 +337,67 @@ class Node:
 
         return changes
 
+    # return SettingsDict with all unused settings
+    def get_unused_python_settings(self):
+        settings_container_default = copy.deepcopy(self.get_default_python_settings_dict())
+        missing_settings_dict, added_a_key =  self.__get_unused_python_settings_recursive(self.settings_dict, settings_container_default, SettingsDict())
+        if not added_a_key:
+            return None
+        else:
+            return missing_settings_dict
+    def __get_unused_python_settings_recursive(self, settings_container, settings_container_default, missing_settings_container, added_a_key=False):
+        #missing_settings_container_backup = copy.deepcopy(missing_settings_container)
+        # resolve SettingsChoice
+        for entry in settings_container_default:
+            if isinstance(entry, SettingsChoice):
+                settings_container_default.extend(entry.defaults)
+                settings_container_default.extend(entry.alternatives)
+        # resolve Meshes and Solvers
+        for entry in settings_container_default:
+            if isinstance(entry, SettingsMesh) or isinstance(entry, SettingsSolver):
+                settings_container_default.extend(entry)
+        i = 0
+        for entry in settings_container_default:
+            if isinstance(entry, SettingsListEntry):
+                if isinstance(entry.value, SettingsContainer):
+                    # recurse containers inside SettingsList
+                    missing_entry = SettingsListEntry()
+                    missing_entry.comments = entry.comments
+                    missing_entry.value = type(entry.value)()
+                    try:
+                        settings_container_recurse = settings_container.get_settings_list_entry(i).value
+                    except:
+                        settings_container_recurse = type(entry.value)()
+                    _, added_a_key_here = self.__get_unused_python_settings_recursive(settings_container_recurse, entry.value, missing_entry.value)
+                    if added_a_key_here:
+                        added_a_key = True
+                        missing_settings_container.append(missing_entry)
+            if isinstance(entry, SettingsDictEntry):
+                if isinstance(entry.value, SettingsContainer):
+                    # recurse entry if its value is a container
+                    missing_entry = SettingsDictEntry()
+                    missing_entry.comments = entry.comments
+                    missing_entry.key = entry.key
+                    missing_entry.value = type(entry.value)()
+                    settings_container_recurse = settings_container.get_value(entry.key)
+                    if settings_container_recurse == None: settings_container_recurse = type(entry.value)()
+                    _, added_a_key_here = self.__get_unused_python_settings_recursive(settings_container_recurse, entry.value, missing_entry.value)
+                    if added_a_key_here:
+                        added_a_key = True
+                        missing_settings_container.append(missing_entry)
+                        #print('added recursively: ' + entry.key)
+                elif not settings_container.has_key(entry.key):
+                    # just add it if its key is a string and we dont have it yet
+                    # by using has_key, we are also looking into SettingsConditionals inside settings_container
+                    #print('added: ' + entry.key)
+                    missing_settings_container.append(entry)
+                    added_a_key = True
+            i = i + 1
+        return (missing_settings_container, added_a_key)
+
     # delete self.settings_dict recursively
     def delete_python_settings_recursive(self):
-        self.settings_dict = None
+        self.settings_dict = SettingsDict()
         for child in self.childs.get_real_childs():
             child.delete_python_settings_recursive()
 
@@ -350,7 +408,7 @@ class Node:
         if recurse_childs:
             self.delete_python_settings_recursive()
         else:
-            self.settings_dict = None
+            self.settings_dict = SettingsDict()
         self.settings_dict_prefix = python_settings.prefix
         self.settings_dict_postfix = python_settings.postfix
         (_, warnings) = self.parse_python_settings_recursive(python_settings.config_dict,

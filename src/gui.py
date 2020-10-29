@@ -424,7 +424,6 @@ class MainWindow(Gtk.ApplicationWindow):
         grid = Gtk.Grid()
         for _ in range(depth):
             grid.add(Gtk.Label(label='  '))
-
         try:
             if settings.comments:
                 grid.set_tooltip_text(str(settings.comments))
@@ -624,6 +623,25 @@ class MainWindow(Gtk.ApplicationWindow):
             self.log_append_message(
                 Error('Can\'t add default settings if no Node is selected'))
 
+    def on_python_treeview_button_add_missing_default_setting(self, _):
+        if self.check_python_treeview_for_unapplied_code():
+            return
+        #try:
+        if 1 == 1:
+            node = self.cpp_treeview_listbox.get_selected_row().node
+            missing_settings = node.get_unused_python_settings()
+            print(missing_settings)
+            if missing_settings:
+                pass
+                # TODO create window with a list of missing_settings and let the user select one
+                # TODO then add the selected setting (and needed parents to self.settings_dict)
+                # TODO don't forget to create undo
+            else:
+                self.log_append_message(Info('There is no additional setting, that you could add'))
+        #except:
+        #    self.log_append_message(
+        #        Error('Can\'t add missing setting if no Node is selected'))
+
     def init_ui(self):
         self.cpp_treeview_current_row = None
 
@@ -792,7 +810,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.grid_python_code_buttons.add(self.button_apply_python_code)
 
         self.button_add_defaults_python_code = Gtk.Button(
-            label='add default settings')
+            label='add all default settings recursively')
         self.button_add_defaults_python_code.connect(
             "clicked", self.on_button_add_defaults_python_code)
         self.grid_python_code_buttons.attach_next_to(
@@ -841,8 +859,10 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # python treeview code
         self.tabs_python_treeview = Gtk.Notebook()
+        self.python_treeview_outer_grid = Gtk.Grid()
+        self.python_treeview_outer_grid.add(self.tabs_python_treeview)
         self.grid_treeview.attach_next_to(
-            self.tabs_python_treeview, self.tabs_cpp_treeview, Gtk.PositionType.RIGHT, 1, 1)
+            self.python_treeview_outer_grid, self.tabs_cpp_treeview, Gtk.PositionType.RIGHT, 1, 1)
         self.python_treeview_grid = Gtk.Grid()
         self.tabs_python_treeview.append_page(
             self.python_treeview_grid, Gtk.Label(label='Python-Code'))
@@ -857,20 +877,31 @@ class MainWindow(Gtk.ApplicationWindow):
         self.python_treeview_scroll.add(self.python_treeview_code)
 
         self.python_treeview_buttons = Gtk.Grid()
+        self.python_treeview_outer_grid.attach_next_to(
+            self.python_treeview_buttons, self.tabs_python_treeview, Gtk.PositionType.BOTTOM, 1, 1)
+
+        self.python_treeview_code_buttons = Gtk.Grid()
         self.python_treeview_grid.attach_next_to(
-            self.python_treeview_buttons, self.python_treeview_scroll, Gtk.PositionType.BOTTOM, 1, 1)
+            self.python_treeview_code_buttons, self.python_treeview_scroll, Gtk.PositionType.BOTTOM, 1, 1)
 
         self.python_treeview_button_apply = Gtk.Button(label='apply changes')
         self.python_treeview_button_apply.connect(
             "clicked", self.on_python_treeview_button_apply)
-        self.python_treeview_buttons.add(self.python_treeview_button_apply)
+        self.python_treeview_code_buttons.add(self.python_treeview_button_apply)
 
         self.python_treeview_button_add_defaults = Gtk.Button(
-            label='add default settings')
+            label='add all missing default settings to node')
         self.python_treeview_button_add_defaults.connect(
             "clicked", self.on_python_treeview_button_add_defaults)
         self.python_treeview_buttons.add(
             self.python_treeview_button_add_defaults)
+
+        self.python_treeview_button_add_missing_default_setting = Gtk.Button(
+            label='add missing setting to node')
+        self.python_treeview_button_add_missing_default_setting.connect(
+            "clicked", self.on_python_treeview_button_add_missing_default_setting)
+        self.python_treeview_buttons.add(
+            self.python_treeview_button_add_missing_default_setting)
 
 
         # python treeview list-tab
