@@ -507,6 +507,13 @@ class Node:
                                 settings_container_default_recurse = settings_container_default.get_first_SettingsListEntry().value
                             except: pass
                         new_entry.comments = entry.comments
+                        # add doc_link
+                        try:
+                            default_entry = settings_container_default.get_entry(entry.key)
+                            print(entry.doc_link)
+                            # TODO why is doc_link None?
+                            new_entry.doc_link = default_entry.doc_link
+                        except: pass
 
                         # add an empty list or dict to the new entry
                         if isinstance(entry.value, SettingsDict):

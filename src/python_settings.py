@@ -371,6 +371,13 @@ class SettingsDict(SettingsContainer):
                 return entry.value
         return
 
+    def get_entry(self, key):
+        conditionals_resolved = self.__get_resolved_Conditionals()
+        for entry in self + conditionals_resolved:
+            if isinstance(entry, SettingsDictEntry) and entry.key == key:
+                return entry
+        return
+
     def __get_resolved_Conditionals(self):
         conditionals_resolved = []
         for entry in self:
