@@ -507,11 +507,9 @@ class Node:
                                 settings_container_default_recurse = settings_container_default.get_first_SettingsListEntry().value
                             except: pass
                         new_entry.comments = entry.comments
-                        # add doc_link
+                        # add doc_link to recursive SettingsDictEntrys
                         try:
                             default_entry = settings_container_default.get_entry(entry.key)
-                            print(entry.doc_link)
-                            # TODO why is doc_link None?
                             new_entry.doc_link = default_entry.doc_link
                         except: pass
 
@@ -529,6 +527,11 @@ class Node:
                                                                              keep_entries_that_have_no_default=keep_entries_that_have_no_default, warnings=warnings, recurse_childs=recurse_childs)
                     else:
                         # if the entry.value is no SettingsContainer -> just append the entry
+                        # add doc_link
+                        try:
+                            default_entry = settings_container_default.get_entry(entry.key)
+                            entry.doc_link = default_entry.doc_link
+                        except: pass
                         self_settings_container.append(entry)
                 else:
                     # entry is a SettingsDictEntry
