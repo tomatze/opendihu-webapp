@@ -636,6 +636,7 @@ class MainWindow(Gtk.ApplicationWindow):
                 # TODO create window with a list of missing_settings and let the user select one
                 # TODO then add the selected setting (and needed parents to self.settings_dict)
                 # TODO don't forget to create undo
+                # TODO also check if a key is in SettingsConditionals while adding with has_key() and get_value()
             else:
                 self.log_append_message(Info('There is no additional setting, that you could add'))
         #except:
