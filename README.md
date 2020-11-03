@@ -20,9 +20,13 @@ This Project aims to simplify the creation of a new simulation in opendihu for e
 ## macOS
 `brew install pygobject3 gtk+ gtksourceview4`
 
-## windows (using MSYS2)
+## windows (using mingw)
 * download and install [MSYS2](https://www.msys2.org/#installation)
-* run MSYS2 and install requirements:
+* run a mingw-terminal `C:\msys64\mingw64.exe` and install git and the requirements (it's important to execute mingw not msys2):
+
+`pacman -Suy`
+
+`pacman -S git`
 
 `pacman -S mingw-w64-x86_64-gtk3 mingw-w64-x86_64-python3 mingw-w64-x86_64-python3-gobject mingw-w64-x86_64-gtksourceview4`
 
