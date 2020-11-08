@@ -317,6 +317,11 @@ class SettingsDict(SettingsContainer):
         r = ''
         for i in range(len(self)):
             entrie = self[i]
+            # don't print inserted defaults entries, that are not activated
+            try:
+                if entrie.activated == False:
+                    continue
+            except: pass
             if isinstance(entrie, SettingsDictEntry):
                 comments = ''
                 for comment in entrie.comments:

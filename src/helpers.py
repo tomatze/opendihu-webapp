@@ -40,7 +40,7 @@ class Info(Message):
 class Warning(Message):
     def __init__(self, message):
         self.prefix = 'Warning'
-        self.color = 'yellow'
+        self.color = 'orange'
         super().__init__(message)
 
 # helper function to indent a multiline-string by a given indentation

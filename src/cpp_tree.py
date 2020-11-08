@@ -85,7 +85,9 @@ class CPPTree:
                 if isinstance(entry, SettingsDictEntry) or isinstance(entry, SettingsListEntry):
                     # while we are at it, we can complete the urls in the SettingsListEntrys
                     if isinstance(entry, SettingsDictEntry) and entry.doc_link:
-                        entry.doc_link = 'https://opendihu.readthedocs.io/en/latest/settings/' + entry.doc_link
+                        # only fix it once, some reused SettingsDictEntrys e.g. things in outputwriter are called here multiple times
+                        if not entry.doc_link.startswith("https://"):
+                            entry.doc_link = 'https://opendihu.readthedocs.io/en/latest/settings/' + entry.doc_link
                     if isinstance(entry.value, str):
                         if entry.value.startswith('{') and entry.value.endswith('}'):
                             entry.value = SettingsDict(entry.value)
@@ -235,9 +237,11 @@ class CPPTree:
             return self.cpp_template
 
     # replace a node in the tree with another node
+    # it also inserts deactivated defaults
     def replace_node(self, node, replacement_node):
         self.undo_stack.duplicate_current_state()
         node.parent.childs.replace(node, replacement_node)
+        node.insert_missing_default_python_settings_deactivated(self.undo_stack.get_current_root().settings_dict)
         return Info('replaced node with ' + str(replacement_node.name))
 
     # delete a node from the tree
@@ -246,11 +250,17 @@ class CPPTree:
         node.parent.childs.delete(node)
         return Info('deleted node ' + str(node.name))
 
+    # remove a setting from its parent and reapply the settings
+    #def remove_python_setting(self, settings, node=None, setting)
+
     # parse a string with python-settings and map the settings to the given node (and its child_nodes recursively)
     # if node is given, the settings are applied to a specific node (if not they are applied to root)
     # to give a PythonSettings object to this function, you have to cast it to a string first
-    def parse_python_settings(self, settings, node=None):
-        self.undo_stack.duplicate_current_state()
+    # also insert deactivated defautl settings
+
+    def parse_python_settings(self, settings, node=None, undoable=True):
+        if undoable:
+            self.undo_stack.duplicate_current_state()
         # save PythonSettings so we also have the prefix and postfix
         try:
             if node:
@@ -263,16 +273,21 @@ class CPPTree:
                 n = self.undo_stack.get_current_root()
                 recurse_childs = True
         except:
-            self.undo_stack.undo()
-            self.undo_stack.remove_future()
+            if undoable:
+                self.undo_stack.undo()
+                self.undo_stack.remove_future()
             traceback.print_exc()
             return Error('failed to create a PythonSettings object from code (propably a syntax-error)')
 
         try:
-            return n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=recurse_childs)
+            ret = n.parse_python_settings(python_settings, keep_entries_that_have_no_default=True, recurse_childs=recurse_childs)
+            # insert deactivated defaults
+            n.insert_missing_default_python_settings_deactivated(self.undo_stack.get_current_root().settings_dict)
+            return ret
         except:
-            self.undo_stack.undo()
-            self.undo_stack.remove_future()
+            if undoable:
+                self.undo_stack.undo()
+                self.undo_stack.remove_future()
             traceback.print_exc()
             return Error('failed to add PythonSettings object to ' + str(n.name) + ' (most likely a bug)')
 

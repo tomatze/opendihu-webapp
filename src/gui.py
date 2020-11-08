@@ -9,7 +9,7 @@ import possible_solver_combinations
 from helpers import Message, Error, Info, Warning
 from python_settings import PythonSettings, SettingsList, SettingsDict, SettingsDictEntry, SettingsChildPlaceholder, SettingsListEntry
 from cpp_tree import CPPTree
-from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk
+from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk, GLib
 import sys
 import subprocess
 import os
@@ -134,8 +134,8 @@ class NodeReplaceWindow(Gtk.Window):
 
             def on_button_replace(_):
                 replacement = listbox.get_selected_row().node
-                replacement.add_missing_default_python_settings(
-                    main_window.cpp_tree.undo_stack.get_current_root().settings_dict)
+                #replacement.add_missing_default_python_settings(
+                #    main_window.cpp_tree.undo_stack.get_current_root().settings_dict)
                 ret = main_window.cpp_tree.replace_node(node, replacement)
                 main_window.log_append_message(ret)
                 main_window.redraw_all()
@@ -428,11 +428,40 @@ class MainWindow(Gtk.ApplicationWindow):
             if settings.comments:
                 grid.set_tooltip_text(str(settings.comments))
         except: pass
+        activated = True
+        try:
+            if settings.activated == False:
+                activated = False
+        except: pass
         if isinstance(settings, SettingsDict):
             grid.add(Gtk.Label(label='dict:'))
         if isinstance(settings, SettingsList):
             grid.add(Gtk.Label(label='list:'))
         elif isinstance(settings, SettingsDictEntry):
+            if activated == False:
+                # set textcolor to grey if this entry is not activated
+                grid.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0.5, 0.5, 0.5, 1.0))
+
+            checkbox_activated = Gtk.CheckButton()
+            # with the callback function toggled_cb
+            if activated:
+                checkbox_activated.set_active(True)
+            def toggled_checkbox(button):
+                self.cpp_tree.undo_stack.duplicate_current_state()
+                if button.get_active():
+                    settings.activated = True
+                    # activate this and parents
+                    #par = list_settings
+                    #while par:
+                    #    par.settings.activated = True
+                    #    par = par.parent
+                else:
+                    settings.activated = False
+                    pass
+                self.redraw_python()
+            checkbox_activated.connect("toggled", toggled_checkbox)
+            grid.add(checkbox_activated)
+
             v = ''
             if isinstance(settings.value, str):
                 v = settings.value
@@ -478,7 +507,7 @@ class MainWindow(Gtk.ApplicationWindow):
                 grid.add(button_open_doc)
         except: pass
 
-        if not isinstance(settings, SettingsChildPlaceholder):
+        if activated and not isinstance(settings, SettingsChildPlaceholder):
             grid.add(Gtk.Label(label=' '))
             button_delete_settings = Gtk.Button()
             icon = Gio.ThemedIcon(name="edit-delete-symbolic")
@@ -489,9 +518,14 @@ class MainWindow(Gtk.ApplicationWindow):
                     return
                 self.cpp_tree.undo_stack.duplicate_current_state()
                 parent.remove(settings)
-                self.log_append_message(Info('removed ' + GObject.markup_escape_text(str(type(settings))) + ' from python-options'))
                 self.redraw_python()
-                self.on_python_treeview_button_apply(None)
+                node = self.cpp_treeview_listbox.get_selected_row().node
+                text_bounds = self.python_treeview_code.get_buffer().get_bounds()
+                text = self.python_treeview_code.get_buffer().get_text(
+                    text_bounds[0], text_bounds[1], True)
+                self.cpp_tree.parse_python_settings(text, node, undoable=False)
+                self.redraw_python()
+                self.log_append_message(Info('removed ' + GLib.markup_escape_text(str(type(settings))) + ' from python-options'))
             button_delete_settings.connect("clicked", on_button_delete_settings)
             grid.add(button_delete_settings)
 
@@ -746,7 +780,7 @@ class MainWindow(Gtk.ApplicationWindow):
         # code view
         self.grid_code_view = Gtk.Grid(column_homogeneous=True)
         self.tabs_main.append_page(
-            self.grid_code_view, Gtk.Label(label='Code'))
+            self.grid_code_view, Gtk.Label(label='Global-View'))
 
         # cpp code view
         self.tabs_cpp_code = Gtk.Notebook()
@@ -819,7 +853,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # tree view
         self.grid_treeview = Gtk.Grid(column_homogeneous=True)
-        self.tabs_main.append_page(self.grid_treeview, Gtk.Label(label='Tree'))
+        self.tabs_main.append_page(self.grid_treeview, Gtk.Label(label='Tree-View'))
 
         # cpp tree view
         self.tabs_cpp_treeview = Gtk.Notebook()
