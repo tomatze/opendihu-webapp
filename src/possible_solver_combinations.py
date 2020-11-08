@@ -177,6 +177,7 @@ multidomain_solver_common = timestepping_schemes_ode_common + [
 
 hyperelasticity_common = [
     SettingsDictEntry("materialParameters", '[]', 'list of material parameters, must match the number of parameters in the material', 'hyperelasticity.html#materialparameters'),
+    SettingsDictEntry("density", '1.0', 'density of the material', 'hyperelasticity.html#python-settings'),
     SettingsDictEntry("displacementsScalingFactor", '1.0', 'scaling factor for displacements, only set to sth. other than 1 only to increase visual appearance for very small displacements', 'hyperelasticity.html#python-settings'),
     SettingsDictEntry("residualNormLogFilename", '"residual_norm.txt"', 'log file where residual norm values of the nonlinear solver will be written', 'hyperelasticity.html#python-settings'),
     SettingsDictEntry("useAnalyticJacobian", 'True', 'whether to use the analytically computed jacobian matrix in the nonlinear solver (fast)', 'hyperelasticity.html#python-settings'),

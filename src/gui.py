@@ -578,7 +578,7 @@ class MainWindow(Gtk.ApplicationWindow):
     def on_button_add_defaults_python_code(self, _):
         if self.check_python_treeview_for_unapplied_code():
             return
-        ret = self.cpp_tree.add_missing_default_python_settings()
+        ret = self.cpp_tree.activate_all_default_python_settings()
         self.log_append_message(ret)
         self.redraw_python()
 
@@ -649,7 +649,7 @@ class MainWindow(Gtk.ApplicationWindow):
         try:
             node = self.cpp_treeview_listbox.get_selected_row().node
 
-            rets = self.cpp_tree.add_missing_default_python_settings(node)
+            rets = self.cpp_tree.activate_all_default_python_settings(node)
             self.log_append_message(rets)
             if not isinstance(rets, Error):
                 self.redraw_python()
@@ -657,25 +657,25 @@ class MainWindow(Gtk.ApplicationWindow):
             self.log_append_message(
                 Error('Can\'t add default settings if no Node is selected'))
 
-    def on_python_treeview_button_add_missing_default_setting(self, _):
-        if self.check_python_treeview_for_unapplied_code():
-            return
-        #try:
-        if 1 == 1:
-            node = self.cpp_treeview_listbox.get_selected_row().node
-            missing_settings = node.get_unused_python_settings()
-            print(missing_settings)
-            if missing_settings:
-                pass
-                # TODO create window with a list of missing_settings and let the user select one
-                # TODO then add the selected setting (and needed parents to self.settings_dict)
-                # TODO don't forget to create undo
-                # TODO also check if a key is in SettingsConditionals while adding with has_key() and get_value()
-            else:
-                self.log_append_message(Info('There is no additional setting, that you could add'))
-        #except:
-        #    self.log_append_message(
-        #        Error('Can\'t add missing setting if no Node is selected'))
+    #def on_python_treeview_button_add_missing_default_setting(self, _):
+    #    if self.check_python_treeview_for_unapplied_code():
+    #        return
+    #    #try:
+    #    if 1 == 1:
+    #        node = self.cpp_treeview_listbox.get_selected_row().node
+    #        missing_settings = node.get_unused_python_settings()
+    #        print(missing_settings)
+    #        if missing_settings:
+    #            pass
+    #            # TODO create window with a list of missing_settings and let the user select one
+    #            # TODO then add the selected setting (and needed parents to self.settings_dict)
+    #            # TODO don't forget to create undo
+    #            # TODO also check if a key is in SettingsConditionals while adding with has_key() and get_value()
+    #        else:
+    #            self.log_append_message(Info('There is no additional setting, that you could add'))
+    #    #except:
+    #    #    self.log_append_message(
+    #    #        Error('Can\'t add missing setting if no Node is selected'))
 
     def init_ui(self):
         self.cpp_treeview_current_row = None
@@ -815,7 +815,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.grid_cpp_code_buttons, self.scroll_cpp_code, Gtk.PositionType.BOTTOM, 1, 1)
 
         self.tabs_cpp_code.append_page(
-            self.grid_cpp_code, Gtk.Label(label='C++'))
+            self.grid_cpp_code, Gtk.Label(label='C++ Code'))
 
         # python code view
         self.tabs_python_code = Gtk.Notebook()
@@ -824,7 +824,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.grid_python_code = Gtk.Grid()
         self.tabs_python_code.append_page(
-            self.grid_python_code, Gtk.Label(label='Python'))
+            self.grid_python_code, Gtk.Label(label='Global Python-Code'))
 
         self.text_view_python_code = GtkSource.View()
         self.text_view_python_code.get_buffer().set_language(
@@ -845,7 +845,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.grid_python_code_buttons.add(self.button_apply_python_code)
 
         self.button_add_defaults_python_code = Gtk.Button(
-            label='add all default settings recursively')
+            label='activate all possible default settings recursively')
         self.button_add_defaults_python_code.connect(
             "clicked", self.on_button_add_defaults_python_code)
         self.grid_python_code_buttons.attach_next_to(
@@ -890,17 +890,43 @@ class MainWindow(Gtk.ApplicationWindow):
         self.scroll_cpp_treeview = Gtk.ScrolledWindow()
         self.scroll_cpp_treeview.add(self.cpp_treeview_listbox)
         self.tabs_cpp_treeview.append_page(
-            self.scroll_cpp_treeview, Gtk.Label(label='C++'))
+            self.scroll_cpp_treeview, Gtk.Label(label='C++ Tree'))
+
+
+        # python treeview list-tab
+        self.tabs_python_treeview = Gtk.Notebook()
+        self.python_treeview_store = Gio.ListStore()
+        self.python_treeview_listbox = Gtk.ListBox()
+        self.python_treeview_listbox.set_vexpand(True)
+        self.python_treeview_listbox.set_hexpand(True)
+        self.python_treeview_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.python_treeview_listbox.bind_model(
+            self.python_treeview_store, self.python_treeview_listbox_create_widget)
+
+        self.python_treeview_listbox.set_activate_on_single_click(False)
+
+        def python_row_double_clicked(_, row):
+            pass
+        self.python_treeview_listbox.connect('row-activated', python_row_double_clicked)
+
+        def python_row_clicked(_, row):
+            pass
+        self.python_treeview_listbox.connect('row-selected', python_row_clicked)
+
+        self.scroll_python_treeview = Gtk.ScrolledWindow()
+        self.scroll_python_treeview.add(self.python_treeview_listbox)
+        self.tabs_python_treeview.append_page(
+            self.scroll_python_treeview, Gtk.Label(label='Selected Python-Tree'))
+
 
         # python treeview code
-        self.tabs_python_treeview = Gtk.Notebook()
         self.python_treeview_outer_grid = Gtk.Grid()
         self.python_treeview_outer_grid.add(self.tabs_python_treeview)
         self.grid_treeview.attach_next_to(
             self.python_treeview_outer_grid, self.tabs_cpp_treeview, Gtk.PositionType.RIGHT, 1, 1)
         self.python_treeview_grid = Gtk.Grid()
         self.tabs_python_treeview.append_page(
-            self.python_treeview_grid, Gtk.Label(label='Python-Code'))
+            self.python_treeview_grid, Gtk.Label(label='Selected Python-Code'))
         self.python_treeview_scroll = Gtk.ScrolledWindow()
         self.python_treeview_grid.add(self.python_treeview_scroll)
 
@@ -925,43 +951,11 @@ class MainWindow(Gtk.ApplicationWindow):
         self.python_treeview_code_buttons.add(self.python_treeview_button_apply)
 
         self.python_treeview_button_add_defaults = Gtk.Button(
-            label='add all missing default settings to node')
+            label='activate all possible default settings on selected node')
         self.python_treeview_button_add_defaults.connect(
             "clicked", self.on_python_treeview_button_add_defaults)
         self.python_treeview_buttons.add(
             self.python_treeview_button_add_defaults)
-
-        self.python_treeview_button_add_missing_default_setting = Gtk.Button(
-            label='add missing setting to node')
-        self.python_treeview_button_add_missing_default_setting.connect(
-            "clicked", self.on_python_treeview_button_add_missing_default_setting)
-        self.python_treeview_buttons.add(
-            self.python_treeview_button_add_missing_default_setting)
-
-
-        # python treeview list-tab
-        self.python_treeview_store = Gio.ListStore()
-        self.python_treeview_listbox = Gtk.ListBox()
-        self.python_treeview_listbox.set_vexpand(True)
-        self.python_treeview_listbox.set_hexpand(True)
-        self.python_treeview_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
-        self.python_treeview_listbox.bind_model(
-            self.python_treeview_store, self.python_treeview_listbox_create_widget)
-
-        self.python_treeview_listbox.set_activate_on_single_click(False)
-
-        def python_row_double_clicked(_, row):
-            pass
-        self.python_treeview_listbox.connect('row-activated', python_row_double_clicked)
-
-        def python_row_clicked(_, row):
-            pass
-        self.python_treeview_listbox.connect('row-selected', python_row_clicked)
-
-        self.scroll_python_treeview = Gtk.ScrolledWindow()
-        self.scroll_python_treeview.add(self.python_treeview_listbox)
-        self.tabs_python_treeview.append_page(
-            self.scroll_python_treeview, Gtk.Label(label='Python-List'))
 
 
 

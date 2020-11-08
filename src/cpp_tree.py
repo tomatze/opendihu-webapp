@@ -241,7 +241,8 @@ class CPPTree:
     def replace_node(self, node, replacement_node):
         self.undo_stack.duplicate_current_state()
         node.parent.childs.replace(node, replacement_node)
-        node.insert_missing_default_python_settings_deactivated(self.undo_stack.get_current_root().settings_dict)
+        replacement_node.insert_missing_default_python_settings_deactivated(self.undo_stack.get_current_root().settings_dict)
+        replacement_node.activate_all_default_python_settings(self.undo_stack.get_current_root().settings_dict)
         return Info('replaced node with ' + str(replacement_node.name))
 
     # delete a node from the tree
@@ -295,8 +296,8 @@ class CPPTree:
     def get_python_settings(self):
         return self.undo_stack.get_current_root().get_python_settings()
 
-    # add missing default-python-settings to a given node
-    def add_missing_default_python_settings(self, node=None):
+    # activate missing default-python-settings on a given node
+    def activate_all_default_python_settings(self, node=None):
         if node:
             n = node
             recurse_childs = False
@@ -304,9 +305,9 @@ class CPPTree:
             n = self.undo_stack.get_current_root()
             recurse_childs = True
         self.undo_stack.duplicate_current_state()
-        changes = n.add_missing_default_python_settings(
+        changes = n.activate_all_default_python_settings(
             self.undo_stack.get_current_root().settings_dict, recurse_childs=recurse_childs)
         if not changes > 0:
             self.undo_stack.undo()
             self.undo_stack.remove_future()
-        return Info('added ' + str(changes) + ' missing default python-settings to ' + str(n.name))
+        return Info('activated all possible default python-settings on ' + str(n.name) + ' ('+ str(changes) + ' settings activated)')
