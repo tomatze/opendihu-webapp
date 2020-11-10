@@ -223,10 +223,12 @@ class Node:
                 settings_container_default_resolved = SettingsDict()
                 for entry in settings_container_default:
                     if isinstance(entry, SettingsChoice):
-                        for e in entry.alternatives:
-                            settings_container_default_resolved.append(e)
-                        for e in entry.defaults:
-                            settings_container_default_resolved.append(e)
+                        settings_container_default_resolved.extend(entry.defaults)
+                        settings_container_default_resolved.extend(entry.alternatives)
+                        #for e in entry.alternatives:
+                        #    settings_container_default_resolved.append(e)
+                        #for e in entry.defaults:
+                        #    settings_container_default_resolved.append(e)
                     else:
                         settings_container_default_resolved.append(entry)
                 settings_container_default = settings_container_default_resolved
@@ -304,6 +306,15 @@ class Node:
             # recurse levels
             for entry in self_settings_container:
                 if isinstance(entry, SettingsDictEntry):
+                    # add doc_link to recursive SettingsDictEntrys
+                    # and add default_comment (used in change-settings-gui)
+                    try:
+                        default_entry = settings_container_default.get_entry(entry.key)
+                        # the order is important here, because accessing comments[0] could fail
+                        entry.doc_link = default_entry.doc_link
+                        entry.default_comment = default_entry.comments[0]
+                    except: pass
+
                     # recurse all keys that are no strings, those are SettingsDict and SettingsList
                     if not isinstance(entry.value, str) and settings_container_default.has_key(entry.key):
                         settings_container_default_recurse = settings_container_default.get_value(
@@ -407,8 +418,8 @@ class Node:
                             e.activated = True
                             changes = changes + 1
 
-            # recurse levels
             for entry in self_settings_container:
+                # recurse levels
                 if isinstance(entry, SettingsDictEntry):
                     # recurse all keys that are no strings, those are SettingsDict and SettingsList
                     if not isinstance(entry.value, str) and settings_container_default.has_key(entry.key):
@@ -730,6 +741,7 @@ class Node:
                     settings_container_default_resolved = SettingsDict()
                     for e in settings_container_default:
                         if isinstance(e, SettingsMesh) or isinstance(e, SettingsSolver):
+                            #print(e.name_key)
                             settings_container_default_resolved.append(
                                 SettingsDictEntry(e.name_key, ""))
                             for default_e in e:
@@ -738,6 +750,7 @@ class Node:
                         else:
                             settings_container_default_resolved.append(e)
                     settings_container_default = settings_container_default_resolved
+
                 # resolve SettingsChoice inside settings_container_default
                 # TODO maybe do this a little bit smarter (do not accept all things from the SettingsChoice (either defaults or alternatives))
                 if isinstance(settings_container_default, SettingsDict):
@@ -773,11 +786,14 @@ class Node:
                                 settings_container_default_recurse = settings_container_default.get_first_SettingsListEntry().value
                             except: pass
                         new_entry.comments = entry.comments
-                        # add doc_link to recursive SettingsDictEntrys
-                        try:
-                            default_entry = settings_container_default.get_entry(entry.key)
-                            new_entry.doc_link = default_entry.doc_link
-                        except: pass
+                        ## add doc_link to recursive SettingsDictEntrys
+                        ## and add default_comment (used in change-settings-gui)
+                        #try:
+                        #    default_entry = settings_container_default.get_entry(entry.key)
+                        #    # the order is important here, because accessing comments[0] could fail
+                        #    new_entry.doc_link = default_entry.doc_link
+                        #    new_entry.default_comment = default_entry.comments[0]
+                        #except: pass
 
                         # add an empty list or dict to the new entry
                         if isinstance(entry.value, SettingsDict):
@@ -793,11 +809,11 @@ class Node:
                                                                              keep_entries_that_have_no_default=keep_entries_that_have_no_default, warnings=warnings, recurse_childs=recurse_childs)
                     else:
                         # if the entry.value is no SettingsContainer -> just append the entry
-                        # add doc_link
-                        try:
-                            default_entry = settings_container_default.get_entry(entry.key)
-                            entry.doc_link = default_entry.doc_link
-                        except: pass
+                        ## add doc_link
+                        #try:
+                        #    default_entry = settings_container_default.get_entry(entry.key)
+                        #    entry.doc_link = default_entry.doc_link
+                        #except: pass
                         self_settings_container.append(entry)
                 else:
                     # entry is a SettingsDictEntry

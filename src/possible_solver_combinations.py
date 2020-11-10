@@ -187,6 +187,7 @@ hyperelasticity_common = [
     # undocumented
     SettingsDictEntry("loadFactorGiveUpThreshold", '1e-5', 'a threshold for the load factor, when to abort the solve of the current time step. The load factors are adjusted automatically if the nonlinear solver diverged. If the load factors get too small, it aborts the solve'),
     SettingsDictEntry("dumpDenseMatlabVariables", 'False', 'whether to have extra output of matlab vectors, x,r, jacobian matrix (very slow)', 'hyperelasticity.html#python-settings'),
+    # we use meshName directly here, because the Mesh::CompositeOfDimension is sometimes CHILD0 and sometimes CHILD1
     SettingsDictEntry("meshName", '"meshX"', 'mesh with quadratic Lagrange ansatz functions', 'hyperelasticity.html#python-settings'),
     SettingsDictEntry("inputMeshIsGlobal", 'True', 'boundary conditions are specified in global numberings, whereas the mesh is given in local numberings', 'hyperelasticity.html#python-settings'),
     SettingsChoice([
@@ -197,6 +198,7 @@ hyperelasticity_common = [
     SettingsDictEntry("loadFactors", '[]', 'if []: no load factors are used', 'hyperelasticity.html#python-settings'),
     SettingsDictEntry("nNonlinearSolveCalls", '1', 'how often the nonlinear solve should be called', 'hyperelasticity.html#python-settings'),
     SettingsDictEntry("dirichletBoundaryConditions", '{}', 'the initial Dirichlet boundary conditions that define values for displacements u', 'hyperelasticity.html#python-settings'),
+    SettingsDictEntry("dirichletOutputFilename", '""', 'a filename for a vtp file that contains the Dirichlet boundary condition nodes and their values, set to None to disable. This is for debugging the Dirichlet boundary condition nodes', 'hyperelasticity.html#dirichletoutputfilename'),
     SettingsDictEntry("neumannBoundaryConditions", '[]', 'neumann boundary conditions that define traction forces on surfaces of elements', 'hyperelasticity.html#python-settings'),
     SettingsDictEntry("divideNeumannBoundaryConditionValuesByTotalArea", 'False', 'if the given Neumann boundary condition values under "neumannBoundaryConditions" are total forces instead of surface loads and therefore should be scaled by the surface area of all elements where Neumann BC are applied', 'hyperelasticity.html#python-settings'),
     SettingsDictEntry("updateDirichletBoundaryConditionsFunction", 'None', 'function that updates the dirichlet BCs while the simulation is running', 'hyperelasticity.html#python-settings'),
@@ -220,7 +222,7 @@ hyperelasticity_common = [
 hyperelasticity_solver = SettingsDictEntry("HyperelasticitySolver", SettingsDict(
         [SettingsDictEntry("durationLogKey", '"duration_mechanics"', 'key to find duration of this solver in the log file', 'hyperelasticity.html#python-settings'),] +
         hyperelasticity_common +
-        solver_nonlinear
+        [solver_nonlinear]
     ))
 
 # this is used in DynamicHyperelasticitySolver and MuscleContractionSolver
@@ -235,7 +237,7 @@ dynamic_hyperelasticity_solver = SettingsDictEntry("DynamicHyperelasticitySolver
                 SettingsDictEntry("dynamic", SettingsDict([outputwriter]), 'additional output writer that writes virtual work terms', 'dynamic_hyperelasticity.html#python-settings')
             ]),
         ] +
-        solver_nonlinear
+        [solver_nonlinear]
     ))
 
 

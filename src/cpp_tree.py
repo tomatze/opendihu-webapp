@@ -106,6 +106,8 @@ class CPPTree:
                 elif isinstance(entry, SettingsChoice):
                     fix_lazy_recursive(entry.defaults)
                     fix_lazy_recursive(entry.alternatives)
+                elif isinstance(entry, SettingsMesh) or isinstance(entry, SettingsSolver):
+                    fix_lazy_recursive(entry)
                 else:
                     fix_lazy_recursive(entry.value)
         # iterate over python_options and fix lazy definitions like '{}' and '[1, 2, 3]' replace them with SettingsDict() and SettingsList(SettingsListEntry(..),..)
