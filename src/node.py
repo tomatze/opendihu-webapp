@@ -225,10 +225,6 @@ class Node:
                     if isinstance(entry, SettingsChoice):
                         settings_container_default_resolved.extend(entry.defaults)
                         settings_container_default_resolved.extend(entry.alternatives)
-                        #for e in entry.alternatives:
-                        #    settings_container_default_resolved.append(e)
-                        #for e in entry.defaults:
-                        #    settings_container_default_resolved.append(e)
                     else:
                         settings_container_default_resolved.append(entry)
                 settings_container_default = settings_container_default_resolved
@@ -260,44 +256,43 @@ class Node:
                         self_settings_container.append(entry_copy)
 
                 elif isinstance(entry, SettingsMesh) or isinstance(entry, SettingsSolver):
-                    dict_to_append_to = None
-                    # assume mesh is defined locally, if the first key exists already (the first key should be unique (e.g. not inputMeshIsGlobal))
-                    if self_settings_container.has_key(entry[0].key):
-                        # local
-                        # add all missing keys
-                        dict_to_append_to = self_settings_container
+                    #TODO this does not work (maybe because of parse_python_settings?)
+                    #local
+                    dict_to_append_to = self_settings_container
+                    # add all missing keys recursively
+                    changes = changes + self.insert_missing_default_python_settings_deactivated(
+                        self_settings_container=dict_to_append_to, recurse_childs=recurse_childs, settings_container_default=entry, settings_global_dict=settings_global_dict)
+                    # global
+                    # add e.g. Meshes : {} if not there
+                    if not settings_global_dict.has_key(entry.global_key):
+                        settings_global_dict.append(
+                            SettingsDictEntry(entry.global_key, SettingsDict()))
+                    dict = settings_global_dict.get_value(entry.global_key)
+                    if not isinstance(dict, SettingsDict):
+                        printe(
+                            'we have to add to global, but global is not a dict (propably it is a variable, we cannot add to)')
+                        continue
+                    # get the name e.g. mesh0
+                    if self_settings_container.has_key(entry.name_key):
+                        name = self_settings_container.get_value(
+                            entry.name_key)
                     else:
-                        # global
-                        # add e.g. Meshes : {} if not there
-                        if not settings_global_dict.has_key(entry.global_key):
-                            settings_global_dict.append(
-                                SettingsDictEntry(entry.global_key, SettingsDict()))
-                        dict = settings_global_dict.get_value(entry.global_key)
-                        if not isinstance(dict, SettingsDict):
-                            printe(
-                                'we have to add to global, but global is not a dict (propably it is a variable, we cannot add to)')
-                            continue
-                        # get the name e.g. mesh0
-                        if self_settings_container.has_key(entry.name_key):
-                            name = self_settings_container.get_value(
-                                entry.name_key)
-                        else:
-                            i = 0
-                            name = ''
-                            while True:
-                                name = '"' + entry.name_prefix + str(i) + '"'
-                                if not dict.has_key(name):
-                                    break
-                                i = i+1
-                            self_settings_container.append(
-                                SettingsDictEntry(entry.name_key, name))
-                            #changes = changes + 1
-                        # add global dict entry if not there (e.g. Meshes : { mesh0 : {} })
-                        if not dict.has_key(name):
-                            dict.append(SettingsDictEntry(
-                                name, SettingsDict()))
-                            #changes = changes + 1
-                        dict_to_append_to = dict.get_value(name)
+                        i = 0
+                        name = ''
+                        while True:
+                            name = '"' + entry.name_prefix + str(i) + '"'
+                            if not dict.has_key(name):
+                                break
+                            i = i+1
+                        self_settings_container.append(
+                            SettingsDictEntry(entry.name_key, name))
+                        #changes = changes + 1
+                    # add global dict entry if not there (e.g. Meshes : { mesh0 : {} })
+                    if not dict.has_key(name):
+                        dict.append(SettingsDictEntry(
+                            name, SettingsDict()))
+                        #changes = changes + 1
+                    dict_to_append_to = dict.get_value(name)
 
                     # add all missing keys recursively
                     changes = changes + self.insert_missing_default_python_settings_deactivated(
@@ -409,12 +404,7 @@ class Node:
                     if isinstance(entry, SettingsDictEntry):
                         # activate entries
                         e = self_settings_container.get_entry(entry.key)
-                        activated = True
-                        try:
-                            if e.activated == False:
-                                activated = False
-                        except: pass
-                        if activated == False:
+                        if e.activated == False:
                             e.activated = True
                             changes = changes + 1
 

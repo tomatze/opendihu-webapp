@@ -95,6 +95,7 @@ class SettingsDictEntry:
             self.comments.append('# ' + comment)
         self.doc_link = None
         self.is_unknown = False
+        self.activated = True
         if doc_link:
             self.doc_link = doc_link
 
