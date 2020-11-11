@@ -393,7 +393,7 @@ class SettingsDict(SettingsContainer):
                     conditionals_resolved.append(e)
         return conditionals_resolved
 
-class SettingsMesh(list):
+class SettingsMesh(SettingsDict):
     def __init__(self, options):
         for entry in options:
             self.append(entry)
@@ -402,7 +402,7 @@ class SettingsMesh(list):
         self.global_key = '"Meshes"'
 
 
-class SettingsSolver(list):
+class SettingsSolver(SettingsDict):
     def __init__(self, options):
         for entry in options:
             self.append(entry)
