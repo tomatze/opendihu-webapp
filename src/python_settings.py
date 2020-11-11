@@ -139,12 +139,13 @@ class SettingsDict(SettingsContainer):
         for t in tokens:
             token_value = t.string
             token_type = t.exact_type
-            # print()
-            # try:
-            #    print(stack[0])
-            # except: pass
-            # print(type(stack[-1]))
-            # print(mode_stack)
+            #print()
+            #try:
+            #   print(stack[0])
+            #except: pass
+            #print(type(stack[-1]))
+            #print(mode_stack)
+            #print(token_value)
             #print(token.tok_name[token_type] + token_value)
             if token_type == token.NL or token_type == token.NEWLINE:
                 # in the edgecase where there is no comma after a value -> store the value
@@ -201,7 +202,9 @@ class SettingsDict(SettingsContainer):
                         token_buffer = []
                     # pop 2 times because of key+value on mode_stack
                     mode_stack.pop()
-                    mode_stack.pop()
+                    # but if there was a trailing COMMA before, value is already popped, so we only have to pop once
+                    if mode_stack[-1] == 'dict_key':
+                        mode_stack.pop()
                     stack.pop()
                     append_comment = True
             # handle square brackets '[]'
@@ -263,6 +266,7 @@ class SettingsDict(SettingsContainer):
             elif mode_stack[-1] == "dict_value" or mode_stack[-1] == "list" or mode_stack[-1] == "list_comprehension" or mode_stack[-1] == "conditional":
                 # handle comma ',' (only if we are not in nested braces)
                 if nested_counter == 0 and token_type == token.COMMA:
+                    print('comma')
                     append_comment = True
                     if isinstance(stack[-1], SettingsDict):
                         if len(token_buffer) > 0:
