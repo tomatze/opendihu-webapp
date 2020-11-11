@@ -288,10 +288,23 @@ class MainWindow(Gtk.ApplicationWindow):
         self.text_view_cpp_code.get_buffer().set_text(text)
 
     def redraw_treeview_cpp(self):
+        # get currently selected index
+        selected_row = self.cpp_treeview_listbox.get_selected_row()
+        selected_index = 0
+        while True:
+            row = self.cpp_treeview_listbox.get_row_at_index(selected_index)
+            if selected_row == row:
+                break
+            selected_index = selected_index + 1
+
         self.cpp_treeview_store.remove_all()
         self.redraw_treeview_cpp_recursive(
             self.cpp_tree.undo_stack.get_current_root(), 0)
         self.cpp_treeview_listbox.select_row(self.cpp_treeview_listbox.get_row_at_index(0))
+
+        # reselect row at index
+        row = self.cpp_treeview_listbox.get_row_at_index(selected_index)
+        self.cpp_treeview_listbox.select_row(row)
 
     def redraw_treeview_cpp_recursive(self, node, depth):
         self.cpp_treeview_store.append(NodeLine(node, depth))
