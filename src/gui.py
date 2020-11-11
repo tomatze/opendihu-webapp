@@ -853,7 +853,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # tree view
         self.grid_treeview = Gtk.Grid(column_homogeneous=True)
-        self.tabs_main.append_page(self.grid_treeview, Gtk.Label(label='Tree-View'))
+        self.tabs_main.prepend_page(self.grid_treeview, Gtk.Label(label='Tree-View'))
 
         # cpp tree view
         self.tabs_cpp_treeview = Gtk.Notebook()
