@@ -266,7 +266,6 @@ class SettingsDict(SettingsContainer):
             elif mode_stack[-1] == "dict_value" or mode_stack[-1] == "list" or mode_stack[-1] == "list_comprehension" or mode_stack[-1] == "conditional":
                 # handle comma ',' (only if we are not in nested braces)
                 if nested_counter == 0 and token_type == token.COMMA:
-                    print('comma')
                     append_comment = True
                     if isinstance(stack[-1], SettingsDict):
                         if len(token_buffer) > 0:

@@ -528,6 +528,8 @@ class MainWindow(Gtk.ApplicationWindow):
         try:
             if settings.comments:
                 grid.set_tooltip_text('comments: ' + str(settings.comments) + '\ndefault-comment: ' + str(settings.default_comment))
+            else:
+                grid.set_tooltip_text('default-comment: ' + str(settings.default_comment))
         except: pass
         activated = True
         try:
