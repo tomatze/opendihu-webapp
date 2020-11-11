@@ -13,6 +13,7 @@ from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk, GLib
 import sys
 import subprocess
 import os
+import copy
 
 
 # stores a node + its depth to view it in a ListBox
@@ -51,6 +52,93 @@ class DiscardNodeChangesDialog(Gtk.Dialog):
             label="Warning: Some changes to the current Node are not applied yet, and will be discarded!")
         box = self.get_content_area()
         box.add(label)
+        self.show_all()
+
+class PythonSettingsChangeWindow(Gtk.Window):
+    def __init__(self, settings, main_window):
+        super(PythonSettingsChangeWindow, self).__init__()
+
+        grid = Gtk.Grid()
+        self.add(grid)
+
+        if isinstance(settings, SettingsDictEntry):
+            title = settings.key
+        elif isinstance(settings, SettingsListEntry):
+            title = "list-entry"
+        else:
+            self.close()
+        label_title = Gtk.Label(label=str(title))
+        grid.add(label_title)
+
+        language_manager = GtkSource.LanguageManager()
+        text_view_python_code = GtkSource.View()
+        text_view_python_code.get_buffer().set_language(
+            language_manager.get_language('python3'))
+        text_view_python_code.set_vexpand(True)
+        text_view_python_code.set_hexpand(True)
+        scroll_python_code = Gtk.ScrolledWindow()
+        scroll_python_code.add(text_view_python_code)
+        scroll_python_code.set_min_content_height(200)
+        scroll_python_code.set_min_content_width(400)
+        grid.attach_next_to(scroll_python_code, label_title,
+                            Gtk.PositionType.BOTTOM, 1, 1)
+
+        text = str(settings.value)
+        text_view_python_code.get_buffer().set_text(text)
+        text_original = copy.deepcopy(text)
+
+        button_grid = Gtk.Grid()
+        grid.attach_next_to(button_grid, scroll_python_code,
+                            Gtk.PositionType.BOTTOM, 1, 1)
+
+        def on_button_ok(_):
+            text_bounds = text_view_python_code.get_buffer().get_bounds()
+            text = text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
+            if text != text_original:
+                main_window.cpp_tree.undo_stack.duplicate_current_state()
+                # this is a little hacky:
+                # we first set the value to the string
+                settings.value = text
+                # then we reparse the whole python_settings string
+                new_settings_str = str(main_window.cpp_tree.get_python_settings())
+                rets = main_window.cpp_tree.parse_python_settings(new_settings_str, undoable=False)
+                main_window.log_append_message(rets)
+                if not isinstance(rets, Error):
+                    main_window.redraw_python()
+                    self.close()
+                else:
+                    # revert to the undo point, because changes were syntactically incorrect
+                    main_window.cpp_tree.undo_stack.undo()
+                    main_window.cpp_tree.undo_stack.remove_future()
+                    # we have to redraw_all after undo
+                    main_window.redraw_all()
+                    # if we don't close here settings is a dangling pointer to an old root, because of the undo
+                    self.close()
+            else:
+                # nothing changed
+                self.close()
+
+        def on_button_cancel(_):
+            self.close()
+
+        button_ok = Gtk.Button(label='ok')
+        button_ok.set_hexpand(True)
+        button_ok.connect("clicked", on_button_ok)
+        button_grid.add(button_ok)
+
+        button_cancel = Gtk.Button(label='cancel')
+        button_cancel.set_hexpand(True)
+        button_cancel.connect("clicked", on_button_cancel)
+        button_grid.add(button_cancel)
+
+        def on_keypress(_, event):
+            if event.keyval == Gdk.KEY_Escape:
+                self.close()
+            # this is bad when pressing return in sourceview
+            #elif event.keyval == Gdk.KEY_Return:
+            #    on_button_ok(_)
+        self.connect('key-press-event', on_keypress)
+
         self.show_all()
 
 
@@ -580,7 +668,7 @@ class MainWindow(Gtk.ApplicationWindow):
             return
         ret = self.cpp_tree.activate_all_default_python_settings()
         self.log_append_message(ret)
-        self.redraw_python()
+        self.redraw_all()
 
     def on_button_apply_python_code(self, _):
         if self.check_python_treeview_for_unapplied_code():
@@ -590,8 +678,9 @@ class MainWindow(Gtk.ApplicationWindow):
             text_bounds[0], text_bounds[1], True)
         rets = self.cpp_tree.parse_python_settings(text)
         self.log_append_message(rets)
-        if not isinstance(rets, Error):
-            self.redraw_python()
+        #if not isinstance(rets, Error):
+        #    self.redraw_python()
+        self.redraw_all()
 
     def on_button_apply_cpp_code(self, _):
         if self.check_python_treeview_for_unapplied_code():
@@ -639,6 +728,8 @@ class MainWindow(Gtk.ApplicationWindow):
             self.log_append_message(rets)
             if not isinstance(rets, Error):
                 self.redraw_python()
+            else:
+                self.redraw_all()
         except:
             self.log_append_message(
                 Error('Can\'t apply settings if no Node is selected'))
@@ -651,8 +742,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
             rets = self.cpp_tree.activate_all_default_python_settings(node)
             self.log_append_message(rets)
-            if not isinstance(rets, Error):
-                self.redraw_python()
+            self.redraw_all()
         except:
             self.log_append_message(
                 Error('Can\'t add default settings if no Node is selected'))
@@ -906,7 +996,10 @@ class MainWindow(Gtk.ApplicationWindow):
         self.python_treeview_listbox.set_activate_on_single_click(False)
 
         def python_row_double_clicked(_, row):
-            pass
+            if self.check_python_treeview_for_unapplied_code():
+                return
+            _window = PythonSettingsChangeWindow(row.settings, self)
+
         self.python_treeview_listbox.connect('row-activated', python_row_double_clicked)
 
         def python_row_clicked(_, row):
