@@ -256,7 +256,6 @@ class Node:
                         self_settings_container.append(entry_copy)
 
                 elif isinstance(entry, SettingsMesh) or isinstance(entry, SettingsSolver):
-                    #TODO this does not work (maybe because of parse_python_settings?)
                     #local
                     dict_to_append_to = self_settings_container
                     # add all missing keys recursively
@@ -284,13 +283,15 @@ class Node:
                             if not dict.has_key(name):
                                 break
                             i = i+1
-                        self_settings_container.append(
-                            SettingsDictEntry(entry.name_key, name))
+                        name_entry = SettingsDictEntry(entry.name_key, name)
+                        name_entry.activated = False
+                        self_settings_container.append(name_entry)
                         #changes = changes + 1
                     # add global dict entry if not there (e.g. Meshes : { mesh0 : {} })
                     if not dict.has_key(name):
-                        dict.append(SettingsDictEntry(
-                            name, SettingsDict()))
+                        global_dict_entry = SettingsDictEntry(name, SettingsDict())
+                        global_dict_entry.activated = False
+                        dict.append(global_dict_entry)
                         #changes = changes + 1
                     dict_to_append_to = dict.get_value(name)
 
@@ -349,7 +350,6 @@ class Node:
             # init settings_container_default
             settings_container_default = self.get_default_python_settings_dict()
             if settings_container_default == None:
-                # TODO maybe add error (no defaults found for self.name)
                 return 0
 
             # init self_settings_container
@@ -403,10 +403,52 @@ class Node:
                 for entry in settings_container_default:
                     if isinstance(entry, SettingsDictEntry):
                         # activate entries
-                        e = self_settings_container.get_entry(entry.key)
-                        if e.activated == False:
-                            e.activated = True
-                            changes = changes + 1
+                        # try because e.g. the key "meshName" is not found in self_settings_container
+                        try:
+                            e = self_settings_container.get_entry(entry.key)
+                            if e.activated == False:
+                                e.activated = True
+                                changes = changes + 1
+                        except: pass
+
+                    elif isinstance(entry, SettingsMesh) or isinstance(entry, SettingsSolver):
+                        dict_to_append_to = self_settings_container
+                        name_entry = self_settings_container.get_entry(entry.name_key)
+                        if name_entry.activated:
+                            activate_global = True
+                        else:
+                            # resolve SettingsChoice inside Mesh/Solver
+                            entry_resolved = SettingsDict()
+                            for e in entry:
+                                if isinstance(e, SettingsChoice):
+                                    entry_resolved.extend(e.defaults)
+                                    entry_resolved.extend(e.alternatives)
+                                else:
+                                    entry_resolved.append(e)
+
+                            # check if any of the entries is activated, if not -> global by default
+                            activate_global = True
+                            for e in entry_resolved:
+                                if self_settings_container.get_entry(e.key).activated:
+                                    activate_global = False
+                                    break
+
+                        if activate_global:
+                            # activate global
+                            name_entry.activated = True
+                            meshes = settings_global_dict.get_value(entry.global_key)
+                            if not isinstance(meshes, SettingsDict):
+                                printe('we have to activate keys in global, but global is not a dict (propably it is a variable, we cannot add to)')
+                                continue
+                            global_dict_entry = meshes.get_entry(name_entry.value)
+                            global_dict_entry.activated = True
+                            dict_to_append_to = global_dict_entry.value
+                        else:
+                            # activate local
+                            dict_to_append_to = self_settings_container
+                        # activate keys recursively
+                        changes = changes + self.activate_all_default_python_settings(
+                            self_settings_container=dict_to_append_to, recurse_childs=recurse_childs, settings_container_default=entry, settings_global_dict=settings_global_dict)
 
             for entry in self_settings_container:
                 # recurse levels
@@ -417,8 +459,6 @@ class Node:
                             entry.key)
                         changes = changes + self.activate_all_default_python_settings(
                             self_settings_container=entry.value, recurse_childs=recurse_childs, settings_container_default=settings_container_default_recurse, settings_global_dict=settings_global_dict)
-
-        # TODO SettingsMesh and SettingsSolver
 
         if recurse_childs_at_the_end:
             childs_recurse = []
