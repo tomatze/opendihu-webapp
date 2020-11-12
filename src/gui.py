@@ -96,6 +96,8 @@ class PythonSettingsChangeWindow(Gtk.Window):
             text = text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
             if text != text_original:
                 main_window.cpp_tree.undo_stack.duplicate_current_state()
+                if settings.activated == False:
+                    settings.activated = True
                 # this is a little hacky:
                 # we first set the value to the string
                 settings.value = text
