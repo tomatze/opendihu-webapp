@@ -31,6 +31,17 @@ class SettingsEmptyLine:
 
 # holds 2 lists, one with default SettingsDictEntrys and one with alternative SettingsDictEntrys
 
+class Activatable:
+    activated = True
+    parent = None
+    def __init__(self):
+        pass
+
+    def activate_recursive(self):
+        self.activated = True
+        if self.parent:
+            self.parent.activate_recursive()
+
 
 class SettingsChoice:
     def __init__(self, defaults, alternatives):
@@ -83,7 +94,7 @@ class SettingsContainer(list):
 
 
 # normal entry in a SettingsDict
-class SettingsDictEntry:
+class SettingsDictEntry(Activatable):
     def __init__(self, key=None, value=None, comment=None, doc_link=None):
         if isinstance(key, str) and not key[0] == '"':
             self.key = '"' + key + '"'
@@ -95,13 +106,13 @@ class SettingsDictEntry:
             self.comments.append('# ' + comment)
         self.doc_link = None
         self.is_unknown = False
-        self.activated = True
+        self.parent = None
         if doc_link:
             self.doc_link = doc_link
 
 
 # normal entry for a SettingsList
-class SettingsListEntry:
+class SettingsListEntry(Activatable):
     def __init__(self, value=None, comment=None):
         self.value = value
         self.comments = []
@@ -110,7 +121,7 @@ class SettingsListEntry:
 
 
 # represents a python-settings-dict
-class SettingsDict(SettingsContainer):
+class SettingsDict(SettingsContainer, Activatable):
     # init an empty SettingsDict or parse a settings-string to a SettingsDict
     # you can also give this a list with entries
     def __init__(self, settings=None):
@@ -415,7 +426,7 @@ class SettingsSolver(SettingsDict):
 
 
 # represents a list stored in a SettingsDictEntry.value or a SettingsListEntry.value
-class SettingsList(SettingsContainer):
+class SettingsList(SettingsContainer, Activatable):
     def __init__(self, entries=None):
         self.list_comprehension = None
         if entries:

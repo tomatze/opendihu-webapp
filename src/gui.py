@@ -96,8 +96,9 @@ class PythonSettingsChangeWindow(Gtk.Window):
             text = text_view_python_code.get_buffer().get_text(text_bounds[0], text_bounds[1], True)
             if text != text_original:
                 main_window.cpp_tree.undo_stack.duplicate_current_state()
-                if settings.activated == False:
-                    settings.activated = True
+                # activate settings recurse up
+                settings.activate_recursive()
+
                 # this is a little hacky:
                 # we first set the value to the string
                 settings.value = text
@@ -554,12 +555,8 @@ class MainWindow(Gtk.ApplicationWindow):
             def toggled_checkbox(button):
                 self.cpp_tree.undo_stack.duplicate_current_state()
                 if button.get_active():
-                    settings.activated = True
                     # activate this and parents
-                    #par = list_settings
-                    #while par:
-                    #    par.settings.activated = True
-                    #    par = par.parent
+                    settings.activate_recursive()
                 else:
                     settings.activated = False
                     pass

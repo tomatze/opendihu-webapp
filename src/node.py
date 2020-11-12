@@ -208,8 +208,14 @@ class Node:
             ## recurse
             # if we have multiple entries just use settings_container_default[0] for all of them
             for entry in self_settings_container:
+                # add parent_info
+                entry.parent = self_settings_container
+
                 if isinstance(entry, SettingsListEntry):
                     if not isinstance(entry.value, str):
+                        # add parent_info
+                        entry.value.parent = entry
+
                         settings_container_default_recurse = None
                         try:
                             settings_container_default_recurse = settings_container_default[0].value
@@ -301,6 +307,9 @@ class Node:
 
             # recurse levels
             for entry in self_settings_container:
+                # add parent_info
+                entry.parent = self_settings_container
+
                 if isinstance(entry, SettingsDictEntry):
                     # add doc_link to recursive SettingsDictEntrys
                     # and add default_comment (used in change-settings-gui)
@@ -313,6 +322,9 @@ class Node:
 
                     # recurse all keys that are no strings, those are SettingsDict and SettingsList
                     if not isinstance(entry.value, str) and settings_container_default.has_key(entry.key):
+                        # add parent_info
+                        entry.value.parent = entry
+
                         settings_container_default_recurse = settings_container_default.get_value(
                             entry.key)
                         changes = changes + self.insert_missing_default_python_settings_deactivated(
