@@ -148,7 +148,7 @@ class Node:
             try:
                 self.settings_container_default = self.combinations[self.name]["python_options"]
             except:
-                printe('no python_options found for ' + str(self.name))
+                #printe('no python_options found for ' + str(self.name))
                 # return None if nothing found
                 self.settings_container_default = None
         return self.settings_container_default
@@ -274,8 +274,7 @@ class Node:
                             SettingsDictEntry(entry.global_key, SettingsDict()))
                     dict = settings_global_dict.get_value(entry.global_key)
                     if not isinstance(dict, SettingsDict):
-                        printe(
-                            'we have to add to global, but global is not a dict (propably it is a variable, we cannot add to)')
+                        #printe('we have to add to global, but global is not a dict (propably it is a variable, we cannot add to)')
                         continue
                     # get the name e.g. mesh0
                     if self_settings_container.has_key(entry.name_key):
