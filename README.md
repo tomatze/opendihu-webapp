@@ -12,13 +12,13 @@ This Project aims to simplify the creation of a new simulation in opendihu for e
 * [gtksourceview](https://gitlab.gnome.org/GNOME/gtksourceview)
 
 ## ubuntu
-`sudo apt-get install -y python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-gtksource-4`
+`sudo apt-get install -y python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-gtksource-3.0`
 
 ## archlinux
-`sudo pacman -S gtk3 python-gobject gtksourceview4`
+`sudo pacman -S gtk3 python-gobject gtksourceview3`
 
 ## macOS
-`brew install pygobject3 gtk+ gtksourceview4`
+`brew install pygobject3 gtk+ gtksourceview3`
 
 ## windows (using mingw)
 * download and install [MSYS2](https://www.msys2.org/#installation)
@@ -28,7 +28,7 @@ This Project aims to simplify the creation of a new simulation in opendihu for e
 
 `pacman -S git`
 
-`pacman -S mingw-w64-x86_64-gtk3 mingw-w64-x86_64-python3 mingw-w64-x86_64-python3-gobject mingw-w64-x86_64-gtksourceview4`
+`pacman -S mingw-w64-x86_64-gtk3 mingw-w64-x86_64-python3 mingw-w64-x86_64-python3-gobject mingw-w64-x86_64-gtksourceview3`
 
 # Usage
 `git clone 'https://github.com/tomatze/opendihu-webapp'`

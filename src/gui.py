@@ -2,7 +2,7 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-gi.require_version('GtkSource', '4')
+gi.require_version('GtkSource', '3.0')
 from root_node import RootNode
 from node import PlaceholderNode
 import possible_solver_combinations
