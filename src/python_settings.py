@@ -1,5 +1,6 @@
 import re
 import typing
+import sys
 
 from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 from helpers import Error
@@ -158,7 +159,15 @@ class SettingsDict(SettingsContainer, Activatable):
             #print(mode_stack)
             #print(token_value)
             #print(token.tok_name[token_type] + token_value)
-            if token_type == token.NL or token_type == token.NEWLINE:
+            # the NL token was introduced in python 3.7
+            if sys.hexversion >= 0x3070000:
+                # if python-version >= 3.7
+                token_newline = (token_type == token.NL or token_type == token.NEWLINE)
+                token_newline_last = (token_type_last == token.NL or token_type_last == token.NEWLINE)
+            else:
+                token_newline = (token_type == token.NEWLINE)
+                token_newline_last = (token_type_last == token.NEWLINE)
+            if token_newline:
                 # in the edgecase where there is no comma after a value -> store the value
                 #if len(token_buffer) > 0:
                 #    if not mode_stack[-1] == "list_comprehension":
@@ -167,10 +176,13 @@ class SettingsDict(SettingsContainer, Activatable):
                 # don't append comments to SettingsDictEntry or SettingsListEntry after newline
                 append_comment = False
                 # handle empty lines
-                if token_type_last == token.NL or token_type_last == token.NEWLINE:
+                if token_newline_last:
+                #if token_type_last == token.NEWLINE:
                     stack[-1].append(SettingsEmptyLine())
             # handle comments
-            elif token_type == token.COMMENT:
+            # the COMMENT token was introduced in python 3.7
+            # in python 3.6 and lower, comments will not be handled at all
+            elif sys.hexversion >= 0x3070000 and token_type == token.COMMENT:
                 if append_comment:
                     # append the comment to the last list entry
                     stack[-1][-1].comments.append(token_value)
