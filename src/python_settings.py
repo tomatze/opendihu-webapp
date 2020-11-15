@@ -151,14 +151,14 @@ class SettingsDict(SettingsContainer, Activatable):
         for t in tokens:
             token_value = t.string
             token_type = token.tok_name[t.exact_type]
-            print()
+            #print()
             #try:
             #   print(stack[0])
             #except: pass
             #print(type(stack[-1]))
             #print(mode_stack)
             #print(token_value)
-            print(token_type + token_value)
+            #print(token_type + token_value)
             if token_type == 'NEWLINE' or token_type == 'NL':
                 # in the edgecase where there is no comma after a value -> store the value
                 #if len(token_buffer) > 0:
