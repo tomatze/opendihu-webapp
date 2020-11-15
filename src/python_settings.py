@@ -150,24 +150,16 @@ class SettingsDict(SettingsContainer, Activatable):
         token_type_last = None
         for t in tokens:
             token_value = t.string
-            token_type = t.exact_type
-            #print()
+            token_type = token.tok_name[t.exact_type]
+            print()
             #try:
             #   print(stack[0])
             #except: pass
             #print(type(stack[-1]))
             #print(mode_stack)
             #print(token_value)
-            #print(token.tok_name[token_type] + token_value)
-            # the NL token was introduced in python 3.7
-            if sys.hexversion >= 0x3070000:
-                # if python-version >= 3.7
-                token_newline = (token_type == token.NL or token_type == token.NEWLINE)
-                token_newline_last = (token_type_last == token.NL or token_type_last == token.NEWLINE)
-            else:
-                token_newline = (token_type == token.NEWLINE)
-                token_newline_last = (token_type_last == token.NEWLINE)
-            if token_newline:
+            print(token_type + token_value)
+            if token_type == 'NEWLINE' or token_type == 'NL':
                 # in the edgecase where there is no comma after a value -> store the value
                 #if len(token_buffer) > 0:
                 #    if not mode_stack[-1] == "list_comprehension":
@@ -176,13 +168,10 @@ class SettingsDict(SettingsContainer, Activatable):
                 # don't append comments to SettingsDictEntry or SettingsListEntry after newline
                 append_comment = False
                 # handle empty lines
-                if token_newline_last:
-                #if token_type_last == token.NEWLINE:
+                if token_type_last == 'NEWLINE' or token_type_last == 'NL':
                     stack[-1].append(SettingsEmptyLine())
             # handle comments
-            # the COMMENT token was introduced in python 3.7
-            # in python 3.6 and lower, comments will not be handled at all
-            elif sys.hexversion >= 0x3070000 and token_type == token.COMMENT:
+            elif token_type == 'COMMENT':
                 if append_comment:
                     # append the comment to the last list entry
                     stack[-1][-1].comments.append(token_value)
@@ -202,7 +191,7 @@ class SettingsDict(SettingsContainer, Activatable):
                         c.comment = token_value
                     stack[-1].append(c)
             # handle curly braces '{}'
-            elif token_type == token.LBRACE:
+            elif token_type == 'LBRACE':
                 if mode_stack[-1] == "list_comprehension" or mode_stack[-1] == 'conditional':
                     nested_counter = nested_counter + 1
                 elif nested_counter == 0:
@@ -216,7 +205,7 @@ class SettingsDict(SettingsContainer, Activatable):
                         stack[-1][-1].value = dict
                     stack.append(dict)
                     append_comment = False
-            elif token_type == token.RBRACE:
+            elif token_type == 'RBRACE':
                 if mode_stack[-1] == "list_comprehension" or mode_stack[-1] == 'conditional':
                     nested_counter = nested_counter - 1
                 elif nested_counter == 0:
@@ -231,7 +220,7 @@ class SettingsDict(SettingsContainer, Activatable):
                     stack.pop()
                     append_comment = True
             # handle square brackets '[]'
-            elif token_type == token.LSQB:
+            elif token_type == 'LSQB':
                 if mode_stack[-1] == "list_comprehension" or mode_stack[-1] == 'conditional':
                     nested_counter = nested_counter + 1
                 elif nested_counter == 0:
@@ -246,7 +235,7 @@ class SettingsDict(SettingsContainer, Activatable):
                         stack[-1][-1].value = list
                     stack.append(list)
                     append_comment = False
-            elif token_type == token.RSQB:
+            elif token_type == 'RSQB':
                 if mode_stack[-1] == "list_comprehension":
                     if nested_counter == 1:
                         #if token_buffer:
@@ -277,18 +266,18 @@ class SettingsDict(SettingsContainer, Activatable):
 
             # handle dictionary keys
             elif mode_stack[-1] == "dict_key":
-                if token_type == token.STRING or token_type == token.NUMBER:
-                    # we got a new key (keys are always token.STRING or token.NUMBER)
+                if token_type == 'STRING' or token_type == 'NUMBER':
+                    # we got a new key (keys are always STRING or NUMBER)
                     stack[-1].append(SettingsDictEntry())
                     append_comment = True
                     stack[-1][-1].key = token_value
-                elif token_type == token.COLON:
+                elif token_type == 'COLON':
                     mode_stack.append("dict_value")
 
             # handle dictionary values and list entries
             elif mode_stack[-1] == "dict_value" or mode_stack[-1] == "list" or mode_stack[-1] == "list_comprehension" or mode_stack[-1] == "conditional":
                 # handle comma ',' (only if we are not in nested braces)
-                if nested_counter == 0 and token_type == token.COMMA:
+                if nested_counter == 0 and token_type == 'COMMA':
                     append_comment = True
                     if isinstance(stack[-1], SettingsDict):
                         if len(token_buffer) > 0:
@@ -302,7 +291,7 @@ class SettingsDict(SettingsContainer, Activatable):
                             list_entry.value = tokens_to_string(token_buffer)
                             stack[-1].append(list_entry)
                             token_buffer = []
-                elif nested_counter == 0 and token_type == token.NAME and token_value == 'if':
+                elif nested_counter == 0 and token_type == 'NAME' and token_value == 'if':
                     nested_counter = nested_counter + 1
                     mode_stack.append('conditional')
                     # get the value of the last entry we added and replace it with a SettingsConditional containing the old value
@@ -311,14 +300,14 @@ class SettingsDict(SettingsContainer, Activatable):
                     stack[-1][-1].value.if_block = first_condition_value
 
                     stack.append(stack[-1][-1].value)
-                elif mode_stack[-1] == 'conditional' and nested_counter == 1 and token_type == token.NAME and token_value == 'else':
+                elif mode_stack[-1] == 'conditional' and nested_counter == 1 and token_type == 'NAME' and token_value == 'else':
                     nested_counter = 0
                     mode_stack.pop()
                     stack[-1].condition = tokens_to_string(token_buffer)
                     token_buffer = []
                 else:
                     # handle list-comprehensions like [ ... for i in range 10]
-                    if nested_counter == 0 and token_type == token.NAME and token_value == 'for':
+                    if nested_counter == 0 and token_type == 'NAME' and token_value == 'for':
                         nested_counter = nested_counter + 1
                         mode_stack.append('list_comprehension')
 
@@ -327,9 +316,9 @@ class SettingsDict(SettingsContainer, Activatable):
                     token_buffer.append(t)
 
                     # handle parentheses '()'
-                    if token_type == token.LPAR:
+                    if token_type == 'LPAR':
                         nested_counter = nested_counter + 1
-                    if token_type == token.RPAR:
+                    if token_type == 'RPAR':
                         nested_counter = nested_counter - 1
 
             token_type_last = token_type
