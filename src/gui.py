@@ -1070,6 +1070,17 @@ class MainApplication(Gtk.Application):
     def __init__(self):
         Gtk.Application.__init__(self)
 
+    # override super.run to process sys.argv
+    # TODO can gtk handle argv for us instead?
+    def run(self, argv):
+        try:
+            if str(sys.argv[1]) == '--web':
+                # set webmode if first argument is --web
+                global webmode
+                webmode = True
+        except: pass
+        return super().run([])
+
     def do_activate(self):
         win = MainWindow(self)
         win.show_all()
