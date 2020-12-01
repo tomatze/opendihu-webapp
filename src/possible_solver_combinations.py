@@ -1,4 +1,5 @@
-from python_settings import SettingsDict, SettingsList, SettingsChildPlaceholder, SettingsChoice, SettingsDictEntry, SettingsListEntry, SettingsSolver, SettingsMesh, SettingsComment
+from python_settings.python_settings import *
+
 # each dict entry corresponds to a cpp-template
 # each template-dict can have a ordered list with template_arguments (assuming there are no template_arguments if omitted)
 

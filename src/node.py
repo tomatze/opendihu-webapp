@@ -1,8 +1,7 @@
 import copy
 
 from helpers import printe, indent, Error, Info, Warning
-from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice, SettingsConditional
-
+from python_settings.python_settings import *
 
 class Childs():
     def __init__(self, node):
@@ -66,7 +65,7 @@ class Childs():
             if self.__childs[i] == child_old:
                 self.__childs[i] = child_new
                 return
-        printe('failed to replace node')
+        #printe('failed to replace node')
 
     # normally gets called while parsing cpp-code
     def replace_next_placeholder(self, child):
@@ -82,7 +81,6 @@ class Childs():
 
     def clear(self):
         self.populate()
-
 
 # this class represents a Node in the structure tree (Example.root e.g. is such a Node)
 class Node:
@@ -807,7 +805,6 @@ class Node:
                 res = self._validate_cpp_src_recursive(
                     node=node.childs.get_real_childs()[i], res=res)
         return res
-
 
 class PlaceholderNode(Node):
     def __init__(self, combinations, needed):

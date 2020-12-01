@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
-
-import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('GtkSource', '3.0')
-from root_node import RootNode
-from node import PlaceholderNode
-import possible_solver_combinations
-from helpers import Message, Error, Info, Warning
-from python_settings import PythonSettings, SettingsList, SettingsDict, SettingsDictEntry, SettingsChildPlaceholder, SettingsListEntry
-from cpp_tree import CPPTree
-from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk, GLib
 import sys
 import subprocess
 import os
 import copy
 
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('GtkSource', '3.0')
+from gi.repository import Gtk, Gio, GtkSource, GObject, Gdk, GLib
+
+from cpp_tree import CPPTree
+from root_node import RootNode
+from node import PlaceholderNode
+from python_settings.python_settings import *
+from helpers import Message, Error, Info, Warning
+
 
 # stores a node + its depth to view it in a ListBox
-
 class NodeLine(GObject.GObject):
     def __init__(self, node, depth):
         GObject.GObject.__init__(self)

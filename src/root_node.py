@@ -1,6 +1,6 @@
 from node import Node
 from helpers import printe, indent, Error, Info
-from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice
+from python_settings.python_settings import *
 
 # specialized Node with some extra stuff
 

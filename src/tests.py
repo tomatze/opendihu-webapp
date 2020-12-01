@@ -3,7 +3,7 @@
 import unittest
 
 from cpp_tree import CPPTree
-from python_settings import SettingsDict
+from python_settings.python_settings import *
 from helpers import Error
 
 
@@ -178,7 +178,7 @@ class TestPythonParser(unittest.TestCase):
     def test_default_python_settings_syntax(self):
         example = CPPTree()
         example.load_empty_simulation()
-        for key, value in example.combinations.items():
+        for _key, value in example.combinations.items():
             if not "python_options" in value:
                 continue
             #print("syntax checking: " + key)

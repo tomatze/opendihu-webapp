@@ -7,68 +7,13 @@ from helpers import Error
 import token
 from io import BytesIO
 
-# a floating comment within a SettingsDict or SettingsList
-
-
-class SettingsComment:
-    def __init__(self, comment=None):
-        self.comment = comment
-
-
-# a placeholder in a SettingsDict, which can be replaced with some SettingsDictEntrys
-# this gets created when parsing python_options from possible_solver_combinations
-# it is marked with the floating comment '### CHILD ###'
-class SettingsChildPlaceholder(SettingsComment):
-    def __init__(self, childnumber):
-        super().__init__()
-        self.comment = '### CHILD ' + str(childnumber) + ' ###'
-        self.childnumber = int(childnumber)
-
-
-# an empty line within a SettingsDict or SettingsList
-# this is used to restore simple formatting
-class SettingsEmptyLine:
-    pass
-
-# holds 2 lists, one with default SettingsDictEntrys and one with alternative SettingsDictEntrys
-
-class Activatable:
-    activated = True
-    parent = None
-    def __init__(self):
-        pass
-
-    def activate_recursive(self):
-        self.activated = True
-        if self.parent:
-            self.parent.activate_recursive()
-
-
-class SettingsChoice:
-    def __init__(self, defaults, alternatives):
-        self.defaults = defaults
-        self.alternatives = alternatives
-
-
-# if-else block inside a SettingsDictEntry.value or a SettingsListEntry.value
-class SettingsConditional():
-    def __init__(self):
-        self.condition = None
-        self.if_block = None
-        self.else_block = None
-
-    def repr(self, depth, hide_placeholders=False):
-        depth = depth - 1
-        if isinstance(self.if_block, str):
-            value1 = self.if_block
-        else:
-            value1 = self.if_block.repr(depth + 1, hide_placeholders=hide_placeholders)
-        if isinstance(self.else_block, str):
-            value2 = self.else_block
-        else:
-            value2 = self.else_block.repr(depth + 1, hide_placeholders=hide_placeholders)
-        return value1 + ' if ' + self.condition + ' else ' + value2
-
+from python_settings.settings_child_placeholder import *
+from python_settings.settings_list_entry import *
+from python_settings.settings_dict_entry import *
+from python_settings.settings_activatable import *
+from python_settings.settings_empty_line import *
+from python_settings.settings_conditional import *
+from python_settings.settings_choice import *
 
 # this class is the parent of SettingsDict and SettingsList
 class SettingsContainer(list):
@@ -92,33 +37,6 @@ class SettingsContainer(list):
             if isinstance(entry, SettingsChildPlaceholder):
                 count = count + 1
         return count
-
-
-# normal entry in a SettingsDict
-class SettingsDictEntry(Activatable):
-    def __init__(self, key=None, value=None, comment=None, doc_link=None):
-        if isinstance(key, str) and not key[0] == '"':
-            self.key = '"' + key + '"'
-        else:
-            self.key = key
-        self.value = value
-        self.comments = []
-        if comment:
-            self.comments.append('# ' + comment)
-        self.doc_link = None
-        self.is_unknown = False
-        self.parent = None
-        if doc_link:
-            self.doc_link = doc_link
-
-
-# normal entry for a SettingsList
-class SettingsListEntry(Activatable):
-    def __init__(self, value=None, comment=None):
-        self.value = value
-        self.comments = []
-        if comment:
-            self.comments.append('#' + comment)
 
 
 # represents a python-settings-dict
@@ -161,10 +79,20 @@ class SettingsDict(SettingsContainer, Activatable):
             #print(token_type + token_value)
             if token_type == 'NEWLINE' or token_type == 'NL':
                 # in the edgecase where there is no comma after a value -> store the value
-                #if len(token_buffer) > 0:
-                #    if not mode_stack[-1] == "list_comprehension":
-                #        stack[-1][-1].value = tokens_to_string(token_buffer)
-                #        token_buffer = []
+                if nested_counter == 0 and len(token_buffer) > 0:
+                    append_comment = True
+                    if isinstance(stack[-1], SettingsDict):
+                        if len(token_buffer) > 0:
+                            stack[-1][-1].value = tokens_to_string(
+                                token_buffer)
+                            token_buffer = []
+                        mode_stack.pop()
+                    else:
+                        if len(token_buffer) > 0:
+                            list_entry = SettingsListEntry()
+                            list_entry.value = tokens_to_string(token_buffer)
+                            stack[-1].append(list_entry)
+                            token_buffer = []
                 # don't append comments to SettingsDictEntry or SettingsListEntry after newline
                 append_comment = False
                 # handle empty lines
@@ -345,6 +273,9 @@ class SettingsDict(SettingsContainer, Activatable):
                 if isinstance(entrie.value, str):
                     value = entrie.value
                 else:
+                    #print(entrie.key)
+                    #print(entrie.comments)
+                    #print(entrie.value)
                     value = entrie.value.repr(depth + 1, hide_placeholders=hide_placeholders)
                 optional_comma = ','
                 if i == len(self) - 1:
@@ -407,24 +338,6 @@ class SettingsDict(SettingsContainer, Activatable):
                 for e in entry.if_block:
                     conditionals_resolved.append(e)
         return conditionals_resolved
-
-class SettingsMesh(SettingsDict):
-    def __init__(self, options):
-        for entry in options:
-            self.append(entry)
-        self.name_key = '"meshName"'
-        self.name_prefix = 'mesh'
-        self.global_key = '"Meshes"'
-
-
-class SettingsSolver(SettingsDict):
-    def __init__(self, options):
-        for entry in options:
-            self.append(entry)
-        self.name_key = '"solverName"'
-        self.name_prefix = 'solver'
-        self.global_key = '"Solvers"'
-
 
 # represents a list stored in a SettingsDictEntry.value or a SettingsListEntry.value
 class SettingsList(SettingsContainer, Activatable):
@@ -495,31 +408,21 @@ class SettingsList(SettingsContainer, Activatable):
         return None
 
 
-# this holds a complete settings.py by parsing its config-dict and storing the rest of the file in prefix and postfix
-class PythonSettings():
-    prefix = ''
-    config_dict = None
-    postfix = ''
-    # takes a string of a settings.py and parses it
+class SettingsMesh(SettingsDict):
+    def __init__(self, options):
+        for entry in options:
+            self.append(entry)
+        self.name_key = '"meshName"'
+        self.name_prefix = 'mesh'
+        self.global_key = '"Meshes"'
 
-    def __init__(self, settings=None):
-        if settings:
-            # isolate content of config{} to settings and save the rest of the file settings_prefix and settings_postfix
-            split1 = settings.split('config = {')
-            self.prefix = split1[0][:-1]
-            settings = split1[1]
-            split2 = re.compile(r'(?m)^}').split(settings, 1)
-            settings = split2[0]
-            settings = '{' + settings + '}'
-            self.postfix = split2[1][1:]
-
-            # iterate over tokens to create SettingsDict
-            self.config_dict = SettingsDict(settings)
-            return None
-
-    def __repr__(self):
-        return self.prefix + '\nconfig = ' + str(self.config_dict) + self.postfix
-
+class SettingsSolver(SettingsDict):
+    def __init__(self, options):
+        for entry in options:
+            self.append(entry)
+        self.name_key = '"solverName"'
+        self.name_prefix = 'solver'
+        self.global_key = '"Solvers"'
 
 # helper function wrapping pythons untokenize-function to improve readability of the returned string
 def tokens_to_string(tokens):

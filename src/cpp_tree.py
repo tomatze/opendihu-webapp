@@ -3,12 +3,11 @@ import copy
 import traceback
 
 from helpers import printe, indent, Error, Info, Warning
-import possible_solver_combinations
-from python_settings import PythonSettings, SettingsDict, SettingsList, SettingsListEntry, SettingsComment, SettingsDictEntry, SettingsChildPlaceholder, SettingsContainer, SettingsMesh, SettingsSolver, SettingsChoice
+# this also import python_settings.python_settings
+from possible_solver_combinations import *
 from node import Node
 from root_node import RootNode
 from undo_stack import UndoStack
-
 
 # this class is the backend
 # it holds the cpp-tree and all functions that can be used by an interface
@@ -20,7 +19,7 @@ class CPPTree:
         self.cpp_template = file_cpp_template.read()
         file_cpp_template.close()
 
-        self.combinations = possible_solver_combinations.possible_solver_combinations
+        self.combinations = possible_solver_combinations
 
         # create a list of keys
         self.keys = list(self.combinations.keys())
