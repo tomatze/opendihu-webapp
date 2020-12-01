@@ -25,8 +25,7 @@ class TestParser(unittest.TestCase):
         "electrophysiology/cellml/shorten/src/cellml.cpp",
         "electrophysiology/fibers/cuboid/src/cuboid.cpp",
         "electrophysiology/fibers/fibers_contraction/no_precice/src/biceps_contraction.cpp",
-        # IGNORE Dummy
-        # "electrophysiology/fibers/fibers_contraction/no_precice/src/biceps_contraction_no_cell.cpp",
+        "electrophysiology/fibers/fibers_contraction/no_precice/src/biceps_contraction_no_cell.cpp",
         "electrophysiology/fibers/fibers_contraction/no_precice/src/biceps_contraction_not_fast.cpp",
         "electrophysiology/fibers/fibers_contraction/with_precice/src/contraction.cpp",
         "electrophysiology/fibers/fibers_contraction/with_precice/src/fibers.cpp",
@@ -71,7 +70,7 @@ class TestParser(unittest.TestCase):
         "electrophysiology/multidomain/multidomain_no_fat/src/multidomain_output.cpp",
         "electrophysiology/multidomain/multidomain_with_fat/src/multidomain_shorten_with_fat.cpp",
         "electrophysiology/multidomain/multidomain_with_fat/src/multidomain_with_fat.cpp",
-        # IGNORE TODO using insted of define
+        # IGNORE TODO using instead of define
         # "electrophysiology/neuromuscular/neurons_with_contraction/src/neurons_with_contraction.cpp",
         # "electrophysiology/neuromuscular/only_neurons/src/only_neurons.cpp",
         # TODO problem.fixInvalidFibersInFile();
