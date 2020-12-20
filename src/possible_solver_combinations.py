@@ -933,6 +933,7 @@ possible_solver_combinations = {
             SettingsMesh([
                 SettingsDictEntry("nElements", SettingsList(['1', '1']), 'the number of elements of the mesh in the coordinate directions', 'mesh.html#nelements'),
                 SettingsDictEntry("physicalExtent", '[1.0, 1.0]', 'the “size” of the mesh in physical units (e.g. meters if SI units are used), in the coordinate directions', 'mesh.html#physicalextent'),
+                #SettingsDictEntry("physicalOffset", '[0, 0]', 'offsets all node positions by the given vector. The physicalOffset is always global, i.e. even when inputMeshIsGlobal is set to False, the physicalOffset specifies the offset to the front lower left corner of the global mesh.', 'mesh.html#physicalextent'),
                 SettingsDictEntry("inputMeshIsGlobal", 'True', 'whether the values of nElements and physicalExtent describe the global domain (True) or the local subdomain (False) in parallel execution', 'mesh.html#inputmeshisglobal')
             ])
         ])
