@@ -596,7 +596,9 @@ class MainWindow(Gtk.ApplicationWindow):
                 grid.add(Gtk.Label(label=' '))
                 button_open_doc = Gtk.Button()
                 button_open_doc.set_tooltip_text('open web-documentation')
-                icon = Gio.ThemedIcon(name="help-about")
+                #icon = Gio.ThemedIcon(name="help-about")
+                icon = Gio.ThemedIcon(name="help-faq")
+                #icon = Gio.ThemedIcon(name="dialog-question")
                 image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
                 button_open_doc.add(image)
                 def on_button_open_doc(_):
