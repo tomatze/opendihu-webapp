@@ -454,7 +454,8 @@ class MainWindow(Gtk.ApplicationWindow):
 
         grid = Gtk.Grid()
         for _ in range(depth):
-            grid.add(Gtk.Label(label='   '))
+            grid.add(Gtk.Label(label='  '))
+            #grid.add(Gtk.Label(label='   '))
 
         description = node.get_contextual_description()
         if not isinstance(node, RootNode):
@@ -526,7 +527,8 @@ class MainWindow(Gtk.ApplicationWindow):
         parent = list_settings.parent
         grid = Gtk.Grid()
         for _ in range(depth):
-            grid.add(Gtk.Label(label='   '))
+            #grid.add(Gtk.Label(label='   '))
+            grid.add(Gtk.Label(label='  '))
         try:
             if settings.comments:
                 grid.set_tooltip_text('comments: ' + str(settings.comments) + '\ndefault-comment: ' + str(settings.default_comment))
