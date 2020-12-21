@@ -404,7 +404,7 @@ class MainWindow(Gtk.ApplicationWindow):
         dialog.add_buttons(
             Gtk.STOCK_CANCEL,
             Gtk.ResponseType.CANCEL,
-            Gtk.STOCK_OPEN,
+            Gtk.STOCK_SAVE,
             Gtk.ResponseType.OK,
         )
 
